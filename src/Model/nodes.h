@@ -1,6 +1,7 @@
 #include "ASTNode.h"
 #include "BlockNode.h"
 #include "ByteNode.h"
+#include "CallArgsNode.h"
 #include "CharNode.h"
 #include "ExpressionNode.h"
 #include "FloatNode.h"

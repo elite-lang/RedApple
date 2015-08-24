@@ -13,7 +13,9 @@ using namespace std;
 
 class ModuleDefNode: public StatementNode {
 public: 
-	list<StatementNode*> def_list;
+	list<StatementNode*> *def_list;
+
+	ModuleDefNode(int type, string name, list<StatementNode*> *def_list);
 };
 
 #endif //_MODULEDEFNODE_H

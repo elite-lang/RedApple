@@ -15,6 +15,7 @@ public:
 	string name;
 	int type;
 
+	StatementNode(){}
 	StatementNode(string name);
 	~StatementNode();
 	
