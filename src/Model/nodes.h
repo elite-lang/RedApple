@@ -4,6 +4,7 @@
 #include "CallArgsNode.h"
 #include "CharNode.h"
 #include "ExpressionNode.h"
+#include "ExpStatementNode.h"
 #include "FloatNode.h"
 #include "FuncCallNode.h"
 #include "FuncDefNode.h"

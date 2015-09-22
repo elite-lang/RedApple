@@ -19,6 +19,7 @@ public:
 	void pushStack();
 	
 	void popStack();
+
 private:
 	list<StatementNode*> *statement_list;
 };

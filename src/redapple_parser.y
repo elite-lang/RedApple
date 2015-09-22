@@ -1,16 +1,21 @@
 %{
 #include "Model/nodes.h"
 #include "idtable.h"
-
+#include <list>
 using namespace std;
 
-ASTNode *programBlock; /* the top level root node of our final AST */
+#define YYERROR_VERBOSE 1
+
+list<ModuleDefNode*> *programBlock; /* the top level root node of our final AST */
 
 IDTable *st;
 
 extern int yylex();
+extern int yylineno;
+extern char* yytext;
+extern int yyleng;
 
-void yyerror(const char *s) { printf("ERROR: %s\n", s); }
+void yyerror(const char *s);
 
 %}
 
@@ -40,6 +45,8 @@ void yyerror(const char *s) { printf("ERROR: %s\n", s); }
     FloatNode *float_node;
     ByteNode *byte_node;
     FuncDefNode *funcdef_node;
+    list<string> *funcdef_xs_node;
+    
     //FuncArgsNode *funcargs_node;
     VarDefNode *vardef_node;
     list<VarDefNode*> *vardef_node_list;
@@ -64,7 +71,8 @@ void yyerror(const char *s) { printf("ERROR: %s\n", s); }
 %token <str> STRING CHAR
 %token <token> IF ELSE WHILE DO GOTO FOR FOREACH  
 %token <token> DELEGATE DEF DEFINE IMPORT USING NAMESPACE
-%token <str> KWS_EXIT RETURN NEW THIS KWS_ERROR KWS_TSZ KWS_STRUCT KWS_FWKZ KWS_FUNC_XS KWS_TYPE
+%token <token> RETURN NEW THIS 
+%token <str> KWS_EXIT KWS_ERROR KWS_TSZ KWS_STRUCT KWS_FWKZ KWS_FUNC_XS KWS_TYPE
 
 /* 
    Define the type of node our nonterminal symbols represent.
@@ -77,14 +85,15 @@ void yyerror(const char *s) { printf("ERROR: %s\n", s); }
 %type <module_def_node> def_module_statement
 %type <module_def_node_list> def_module_statements
 %type <statement_node> def_statement
-%type <block_node> def_statements
+%type <statement_node_list> def_statements
 %type <statement_node> statement
-%type <block_node> statements
+%type <statement_node_list> statements
 %type <block_node> block
 %type <vardef_node> var_def
 %type <funcdef_node> func_def
 %type <vardef_node_list> func_def_args
 // %type <id_node> id
+%type <funcdef_xs_node> func_def_xs 
 %type <value_node> numeric
 %type <exp_node> expr
 %type <callargs_node> call_arg 
@@ -112,7 +121,14 @@ def_module_statements  : def_module_statement { $$ = new list<ModuleDefNode*>();
                        | def_module_statements def_module_statement { $$ = $1; $$->push_back($2); }
                        ;
 
-def_statement : var_def ';' { $$ = $1; } | func_def ;
+func_def_xs : KWS_FUNC_XS 
+            | func_def_xs KWS_FUNC_XS 
+            ;
+
+def_statement : var_def ';' { $$ = $1; } 
+              | func_def 
+              | func_def_xs func_def {$$ = $2; $2->setTags($1);} 
+              ;
 
 def_statements : def_statement { $$ = new list<StatementNode*>(); 
                                  $$->push_back($1); }
@@ -124,7 +140,8 @@ statements : statement { $$ = new list<StatementNode*>();
            | statements statement { $$ = $1; $$->push_back($2); }
            ;
 
-statement : def_statement | expr ';' { $$ = $1; } | block ;
+statement : def_statement | expr ';' { $$ = new ExpStatementNode($1); } 
+          | block { $$ = new ExpStatementNode($1); };
 
 block : '{' statements '}' { $$ = new BlockNode($2); }
       | '{' '}' { $$ = new BlockNode(); }
@@ -147,14 +164,17 @@ func_def_args : %empty  { $$ = NULL; }
               | func_def_args ',' var_def { $$ = $1; $$->push_back($3); }
               ;
 
-numeric : INTEGER { $$ = new IntNode($1->str); }
-        | DOUBLE { $$ = new FloatNode($1->str); }
+numeric : INTEGER { $$ = new IntNode($1); }
+        | DOUBLE { $$ = new FloatNode($1); }
         ;
 
-expr : ID '=' expr { $$ = new FuncCallNode($2, $1, $3); }
+expr : ID '=' expr { $$ = new FuncCallNode($2, new IDNode($1), $3); }
      | ID '(' call_args ')' { $$ = new FuncCallNode($1, $3); }
-     | ID { $$ = $1; }
+     | ID { $$ = new IDNode($1); }
      | numeric { $$ = $1; }
+     | STRING
+     | CHAR
+     | KWS_TSZ
      | expr CEQ expr { $$ = new FuncCallNode($2, $1, $3); }
      | expr CNE expr { $$ = new FuncCallNode($2, $1, $3); }
      | expr CLE expr { $$ = new FuncCallNode($2, $1, $3); }
@@ -169,7 +189,7 @@ expr : ID '=' expr { $$ = new FuncCallNode($2, $1, $3); }
      | expr '^' expr { $$ = new FuncCallNode($2, $1, $3); }
      | expr '&' expr { $$ = new FuncCallNode($2, $1, $3); }
      | expr '|' expr { $$ = new FuncCallNode($2, $1, $3); }
-     | '~' expr { $$ = new FuncCallNode($2, $1); }
+     | '~' expr { $$ = new FuncCallNode($1, $2); }
      | '(' expr ')'  /* ( expr ) */  { $$ = $2; }
      ;
 
@@ -184,3 +204,9 @@ call_args : %empty { $$ = NULL; }
           ;
 
 %%
+
+void yyerror(const char* s){
+    fprintf(stderr, "%s \n", s);    
+    fprintf(stderr, "line %d: ", yylineno);
+    fprintf(stderr, "text %s \n", yytext);
+}

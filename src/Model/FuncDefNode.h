@@ -8,12 +8,23 @@
 
 #include "DelegateDefNode.h"
 #include "BlockNode.h"
+#include "VarDefNode.h"
+#include <list>
+#include <string>
+
+using namespace std;
 
 class FuncDefNode: public DelegateDefNode {
 public: 
-	BlockNode& funcblock;
-	string ret_type;
-	list<string> args_type;
+
+	FuncDefNode(string type_name, string func_name, 
+				 list<VarDefNode*> *vardef_node_list, BlockNode *funcblock);
+
+	void setTags(list<string> *funcdef_xs_node);
+
+private:
+	BlockNode* funcblock;
+	list<string> *funcdef_xs_node;
 };
 
 #endif //_FUNCDEFNODE_H

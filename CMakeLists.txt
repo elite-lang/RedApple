@@ -11,7 +11,7 @@ BISON_TARGET(MyParser ${CMAKE_CURRENT_SOURCE_DIR}/src/redapple_parser.y
 					  ${CMAKE_CURRENT_BINARY_DIR}/redapple_parser.cpp)
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
-include_directories(build src src/Model)
+include_directories(Debug Release build src src/Model)
 
 file(GLOB_RECURSE source_files	${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 								${CMAKE_CURRENT_SOURCE_DIR}/src/Model/*.cpp)

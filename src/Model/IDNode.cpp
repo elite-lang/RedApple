@@ -8,7 +8,9 @@
 /**
  * IDNode implementation
  */
-
+IDNode::IDNode(string name) {
+	
+}
 
 void IDNode::getSymbolTable() {
 

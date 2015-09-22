@@ -8,3 +8,7 @@
 /**
  * FloatNode implementation
  */
+
+FloatNode::FloatNode(string num) {
+
+}

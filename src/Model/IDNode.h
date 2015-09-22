@@ -7,11 +7,14 @@
 #define _IDNODE_H
 
 #include "ExpressionNode.h"
+#include <string>
 
+using namespace std;
 
 class IDNode: public ExpressionNode {
 public: 
-	
+	IDNode(string name);
+
 	void getSymbolTable();
 };
 

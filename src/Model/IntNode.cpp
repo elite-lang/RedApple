@@ -8,3 +8,7 @@
 /**
  * IntNode implementation
  */
+
+IntNode::IntNode(string num) {
+	
+}

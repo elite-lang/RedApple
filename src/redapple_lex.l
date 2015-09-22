@@ -1,5 +1,10 @@
 %{
 #include <string>
+#include "Model/nodes.h"
+#include "idtable.h"
+#include <list>
+using namespace std;
+
 #include "redapple_parser.hpp"
 
 #define SAVE_TOKEN     yylval.str = maketoken(yytext, yyleng)
@@ -21,16 +26,16 @@ char* makestring(const char* data, int len, int s);
 [ \t\v\n\f]             ; /* 过滤空白字符 */
 
 [0-9]*\.[0-9]*          SAVE_TOKEN; return DOUBLE;
-(\+|\-)?[0-9]+          SAVE_TOKEN; return INTEGER;
+[0-9]+                  SAVE_TOKEN; return INTEGER;
 
-"=="                    SAVE_TOKEN; return CEQ;
-"<="                    SAVE_TOKEN; return CLE;
-">="                    SAVE_TOKEN; return CGE;
-"!="                    SAVE_TOKEN; return CNE;
+"=="                    return CEQ;
+"<="                    return CLE;
+">="                    return CGE;
+"!="                    return CNE;
 
-"<"                     SAVE_TOKEN; return '<';
-"="                     SAVE_TOKEN; return '=';
-">"                     SAVE_TOKEN; return '>';
+"<"                     return '<';
+"="                     return '=';
+">"                     return '>';
 "("                     return '(';
 ")"                     return ')';
 "["                     return '[';
@@ -41,64 +46,57 @@ char* makestring(const char* data, int len, int s);
 ","                     return ',';
 ":"                     return ':';
 ";"                     return ';';
-"+"                     SAVE_TOKEN; return '+';
-"-"                     SAVE_TOKEN; return '-';
-"*"                     SAVE_TOKEN; return '*';
-"/"                     SAVE_TOKEN; return '/';
-"%"                     SAVE_TOKEN; return '%';
-"^"                     SAVE_TOKEN; return '^';
-"&"                     SAVE_TOKEN; return '&';
-"|"                     SAVE_TOKEN; return '|';
-"~"                     SAVE_TOKEN; return '~';
+"+"                     return '+';
+"-"                     return '-';
+"*"                     return '*';
+"/"                     return '/';
+"%"                     return '%';
+"^"                     return '^';
+"&"                     return '&';
+"|"                     return '|';
+"~"                     return '~';
 
-	/* 下面声明要用到的关键字 */
+    /* 下面声明要用到的关键字 */
 
-	/* 控制流 */
-"if"					return IF;
-"else"					return ELSE;
-"while"					return WHILE;
-"do"					return DO;
-"goto"					return GOTO;
-"for"					return FOR;
-"foreach"				return FOREACH;
+    /* 控制流 */
+"if"                    return IF;
+"else"                  return ELSE;
+"while"                 return WHILE;
+"do"                    return DO;
+"goto"                  return GOTO;
+"for"                   return FOR;
+"foreach"               return FOREACH;
 
-	/* 退出控制 */
-"break" | "continue" | "exit" 
-						SAVE_TOKENl; return KWS_EXIT;
+    /* 退出控制 */
+"break"|"continue"|"exit"   SAVE_TOKEN; return KWS_EXIT;
 
-"return" 				return RETURN;
+"return"                return RETURN;
 
-	/* 特殊运算符 */
-"new"					return NEW;
-"this"					return THIS;
-	
-	/* 特殊定义 */
-"delegate"				return DELEGATE;
-"def"					return DEF;
-"define"				return DEFINE;
-"import"				return IMPORT;
-"using"					return USING;
-"namespace"				return NAMESPACE;
+    /* 特殊运算符 */
+"new"                   return NEW;
+"this"                  return THIS;
+    
+    /* 特殊定义 */
+"delegate"              return DELEGATE;
+"def"                   return DEF;
+"define"                return DEFINE;
+"import"                return IMPORT;
+"using"                 return USING;
+"namespace"             return NAMESPACE;
 
-"try" | "catch" | "finally" | "throw" 
-						SAVE_TOKEN; return KWS_ERROR; /* 异常控制 */
+"try"|"catch"|"finally"|"throw"  SAVE_TOKEN; return KWS_ERROR; /* 异常控制 */
 
-"null" | "true" | "false"
-						SAVE_TOKEN; return KWS_TSZ; /* 特殊值 */
+"null"|"true"|"false"               SAVE_TOKEN; return KWS_TSZ; /* 特殊值 */
 
-"struct" | "enum" | "union" | "module" | "interface" | "class"
-						SAVE_TOKEN; return KWS_STRUCT; /* 结构声明 */
+"struct"|"enum"|"union"|"module"|"interface"|"class"     SAVE_TOKEN; return KWS_STRUCT; /* 结构声明 */
 
-"public" | "private" | "protected"
-						SAVE_TOKEN; return KWS_FWKZ; /* 访问控制 */
+"public"|"private"|"protected"  SAVE_TOKEN; return KWS_FWKZ; /* 访问控制 */
 
-"const" | "static" | "virtual" | "abstract" | "in" | "out" 
-						SAVE_TOKEN; return KWS_FUNC_XS; /* 函数修饰符 */
+"const"|"static"|"virtual"|"abstract"|"in"|"out"        SAVE_TOKEN; return KWS_FUNC_XS; /* 函数修饰符 */
 
-"void" |"double" | "int" | "float" | "char" | "bool" | "var" | "auto" /* 基本类型 */
-						SAVE_TOKEN; return KWS_TYPE;
+"void"|"double"|"int"|"float"|"char"|"bool"|"var"|"auto"  SAVE_TOKEN; return KWS_TYPE; /* 基本类型 */
 
-[a-zA-Z_][a-zA-Z0-9_]*  SAVE_TOKEN; return ID;
+[a-zA-Z_][a-zA-Z0-9_]*  SAVE_TOKEN; return ID; /* 标识符 */
 
 \"(\\.|[^\\"])*\"       SAVE_STRING; return STRING; /* 字符串 */
 @\"(\\.|[^\\"])*\"      SAVE_STRING_NC; return STRING; /* 无转义字符串 */
@@ -110,15 +108,15 @@ char* makestring(const char* data, int len, int s);
 
 
 char* maketoken(const char* data, int len) {
-	char* str = new char[len+1];
-	strncpy(str, data, len);
-	str[len] = 0;
-	return str;
+    char* str = new char[len+1];
+    strncpy(str, data, len);
+    str[len] = 0;
+    return str;
 }
 
 char* makestring(const char* data, int len, int s) {
-	char* str = new char[len-s+1];
-	strncpy(str, data+s-1, len-s);
-	str[len-s] = 0;
-	return str;
+    char* str = new char[len-s+1];
+    strncpy(str, data+s-1, len-s);
+    str[len-s] = 0;
+    return str;
 }
