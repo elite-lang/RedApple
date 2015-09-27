@@ -6,12 +6,12 @@
 #ifndef _IDNODE_H
 #define _IDNODE_H
 
-#include "ExpressionNode.h"
+#include "Node.h"
 #include <string>
 
 using namespace std;
 
-class IDNode: public ExpressionNode {
+class IDNode: public Node {
 public: 
 	IDNode(string name);
 

@@ -6,11 +6,11 @@
 #ifndef _FLOATNODE_H
 #define _FLOATNODE_H
 
-#include "ValueNode.h"
+#include "Node.h"
 #include <string>
 using namespace std;
 
-class FloatNode: public ValueNode {
+class FloatNode: public Node {
 public: 
 	float value;
 

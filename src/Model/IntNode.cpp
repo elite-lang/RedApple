@@ -4,11 +4,16 @@
 
 
 #include "IntNode.h"
-
+#include <stdlib.h>
+#include <stdio.h>
 /**
  * IntNode implementation
  */
 
-IntNode::IntNode(string num) {
-	
+IntNode::IntNode(const char* num) {
+	value = atoi(num);
+}
+
+void IntNode::printSelf() {
+	printf("Int %d", value);
 }

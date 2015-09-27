@@ -9,6 +9,7 @@ using namespace std;
 const char help_message[] = "welcome for using Red Apple compiler v0.1!\nusage: red [options] src-files\n";
 
 extern FILE* yyin;
+extern Node *programBlock;
 
 char* fileReader(const char* path, int& flen) {
 	fstream file;
@@ -43,6 +44,9 @@ int main(int argc,const char *argv[])
 		}
 		yyin = file_in;
 		yyparse();
+		
+		// 打印语法树
+		programBlock->print(0);
 
 		/* you should close the file. */
 		fclose(file_in);

@@ -6,10 +6,10 @@
 #ifndef _BYTENODE_H
 #define _BYTENODE_H
 
-#include "ValueNode.h"
+#include "Node.h"
 
 
-class ByteNode: public ValueNode {
+class ByteNode: public Node {
 public: 
 	char value;
 };

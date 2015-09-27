@@ -6,16 +6,15 @@
 #ifndef _INTNODE_H
 #define _INTNODE_H
 
-#include "ValueNode.h"
-#include <string>
+#include "Node.h"
 
-using namespace std;
-
-class IntNode: public ValueNode {
+class IntNode: public Node {
 public: 
 	int value;
 
-	IntNode(string num);
+	IntNode(const char* num);
+
+	virtual void printSelf();
 };
 
 #endif //_INTNODE_H

@@ -6,7 +6,7 @@ using namespace std;
 
 #define YYERROR_VERBOSE 1
 
-list<ModuleDefNode*> *programBlock; /* the top level root node of our final AST */
+Node *programBlock; /* the top level root node of our final AST */
 
 IDTable *st;
 
@@ -24,33 +24,7 @@ void yyerror(const char *s);
 /* Represents the many different ways we can access our data */
 
 %union {
-    ASTNode *node;
-    ExpressionNode *exp_node;
-
-    StatementNode *statement_node;
-    list<StatementNode*> *statement_node_list;
-
-    ModuleDefNode *module_def_node;
-    list<ModuleDefNode*> *module_def_node_list;
-
-    IDNode *id_node;
-    ValueNode *value_node;
-    BlockNode *block_node;
-    FuncCallNode *funccall_node;
-    
-    CallArgsNode *callargs_node;
-    list<CallArgsNode*> *callargs_node_list;
-
-    IntNode *int_node;
-    FloatNode *float_node;
-    ByteNode *byte_node;
-    FuncDefNode *funcdef_node;
-    list<string> *funcdef_xs_node;
-    
-    //FuncArgsNode *funcargs_node;
-    VarDefNode *vardef_node;
-    list<VarDefNode*> *vardef_node_list;
-    //ConstDefNode *constdef_node;
+    Node *nodes;
     char *str;
     int token;
 }
@@ -81,23 +55,22 @@ void yyerror(const char *s);
    calling an (NIdentifier*). It makes the compiler happy.
  */
 
-%type <node> program
-%type <module_def_node> def_module_statement
-%type <module_def_node_list> def_module_statements
-%type <statement_node> def_statement
-%type <statement_node_list> def_statements
-%type <statement_node> statement
-%type <statement_node_list> statements
-%type <block_node> block
-%type <vardef_node> var_def
-%type <funcdef_node> func_def
-%type <vardef_node_list> func_def_args
-// %type <id_node> id
-%type <funcdef_xs_node> func_def_xs 
-%type <value_node> numeric
-%type <exp_node> expr
-%type <callargs_node> call_arg 
-%type <callargs_node_list> call_args
+%type <nodes> program
+%type <nodes> def_module_statement
+%type <nodes> def_module_statements
+%type <nodes> def_statement
+%type <nodes> def_statements
+%type <nodes> statement
+%type <nodes> statements
+%type <nodes> block
+%type <nodes> var_def
+%type <nodes> func_def
+%type <nodes> func_def_args
+%type <nodes> func_def_xs 
+%type <nodes> numeric
+%type <nodes> expr
+%type <nodes> call_arg 
+%type <nodes> call_args
 //%type <token> operator 这个设计容易引起规约冲突，舍弃
 /* Operator precedence for mathematical operators */
 
@@ -114,93 +87,90 @@ void yyerror(const char *s);
 program : def_module_statements { programBlock = $1; }
         ;
 
-def_module_statement : KWS_STRUCT ID '{' def_statements '}' { $$ = new ModuleDefNode($1, $2, $4); } ;
+def_module_statement : KWS_STRUCT ID '{' def_statements '}' { $$ = Node::make_list(3, new StringNode($1), new StringNode($2), $4); } ;
 
-def_module_statements  : def_module_statement { $$ = new list<ModuleDefNode*>(); 
-                                                $$->push_back($1); }
-                       | def_module_statements def_module_statement { $$ = $1; $$->push_back($2); }
+def_module_statements  : def_module_statement { $$ = new Node($1); }
+                       | def_module_statements def_module_statement { $$ = $1; $$->addChildren($1); }
                        ;
 
-func_def_xs : KWS_FUNC_XS 
-            | func_def_xs KWS_FUNC_XS 
+func_def_xs : KWS_FUNC_XS { $$ = new Node(new StringNode($1)); }
+            | func_def_xs KWS_FUNC_XS {$$ = $1; $$->addChildren(new StringNode($2)); }
             ;
 
-def_statement : var_def ';' { $$ = $1; } 
-              | func_def 
-              | func_def_xs func_def {$$ = $2; $2->setTags($1);} 
+def_statement : var_def ';'
+              | func_def { $$ = new Node($1); }
+              | func_def_xs func_def { $$ = new Node($2); $2->addBrother($1); } 
               ;
 
-def_statements : def_statement { $$ = new list<StatementNode*>(); 
-                                 $$->push_back($1); }
-               | def_statements def_statement { $$ = $1; $$->push_back($2); }
+def_statements : def_statement { $$ = new Node($1); }
+               | def_statements def_statement { $$ = $1; $$->addChildren($2); }
                ;
 
-statements : statement { $$ = new list<StatementNode*>(); 
-                         $$->push_back($1);  }
-           | statements statement { $$ = $1; $$->push_back($2); }
+statements : statement { $$ = new Node($1);  }
+           | statements statement { $$ = $1; $$->addBrother($2); }
            ;
 
-statement : def_statement | expr ';' { $$ = new ExpStatementNode($1); } 
-          | block { $$ = new ExpStatementNode($1); };
+statement : def_statement | expr ';' { $$ = new Node($1); } 
+          | block { $$ = new Node($1); };
 
-block : '{' statements '}' { $$ = new BlockNode($2); }
-      | '{' '}' { $$ = new BlockNode(); }
+block : '{' statements '}' { $$ = new Node($2); }
+      | '{' '}' { $$ = new Node(); }
       ; 
 
-var_def : KWS_TYPE ID { $$ = new VarDefNode($1, $2); }
-        | ID ID { $$ = new VarDefNode($1, $2); }
-        | KWS_TYPE ID '=' expr { $$ = new VarDefNode($1, $2, $4); }
-        | ID ID '=' expr { $$ = new VarDefNode($1, $2, $4); }
+var_def : KWS_TYPE ID { $$ = Node::make_list(3, new StringNode("set"), new StringNode($1), new StringNode($2)); }
+        | ID ID { $$ = Node::make_list(2, new StringNode($1), new StringNode($2)); }
+        | KWS_TYPE ID '=' expr { $$ = Node::make_list(4, new StringNode("set"), $1, $2, $4); }
+        | ID ID '=' expr { $$ = Node::make_list(4, new StringNode("set"), $1, $2, $4); }
         ;
 
 func_def : ID ID '(' func_def_args ')' block
-            { $$ = new FuncDefNode($1, $2, $4, $6); }
+            { $$ = Node::make_list(5, new StringNode("function"), new StringNode($1), new StringNode($2), $4, $6); }
          | KWS_TYPE ID '(' func_def_args ')' block
-            { $$ = new FuncDefNode($1, $2, $4, $6); }
+            { $$ = Node::make_list(5, new StringNode("function"), new StringNode($1), new StringNode($2), $4, $6); }
          ;
 
-func_def_args : %empty  { $$ = NULL; }
-              | var_def { $$ = new list<VarDefNode*>(); $$->push_back($1); }
-              | func_def_args ',' var_def { $$ = $1; $$->push_back($3); }
+func_def_args : var_def { $$ = new Node(new Node($1)); }
+              | func_def_args ',' var_def { $$ = $1; $$->addChildren(new Node($3)); }
+              | %empty  { $$ = new Node(); }
               ;
 
 numeric : INTEGER { $$ = new IntNode($1); }
         | DOUBLE { $$ = new FloatNode($1); }
         ;
 
-expr : ID '=' expr { $$ = new FuncCallNode($2, new IDNode($1), $3); }
-     | ID '(' call_args ')' { $$ = new FuncCallNode($1, $3); }
-     | ID { $$ = new IDNode($1); }
+expr : ID '=' expr { $$ = Node::make_list(4, new StringNode("="), new StringNode($2), new StringNode($1), $3); }
+     | ID '(' call_args ')' { $$ = Node::make_list(2, new StringNode($1), $3); }
+     | ID { $$ = new StringNode($1); }
      | numeric { $$ = $1; }
-     | STRING
-     | CHAR
-     | KWS_TSZ
-     | expr CEQ expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr CNE expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr CLE expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr CGE expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr '<' expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr '>' expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr '+' expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr '-' expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr '*' expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr '/' expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr '%' expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr '^' expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr '&' expr { $$ = new FuncCallNode($2, $1, $3); }
-     | expr '|' expr { $$ = new FuncCallNode($2, $1, $3); }
-     | '~' expr { $$ = new FuncCallNode($1, $2); }
+     | STRING { $$ = new StringNode($1); }
+     | CHAR   { $$ = new CharNode($1); }
+     | KWS_TSZ 
+     | expr CEQ expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr CNE expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr CLE expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr CGE expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr '<' expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr '>' expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr '+' expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr '-' expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr '*' expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr '/' expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr '%' expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr '^' expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr '&' expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | expr '|' expr { $$ = Node::make_list(3, new StringNode($2), $1, $3); }
+     | '~' expr { $$ = Node::make_list(3, new StringNode($1), $2); }
      | '(' expr ')'  /* ( expr ) */  { $$ = $2; }
      ;
 
 
-call_arg  :  expr { $$ = new CallArgsNode($1);  }
-          |  ID ':' expr { $$ = new CallArgsNode($1, $3); }
+call_arg  :  expr { $$ = $1;  }
+          |  ID ':' expr { $$ = Node::make_list(3, new StringNode(":"), $1, $3); }
           ;
 
-call_args : %empty { $$ = NULL; }
-          | call_arg { $$ = new list<CallArgsNode*>(); $$->push_back($1); }
-          | call_args ',' call_arg  { $$ = $1; $$->push_back($3); }
+call_args : %empty { $$ = new Node(); }
+          | call_arg { $$ = $1; }
+          | call_args ',' call_arg  { $$ = $1; $$->addBrother($3); }
           ;
 
 %%
