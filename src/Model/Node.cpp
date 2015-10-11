@@ -2,12 +2,12 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:40
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-09-23 21:43:41
+* @Last Modified time: 2015-10-10 21:24:21
 */
 
 #include "Node.h"
-#include <stdarg.h>; 
-#include <stdio.h>;
+#include <stdarg.h>
+#include <stdio.h>
 
 Node::Node() {
 	next = child = NULL;
@@ -54,6 +54,10 @@ void Node::print(int k) {
 
 void Node::printSelf() {
 	printf("Node");
+}
+
+std::string Node::getType() {
+	return std::string("Node");
 }
 
 Node* Node::make_list(int num, ...) {

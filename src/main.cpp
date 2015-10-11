@@ -2,6 +2,7 @@
 #include <fstream>
 #include "Model/nodes.h"
 #include "redapple_parser.hpp"
+#include "CodeGen.h"
 
 #define maxpath 1000
 using namespace std;
@@ -40,13 +41,18 @@ int main(int argc,const char *argv[])
 		if ((file_in = fopen(file_in_name, "r")) == NULL) {
 			printf(file_in_name);
 			printf("找不到程序源文件");
-			return NULL;
+			return 0;
 		}
 		yyin = file_in;
 		yyparse();
-		
+
 		// 打印语法树
 		programBlock->print(0);
+
+		// 语法生成
+		CodeGen* codegen = new CodeGen(programBlock);
+		codegen->Make();
+		delete codegen;
 
 		/* you should close the file. */
 		fclose(file_in);

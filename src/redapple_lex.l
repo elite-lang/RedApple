@@ -1,7 +1,6 @@
 %{
 #include <string>
 #include "Model/nodes.h"
-#include "idtable.h"
 #include <list>
 using namespace std;
 

@@ -1,14 +1,11 @@
 %{
 #include "Model/nodes.h"
-#include "idtable.h"
 #include <list>
 using namespace std;
 
 #define YYERROR_VERBOSE 1
 
 Node *programBlock; /* the top level root node of our final AST */
-
-IDTable *st;
 
 extern int yylex();
 extern int yylineno;
@@ -84,7 +81,7 @@ void yyerror(const char *s);
 
 %%
 
-program : def_module_statements { programBlock = $1; }
+program : def_statements { programBlock = $1; }
         ;
 
 def_module_statement : KWS_STRUCT ID '{' def_statements '}' { $$ = Node::make_list(3, new StringNode($1), new StringNode($2), $4); } ;
@@ -103,6 +100,7 @@ def_statement : var_def ';'
               ;
 
 def_statements : def_statement { $$ = new Node($1); }
+               | def_module_statement { $$ = new Node($1); }
                | def_statements def_statement { $$ = $1; $$->addChildren($2); }
                ;
 
@@ -179,4 +177,5 @@ void yyerror(const char* s){
     fprintf(stderr, "%s \n", s);    
     fprintf(stderr, "line %d: ", yylineno);
     fprintf(stderr, "text %s \n", yytext);
+    exit(1);
 }

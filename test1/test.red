@@ -1,12 +1,12 @@
 
 class Main {
 	
-	static void hello() {
+	static void hello(int k, int g) {
 		print("hello world");
 	}
 
 	static void main() {
-		hello();
+		hello(1,2);
 	}
 
 }
