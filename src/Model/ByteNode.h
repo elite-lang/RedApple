@@ -12,6 +12,8 @@
 class ByteNode: public Node {
 public: 
 	char value;
+
+	// virtual Value* codeGen(CodeGenContext* context); 
 };
 
 #endif //_BYTENODE_H

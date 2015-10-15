@@ -13,7 +13,7 @@ public:
 	int value;
 
 	IntNode(const char* num);
-
+	virtual Value* codeGen(CodeGenContext* context); 
 	virtual void printSelf();
 };
 

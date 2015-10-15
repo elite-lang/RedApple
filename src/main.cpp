@@ -3,7 +3,7 @@
 #include "Model/nodes.h"
 #include "redapple_parser.hpp"
 #include "CodeGen.h"
-
+#include <cstring>
 #define maxpath 1000
 using namespace std;
 
@@ -12,23 +12,16 @@ const char help_message[] = "welcome for using Red Apple compiler v0.1!\nusage: 
 extern FILE* yyin;
 extern Node *programBlock;
 
-char* fileReader(const char* path, int& flen) {
-	fstream file;
-	locale::global(locale("zh_CN.UTF-8"));
-	file.open(path);//打开文件
-	if(!file.is_open())
-	{
-		printf("can not open BNF file!\n");
-		return NULL;
-	}
-	file.seekg(0,ios::end);
-	flen = file.tellg();
-	file.seekg(0,ios::beg);
-	char* data = new char[flen+1];
-	file.read(data,flen);
-	file.close();
-	data[flen] = 0;
-	return data;
+char* make_default_name(const char* filename) {
+	int size = 0;
+	for (const char* p = filename; *p != 0; ++p, ++size)
+		if (*p == '.') break;
+	char* str = new char[size+4];
+	strncpy(str, filename, size+1);
+	str[size+1] = 'b';
+	str[size+2] = 'c';
+	str[size+3] = 0;
+	return str;
 }
 
 int main(int argc,const char *argv[])
@@ -36,13 +29,13 @@ int main(int argc,const char *argv[])
 	if (argc <= 1) printf(help_message);
 	else {
 		const char *file_in_name = argv[1];
-
 		FILE* file_in;
 		if ((file_in = fopen(file_in_name, "r")) == NULL) {
 			printf(file_in_name);
 			printf("找不到程序源文件");
 			return 0;
 		}
+		
 		yyin = file_in;
 		yyparse();
 
@@ -50,8 +43,9 @@ int main(int argc,const char *argv[])
 		programBlock->print(0);
 
 		// 语法生成
+		char* output_name = make_default_name(file_in_name);
 		CodeGen* codegen = new CodeGen(programBlock);
-		codegen->Make();
+		codegen->Make(output_name);
 		delete codegen;
 
 		/* you should close the file. */

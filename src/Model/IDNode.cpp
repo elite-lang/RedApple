@@ -8,10 +8,11 @@
 /**
  * IDNode implementation
  */
-IDNode::IDNode(string name) {
-	
+
+void IDNode::printSelf() {
+	printf("ID %s", value.c_str());
 }
 
-void IDNode::getSymbolTable() {
-
+std::string IDNode::getType() {
+	return std::string("IDNode");
 }

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:55:30
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-11 14:22:21
+* @Last Modified time: 2015-10-13 15:43:06
 * 
 * 代码生成部分的引导类
 */
@@ -19,10 +19,10 @@ public:
 	CodeGen(Node* node);
 	~CodeGen();
 	
-	void Make();
+	void Make(const char* outfile_name);
 
 private:
-	CodeGenContext* content;
+	CodeGenContext* context;
 };
 
 

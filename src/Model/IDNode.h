@@ -13,9 +13,19 @@ using namespace std;
 
 class IDNode: public Node {
 public: 
-	IDNode(string name);
-
-	void getSymbolTable();
+	IDNode(const char* _value){
+		this->value = _value;
+	}
+	IDNode(char _value){
+		this->value = _value;
+	}
+	std::string& getStr() { return value; }
+	virtual Value* codeGen(CodeGenContext* context); 
+	virtual std::string getType();
+protected:
+	virtual void printSelf();
+private:
+	string value;
 };
 
 #endif //_IDNODE_H

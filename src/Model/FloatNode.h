@@ -13,7 +13,7 @@ using namespace std;
 class FloatNode: public Node {
 public: 
 	float value;
-
+	virtual Value* codeGen(CodeGenContext* context); 
 	FloatNode(string num);
 };
 

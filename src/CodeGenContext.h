@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-11 14:22:56
+* @Last Modified time: 2015-10-15 21:05:57
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -12,6 +12,7 @@
 
 #include "Node.h"
 #include <map>
+#include <stack>
 #include <string>
 using namespace std;
 
@@ -29,6 +30,7 @@ using namespace std;
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/Support/FileSystem.h"
+#include "llvm/IR/ValueSymbolTable.h"
 
 using namespace llvm;
 
@@ -40,22 +42,39 @@ typedef struct _funcReg
 	CodeGenFunction func;
 } FuncReg;
 
+
 class CodeGenContext
 {
 public:
 	CodeGenContext(Node* node);
 	~CodeGenContext();
 
-	Value* MakeBegin() { return MacroMake(root); }
+	void MakeBegin() { 
+		MacroMake(root); 
+	}
 
 	// 这个函数是用来一条条翻译Node宏的
 	Value* MacroMake(Node* node);
-
+	// 递归翻译该节点下的所有宏
+	void MacroMakeAll(Node* node); 
 	CodeGenFunction getMacro(string& str);
 
 	// C++注册宏
 	// void AddMacros(const FuncReg* macro_funcs); // 为只添加不替换保留
 	void AddOrReplaceMacros(const FuncReg* macro_funcs);
+
+	// 代码块栈的相关操作
+	BasicBlock* getNowBlock();
+	BasicBlock* createBlock();
+	BasicBlock* createBlock(Function* f);
+
+	// 获取当前模块中已注册的函数
+	Function* getFunction(Node* node);
+	Function* getFunction(std::string& name);
+
+	// 根据名字生成类型
+	Type* getNormalType(Node*);
+	Type* getNormalType(std::string& str);
 
 	void setModule(Module* pM) { M = pM; }
 	Module* getModule() { return M; }
@@ -68,7 +87,9 @@ private:
 	// 当前的LLVM Module
 	Module* M;
 	LLVMContext* Context;
-
+	Function* nowFunc;
+	BasicBlock* nowBlock;
+	
 	// 这是用来查找是否有该宏定义的
 	map<string, CodeGenFunction> macro_map;
 };
