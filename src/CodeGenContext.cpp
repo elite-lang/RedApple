@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-16 17:20:44
+* @Last Modified time: 2015-10-16 18:08:42
 */
 
 #include "CodeGenContext.h"
@@ -195,9 +195,10 @@ Value* set_macro(CodeGenContext* context, Node* node) {
 	AllocaInst *alloc = new AllocaInst(t, var_name, context->getNowBlock());
 
 	// 参数三 初始化值
+	// 这里有个问题 初始化为常数时,Store会出问题
 	node = var_node->getNext();
 	if (node == NULL) return alloc;
-	Value* init_expr = context->MacroMake(node);
+	Value* init_expr = node->codeGen(context);
 	if (init_expr == NULL) {
 		errs() << "变量的初始化无效: " << var_name << "\n";
 		exit(1);
