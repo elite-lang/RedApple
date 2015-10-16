@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-15 21:21:31
+* @Last Modified time: 2015-10-16 17:20:44
 */
 
 #include "CodeGenContext.h"
@@ -80,6 +80,10 @@ Function* CodeGenContext::getFunction(std::string& name) {
 	return M->getFunction(name);
 }
 
+void CodeGenContext::nowFunction(Function* _nowFunc) {
+	nowFunc = _nowFunc;
+}
+
 BasicBlock* CodeGenContext::getNowBlock() {
 	return nowBlock;
 }
@@ -109,16 +113,17 @@ Value* function_macro(CodeGenContext* context, Node* node) {
 	Node* args_node = node = node->getNext();
 	std::vector<Type*> type_vec;
 	std::vector<std::string> arg_name;
-	for (Node* pC = node->getChild(); 
-		 pC != NULL; pC = pC->getNext() ) 
-	{
-		Node* pSec = pC->getChild()->getNext();
-		Type* t = context->getNormalType(pSec);
-		type_vec.push_back(t);
-		StringNode* str_node = (StringNode*)(pSec->getNext());
-		arg_name.push_back(str_node->getStr());
+	if (args_node->getChild() != NULL) {
+		for (Node* pC = args_node->getChild(); 
+			 pC != NULL; pC = pC->getNext() ) 
+		{
+			Node* pSec = pC->getChild()->getNext();
+			Type* t = context->getNormalType(pSec);
+			type_vec.push_back(t);
+			StringNode* str_node = (StringNode*)(pSec->getNext());
+			arg_name.push_back(str_node->getStr());	
+		}
 	}
-
 	// 先合成一个函数
 	FunctionType *FT = FunctionType::get(ret_type, type_vec, 
 		/*not vararg*/false);
@@ -126,6 +131,7 @@ Value* function_macro(CodeGenContext* context, Node* node) {
 	Module* M = context->getModule();
 	Function *F = Function::Create(FT, Function::ExternalLinkage, 
 		function_name, M);
+	context->nowFunction(F);
 
 	if (F->getName() != function_name) {
 		// Delete the one we just made and get the existing one.
@@ -141,29 +147,28 @@ Value* function_macro(CodeGenContext* context, Node* node) {
 
 	// 第四个参数, 代码块
 	node = node->getNext();
-	context->createBlock(F); // 创建新的Block
+	BasicBlock* bb = context->createBlock(F); // 创建新的Block
 
 	// 特殊处理参数表, 这个地方特别坑，你必须给每个函数的参数
 	// 手动AllocaInst开空间，再用StoreInst存一遍才行，否则一Load就报错
 	// context->MacroMake(args_node->getChild());
-	context->MacroMake(args_node);
-	int i = 0;
-	for (auto arg = F->arg_begin(); i != arg_name.size(); ++arg, ++i) {
-		arg->setName(arg_name[i]);
-		Value* argumentValue = arg;
-		BasicBlock* bb = context->getNowBlock();
-		ValueSymbolTable* st = bb->getValueSymbolTable();
-		Value* v = st->lookup(arg_name[i]);
-		new StoreInst(argumentValue, v, false, bb);
+	if (args_node->getChild() != NULL) {
+		context->MacroMake(args_node);
+		int i = 0;
+		for (auto arg = F->arg_begin(); i != arg_name.size(); ++arg, ++i) {
+			arg->setName(arg_name[i]);
+			Value* argumentValue = arg;
+			ValueSymbolTable* st = bb->getValueSymbolTable();
+			Value* v = st->lookup(arg_name[i]);
+			new StoreInst(argumentValue, v, false, bb);
+		}
 	}
-	
 	context->MacroMake(node);
 
 	// 处理块结尾
-	BasicBlock* bb = context->getNowBlock();
+	bb = context->getNowBlock();
 	if (bb->getTerminator() == NULL)
 		ReturnInst::Create(*(context->getContext()), bb);
-
 	return F;
 }
 
@@ -227,6 +232,9 @@ Value* for_macro(CodeGenContext* context, Node* node) {
 }
 
 Value* while_macro(CodeGenContext* context, Node* node) {
+	// 参数一 条件
+	// 
+
 	return NULL;
 }
 
@@ -244,7 +252,6 @@ Value* if_macro(CodeGenContext* context, Node* node) {
 
 	// 参数三 为假时, 跳转到的Label
 	node = node->getNext();
-
 	BasicBlock* false_block = context->createBlock();
 	if (node != NULL) {
 		context->MacroMake(node);

@@ -119,14 +119,14 @@ statement : def_statement
           | for_state { $$ = new Node($1); } 
           ;
 
-if_state : IF '(' expr ')' statement { $$ = Node::make_list(3, new StringNode("if"), new Node($3), new Node($5)); }
-         | IF '(' expr ')' statement ELSE statement { $$ = Node::make_list(4, new StringNode("if"), new Node($3), new Node($5), new Node($7)); }
+if_state : IF '(' expr ')' statement { $$ = Node::make_list(3, new StringNode("if"), $3, $5); }
+         | IF '(' expr ')' statement ELSE statement { $$ = Node::make_list(4, new StringNode("if"), $3, $5, $7); }
          ;
 
-while_state : WHILE '(' expr ')' statement { $$ = Node::make_list(3, new StringNode("while"), new Node($3), new Node($5)); }
+while_state : WHILE '(' expr ')' statement { $$ = Node::make_list(3, new StringNode("while"), $3, $5); }
             ;
 
-for_state : FOR '(' expr ';' expr ';' expr ')' statement { $$ = Node::make_list(5, new StringNode("for"), new Node($3), new Node($5), new Node($7), new Node($9)); }
+for_state : FOR '(' expr ';' expr ';' expr ')' statement { $$ = Node::make_list(5, new StringNode("for"), $3, $5, $7, $9); }
           ;
 
 block : '{' statements '}' { $$ = new Node($2); }
@@ -154,7 +154,7 @@ numeric : INTEGER { $$ = new IntNode($1); }
         | DOUBLE { $$ = new FloatNode($1); }
         ;
 
-expr : ID '=' expr { $$ = Node::make_list(5, new StringNode("opt2"), new StringNode("="), new StringNode($2), new StringNode($1), $3); }
+expr : expr '=' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("="), $1, $3); }
      | ID '(' call_args ')' { $$ = Node::make_list(3, new StringNode("call"), new StringNode($1), $3); }
      | ID { $$ = new IDNode($1); }
      | numeric { $$ = $1; }

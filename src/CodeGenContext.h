@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-15 21:05:57
+* @Last Modified time: 2015-10-16 15:14:52
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -71,6 +71,7 @@ public:
 	// 获取当前模块中已注册的函数
 	Function* getFunction(Node* node);
 	Function* getFunction(std::string& name);
+	void nowFunction(Function* _nowFunc);
 
 	// 根据名字生成类型
 	Type* getNormalType(Node*);

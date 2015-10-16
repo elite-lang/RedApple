@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:57:41
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-15 21:22:24
+* @Last Modified time: 2015-10-16 17:12:25
 */
 
 #include "CodeGen.h"
@@ -38,16 +38,16 @@ void CodeGen::Make(const char* outfile_name) {
 	// register_echo(context, M->getFunction("printf"));
 	context->MakeBegin();
 
-	// 输出编译后的LLVM可读字节码
-	outs() << "LLVM module:\n\n" << *M;
-	outs() << "\n\n";
-	outs().flush();
-
 	// 校验问题, 这个函数需要一个输出流来打印错误信息
 	if (verifyModule(*M, &errs())) {
 		errs() << "构建LLVM字节码出错!\n";
 		exit(1);
 	}
+
+    // 输出编译后的LLVM可读字节码
+    outs() << "LLVM module:\n\n" << *M;
+    outs() << "\n\n";
+    outs().flush();
 
 	// 输出二进制BitCode到a.bc文件
 	std::error_code ErrInfo;
