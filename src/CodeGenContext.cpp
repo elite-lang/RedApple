@@ -2,11 +2,12 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-16 18:08:42
+* @Last Modified time: 2015-10-17 12:20:10
 */
 
 #include "CodeGenContext.h"
 #include "StringNode.h"
+#include "IDNode.h"
 #include <stdio.h>
 
 Value* CodeGenContext::MacroMake(Node* node) {
@@ -229,20 +230,60 @@ Value* call_macro(CodeGenContext* context, Node* node) {
 }
 
 Value* for_macro(CodeGenContext* context, Node* node) {
-	return NULL;
+	// 参数一 初始化
+	BasicBlock* father_block = context->getNowBlock();
+	BasicBlock* init_block   = context->createBlock();
+	context->MacroMake(node);
+
+	// 参数二 终止条件
+	node = node->getNext();
+	BasicBlock* end_block = context->createBlock();
+	Value* condition = context->MacroMake(node);
+
+	// 参数三 每次循环
+	node = node->getNext();
+	BasicBlock* do_block = context->createBlock();
+	context->MacroMake(node);
+
+	// 参数四 循环体
+	node = node->getNext();
+	BasicBlock* work_block = context->createBlock();
+	context->MacroMake(node);
+
+	// 生成for循环
+	BasicBlock* false_block = context->createBlock();
+	BranchInst* branch      = BranchInst::Create(work_block, false_block, condition, end_block);
+	BranchInst::Create(init_block, father_block);
+	BranchInst::Create(end_block, init_block);
+	BranchInst::Create(do_block,   work_block);
+	BranchInst::Create(end_block,  do_block);
+
+	return branch;
 }
 
 Value* while_macro(CodeGenContext* context, Node* node) {
 	// 参数一 条件
-	// 
+	BasicBlock* father_block = context->getNowBlock();
+	BasicBlock* pd_block     = context->createBlock();
+	Value* condition = context->MacroMake(node);
 
-	return NULL;
+	// 参数二 循环体
+	node = node->getNext();
+	BasicBlock* true_block = context->createBlock();
+	context->MacroMake(node);
+
+	// 生成while循环
+	BasicBlock* false_block = context->createBlock();
+	BranchInst* branch      = BranchInst::Create(true_block, false_block, condition, pd_block);
+	BranchInst::Create(pd_block, father_block);
+	BranchInst::Create(pd_block, true_block);
+
+	return branch;
 }
 
 Value* if_macro(CodeGenContext* context, Node* node) {
 	// 参数一 条件
 	Value* condition = context->MacroMake(node);
-
 	BasicBlock* father_block = context->getNowBlock();
 
 	// 参数二 为真时, 跳转到的Label
@@ -278,9 +319,14 @@ Value* opt2_macro(CodeGenContext* context, Node* node) {
 	Node* op2 = (node = node->getNext());
 	if (node == NULL) return NULL;
 
-	if (opt == "=") 
-		// return new StoreInst(op2->codeGen(context), op1->codeGen(context), context->getContext());
-		return new StoreInst(op2->codeGen(context), op1->codeGen(context), false, context->getNowBlock());
+	if (opt == "=") {
+		std::string name = ((IDNode*)op1)->getStr();
+		BasicBlock* bb = context->getNowBlock();
+		ValueSymbolTable* st = bb->getValueSymbolTable();
+		Value* ans1 = st->lookup(name);
+		Value* ans2 = op2->codeGen(context);
+		return new StoreInst(ans2, ans1, false, context->getNowBlock());
+	}
 
 	Instruction::BinaryOps instr;
 	if (opt == "+") { instr = Instruction::Add;  goto binOper; }
@@ -313,14 +359,14 @@ cmpOper:
 
 static const FuncReg macro_funcs[] = {
 	{"function", function_macro},
-	{"class", class_macro},
-	{"module", module_macro},
-	{"set", set_macro},
-	{"call", call_macro},
-	{"opt2", opt2_macro},
-	{"for", for_macro},
-	{"while", while_macro},
-	{"if", if_macro},
+	{"class",    class_macro},
+	{"module",   module_macro},
+	{"set",      set_macro},
+	{"call",     call_macro},
+	{"opt2",     opt2_macro},
+	{"for",      for_macro},
+	{"while",    while_macro},
+	{"if",       if_macro},
 	{NULL, NULL}
 };
 

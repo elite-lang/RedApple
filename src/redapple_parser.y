@@ -127,6 +127,7 @@ while_state : WHILE '(' expr ')' statement { $$ = Node::make_list(3, new StringN
             ;
 
 for_state : FOR '(' expr ';' expr ';' expr ')' statement { $$ = Node::make_list(5, new StringNode("for"), $3, $5, $7, $9); }
+          | FOR '(' var_def ';' expr ';' expr ')' statement { $$ = Node::make_list(5, new StringNode("for"), new Node($3), $5, $7, $9); }
           ;
 
 block : '{' statements '}' { $$ = new Node($2); }
@@ -154,7 +155,7 @@ numeric : INTEGER { $$ = new IntNode($1); }
         | DOUBLE { $$ = new FloatNode($1); }
         ;
 
-expr : expr '=' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("="), $1, $3); }
+expr : expr '=' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("="), $1, $3)); }
      | ID '(' call_args ')' { $$ = Node::make_list(3, new StringNode("call"), new StringNode($1), $3); }
      | ID { $$ = new IDNode($1); }
      | numeric { $$ = $1; }
