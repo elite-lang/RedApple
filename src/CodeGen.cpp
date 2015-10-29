@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:57:41
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-16 17:12:25
+* @Last Modified time: 2015-10-29 11:18:00
 */
 
 #include "CodeGen.h"
@@ -14,26 +14,36 @@ using namespace std;
 #include "CodeGenContext.h"
 
 CodeGen::CodeGen(Node* node) {
-	// 创建一个上下文类
-	context = new CodeGenContext(node); 
+    // 创建一个上下文类
+    
+    context = new CodeGenContext(node); 
 }
 
 CodeGen::~CodeGen() {
-	delete context;
+    if (context != NULL) delete context;
 }
 
 void register_printf(llvm::Module *module);
 void register_echo(CodeGenContext* context, llvm::Function* printfFn);
 
+extern const FuncReg macro_prescan[];
+
 void CodeGen::Make(const char* outfile_name) {
 	InitializeNativeTarget();
-	LLVMContext Context;
-
+	
+    LLVMContext Context;
 	// Create some module to put our function into it.
 	std::unique_ptr<Module> M(new Module("main", Context));
 
 	context->setModule(M.get());
 	context->setContext(&Context);
+
+    // prescan流程, 负责优先解析全局函数和类型并存放于符号表
+    context->AddOrReplaceMacros(macro_prescan);
+    context->MakeBegin();
+
+    // 正式流程初始化
+    context->Init();
 	register_printf(M.get());
 	// register_echo(context, M->getFunction("printf"));
 	context->MakeBegin();
@@ -49,7 +59,7 @@ void CodeGen::Make(const char* outfile_name) {
     outs() << "\n\n";
     outs().flush();
 
-	// 输出二进制BitCode到a.bc文件
+	// 输出二进制BitCode到.bc文件
 	std::error_code ErrInfo;
 	raw_ostream *out = new raw_fd_ostream(outfile_name, ErrInfo, sys::fs::F_None);
 	WriteBitcodeToFile(M.get(), *out);

@@ -2,24 +2,26 @@
 * @Author: sxf
 * @Date:   2015-10-12 19:21:50
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-14 16:58:30
+* @Last Modified time: 2015-10-29 10:16:18
 */
 
 #include "CodeGenContext.h"
 #include "nodes.h"
-
-#include <exception>
 
 Value* Node::codeGen(CodeGenContext* context) {
 	return context->MacroMake(this);
 }
 
 Value* IntNode::codeGen(CodeGenContext* context) {
-	return ConstantInt::get(Type::getInt64Ty(*(context->getContext())), value);
+    Type* t = Type::getInt64Ty(*(context->getContext()));
+    setLLVMType(t);
+	return ConstantInt::get(t, value);
 }
 
 Value* FloatNode::codeGen(CodeGenContext* context) {
-	return ConstantFP::get(Type::getFloatTy(*(context->getContext())), value);
+    Type* t = Type::getFloatTy(*(context->getContext()));
+    setLLVMType(t);
+	return ConstantFP::get(t, value);
 }
 
 Constant* geti8StrVal(Module& M, char const* str, Twine const& name) {
@@ -35,23 +37,30 @@ Constant* geti8StrVal(Module& M, char const* str, Twine const& name) {
 }
 
 Value* StringNode::codeGen(CodeGenContext* context) {
-	return geti8StrVal(*(context->getModule()), value.c_str(), "");
+    Module* M = context->getModule();
+    LLVMContext& ctx = M->getContext(); // 千万别用Global Context
+    Constant* strConstant = ConstantDataArray::getString(ctx, value);
+    Type* t = strConstant->getType();
+    setLLVMType(t);
+    GlobalVariable* GVStr = new GlobalVariable(*M, t, true,
+                            GlobalValue::InternalLinkage, strConstant, "");
+    Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
+    Constant* indices[] = {zero, zero};
+    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
+	return strVal;
 }
 
 Value* IDNode::codeGen(CodeGenContext* context) {
     BasicBlock* bb = context->getNowBlock();
     ValueSymbolTable* st = bb->getValueSymbolTable();
     Value* v = st->lookup(value);
+    setLLVMType(v->getType());
     if (v->hasName() == false) {
         errs() << "undeclared variable " << value << "\n";
         return NULL;
     }
-    Value* load = NULL;
-    try {
-        load = new LoadInst(v, "", false, bb);
-    } catch (std::exception& e) {
-        errs() << e.what() << '\n';
-    }
+    if (context->isSave()) return v;
+    Value* load = new LoadInst(v, "", false, bb);
     return load;
 }
 

@@ -34,6 +34,7 @@ include_directories(Debug Release build include src src/Model src/Utils)
 
 file(GLOB_RECURSE source_files	${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 								${CMAKE_CURRENT_SOURCE_DIR}/src/Model/*.cpp
+								${CMAKE_CURRENT_SOURCE_DIR}/src/Macro/*.cpp
 								${CMAKE_CURRENT_SOURCE_DIR}/src/Utils/*.cpp)
 add_executable(redapple ${source_files} 
 						${BISON_MyParser_OUTPUTS} 

@@ -16,6 +16,8 @@ char* makestring(const char* data, int len, int s);
 
 %}
 
+%option yylineno
+
 %%
 
 "/*"([^\*]|(\*)*[^\*/])*(\*)*"*/" ; /* 就是这种注释 */ 
@@ -25,8 +27,6 @@ char* makestring(const char* data, int len, int s);
 
 [ \t\v\n\f]             ; /* 过滤空白字符 */
 
-[0-9]*\.[0-9]*          SAVE_TOKEN; return DOUBLE;
-[0-9]+                  SAVE_TOKEN; return INTEGER;
 
 "=="                    return CEQ;
 "<="                    return CLE;
@@ -97,6 +97,9 @@ char* makestring(const char* data, int len, int s);
 "void"|"double"|"int"|"float"|"char"|"bool"|"var"|"auto"  SAVE_TOKEN; return KWS_TYPE; /* 基本类型 */
 
 [a-zA-Z_][a-zA-Z0-9_]*  SAVE_TOKEN; return ID; /* 标识符 */
+
+[0-9]*\.[0-9]*          SAVE_TOKEN; return DOUBLE;
+[0-9]+                  SAVE_TOKEN; return INTEGER;
 
 \"(\\.|[^\\"])*\"       SAVE_STRING; return STRING; /* 字符串 */
 @\"(\\.|[^\\"])*\"      SAVE_STRING_NC; return STRING; /* 无转义字符串 */

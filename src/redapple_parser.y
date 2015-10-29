@@ -70,15 +70,19 @@ void yyerror(const char *s);
 %type <nodes> numeric
 %type <nodes> expr
 %type <nodes> call_arg 
-%type <nodes> call_args
+%type <nodes> call_args 
+%type <nodes> return_state
+
 //%type <token> operator 这个设计容易引起规约冲突，舍弃
 /* Operator precedence for mathematical operators */
+
 
 %left '~'
 %left '&' '|'
 %left CEQ CNE CLE CGE '<' '>' '='
 %left '+' '-'
 %left '*' '/' '%' '^'
+%left '.'
 
 %start program
 
@@ -99,11 +103,11 @@ func_def_xs : KWS_FUNC_XS { $$ = new Node(new StringNode($1)); }
 
 def_statement : var_def ';' { $$ = new Node($1); }
               | func_def { $$ = new Node($1); }
+              | def_module_statement { $$ = new Node($1); }
               | func_def_xs func_def { $$ = new Node($2); $2->addBrother($1); } 
               ;
 
 def_statements : def_statement { $$ = new Node($1); }
-               | def_module_statement { $$ = new Node($1); }
                | def_statements def_statement { $$ = $1; $$->addChildren($2); }
                ;
 
@@ -117,6 +121,7 @@ statement : def_statement
           | if_state { $$ = new Node($1); } 
           | while_state { $$ = new Node($1); } 
           | for_state { $$ = new Node($1); } 
+          | return_state { $$ = new Node($1); } 
           ;
 
 if_state : IF '(' expr ')' statement { $$ = Node::make_list(3, new StringNode("if"), $3, $5); }
@@ -129,6 +134,9 @@ while_state : WHILE '(' expr ')' statement { $$ = Node::make_list(3, new StringN
 for_state : FOR '(' expr ';' expr ';' expr ')' statement { $$ = Node::make_list(5, new StringNode("for"), $3, $5, $7, $9); }
           | FOR '(' var_def ';' expr ';' expr ')' statement { $$ = Node::make_list(5, new StringNode("for"), new Node($3), $5, $7, $9); }
           ;
+
+return_state : RETURN ';' { $$ = new StringNode("return"); }
+             | RETURN expr ';' { $$ = new StringNode("return"); $$->addBrother($2); }              
 
 block : '{' statements '}' { $$ = new Node($2); }
       | '{' '}' { $$ = new Node(); }
@@ -162,6 +170,7 @@ expr : expr '=' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), 
      | STRING { $$ = new StringNode($1); }
      | CHAR   { $$ = new CharNode($1); }
      | KWS_TSZ 
+     | NEW ID '(' call_args ')' { $$ = new Node(Node::make_list(3, new StringNode("new"), new StringNode($2), $4)); }
      | expr CEQ expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("=="), $1, $3)); }
      | expr CNE expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("!="), $1, $3)); }
      | expr CLE expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("<="), $1, $3)); }
@@ -176,6 +185,7 @@ expr : expr '=' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), 
      | expr '^' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("^"), $1, $3)); }
      | expr '&' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("&"), $1, $3)); }
      | expr '|' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("|"), $1, $3)); }
+     | expr '.' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("."), $1, $3)); }
      | '~' expr { $$ = new Node(Node::make_list(4, new StringNode("opt1"), new StringNode("~"), $2)); }
      | '(' expr ')'  /* ( expr ) */  { $$ = $2; }
      ;

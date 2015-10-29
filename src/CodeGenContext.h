@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-16 15:14:52
+* @Last Modified time: 2015-10-29 16:30:39
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -31,6 +31,7 @@ using namespace std;
 #include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/IR/ValueSymbolTable.h"
+#include "idtable.h"
 
 using namespace llvm;
 
@@ -48,6 +49,9 @@ class CodeGenContext
 public:
 	CodeGenContext(Node* node);
 	~CodeGenContext();
+
+	// 必要的初始化方法
+	void Init();
 
 	void MakeBegin() { 
 		MacroMake(root); 
@@ -73,7 +77,7 @@ public:
 	Function* getFunction(std::string& name);
 	void nowFunction(Function* _nowFunc);
 
-	// 根据名字生成类型
+	// 以下两函数已废弃
 	Type* getNormalType(Node*);
 	Type* getNormalType(std::string& str);
 
@@ -81,6 +85,19 @@ public:
 	Module* getModule() { return M; }
 	void setContext(LLVMContext* pC) { Context = pC; }
 	LLVMContext* getContext() { return Context; }
+
+	// 类型的定义和查找
+	void DefType(string name, Type* t);
+	Type* FindType(string& name);
+	Type* FindType(Node*);
+
+	void SaveMacros();
+	void RecoverMacros();
+
+	bool isSave() { return _save; }
+	void setIsSave(bool save) { _save = save; }
+
+	IDTable* st;
 private:
 	// 语法树根节点
 	Node* root;
@@ -93,6 +110,17 @@ private:
 	
 	// 这是用来查找是否有该宏定义的
 	map<string, CodeGenFunction> macro_map;
+
+	// 这个栈是用来临时保存上面的查询表的
+	stack<map<string, CodeGenFunction> > macro_save_stack;
+
+	// 这个表是用来查询自定义类型的
+	// map<string, Type*> type_map;
+
+	void setNormalType();
+
+	// 用来记录当前是读取还是存入状态
+	bool _save;
 };
 
 

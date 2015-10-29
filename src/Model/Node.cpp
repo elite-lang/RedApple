@@ -2,18 +2,24 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:40
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-10 21:24:21
+* @Last Modified time: 2015-10-29 09:44:13
 */
 
 #include "Node.h"
 #include <stdarg.h>
 #include <stdio.h>
 
+void Node::init() {
+	llvm_type = NULL;
+	next = child = NULL; 
+}
+
 Node::Node() {
-	next = child = NULL;
+	init();
 }
 
 Node::Node(Node* n) {
+	init();
 	addChildren(n);
 }
 
@@ -72,4 +78,12 @@ Node* Node::make_list(int num, ...) {
     }    
     va_end( argp );
     return ans;
+}
+
+Type* Node::getLLVMType() {
+	return llvm_type;
+}
+
+void  Node::setLLVMType(Type* t) {
+	llvm_type = t;
 }
