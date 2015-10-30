@@ -14,7 +14,7 @@ id* IDTable::find(string& idname) const {
     return NULL;
 }
 
-void IDTable::insert(string& str,int type, void* data) {
+void IDTable::insert(string& str,SymbolType type, void* data) {
     IDMap& imap = ID_stack.back();
     imap.insert(str,getLevel(), type, data);
 }

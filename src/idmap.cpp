@@ -19,7 +19,7 @@ id* IDMap::find(string& str) const {
     return NULL;
 }
 
-void IDMap::insert(string& str, int level, int type, void* data) {
+void IDMap::insert(string& str, int level, SymbolType type, void* data) {
 	id* i = new id();
 	i->level = level;
 	i->type = type;

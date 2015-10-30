@@ -2,12 +2,13 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-29 20:02:56
+* @Last Modified time: 2015-10-30 11:22:31
 */
 
 #include "CodeGenContext.h"
 #include "StringNode.h"
 #include "IDNode.h"
+#include "StructModel.h"
 #include <stdio.h>
 
 Value* CodeGenContext::MacroMake(Node* node) {
@@ -98,15 +99,35 @@ BasicBlock* CodeGenContext::createBlock(Function* f) {
 	nowFunc = f;
 	return nowBlock = BasicBlock::Create(*Context, "entry", f);
 }
+/*
+void CodeGenContext::DefFunction(string name, Function* f) {
+	st->insert(name, 3, f);
+}
 
+Function* CodeGenContext::FindFunction(string& name) {
+	id* i = st->find(name);
+	if (i != NULL && i->type == 3) return (Function*)(i->data);
+	else {
+		errs() <<  "找不到该函数的定义： ";
+		errs() << name << "\n";
+		return NULL;
+	}
+}
+*/
 void CodeGenContext::DefType(string name, Type* t) {
-	st->insert(name, 0, t);
+	st->insert(name, type_t, t);
 }
 
 Type* CodeGenContext::FindType(string& name) {
 	id* i = st->find(name);
-	if (i != NULL && i->type == 0) return (Type*)(i->data);
-	else {
+	if (i != NULL && i->type == type_t) {
+		Type* t = (Type*)(i->data);
+		if (t->isStructTy()) t = t->getPointerTo();
+		return t;
+	} else if (i != NULL && i->type == struct_t) {
+		StructModel* s = (StructModel*)(i->data);
+		return s->struct_type;
+	} else {
 		errs() <<  "找不到该类型的定义： ";
 		errs() << name << "\n";
 		return NULL;
@@ -122,9 +143,9 @@ Type* CodeGenContext::FindType(Node* node) {
 }
 
 void CodeGenContext::setNormalType() {
-	DefType("void", Type::getVoidTy(*Context));
-	DefType("int", Type::getInt64Ty(*Context));
-	DefType("float", Type::getFloatTy(*Context));
+	DefType("void",   Type::getVoidTy(*Context));
+	DefType("int",    Type::getInt64Ty(*Context));
+	DefType("float",  Type::getFloatTy(*Context));
 	DefType("double", Type::getDoubleTy(*Context));
 }
 
@@ -141,11 +162,21 @@ void CodeGenContext::RecoverMacros() {
 
 extern const FuncReg macro_funcs[];
 extern const FuncReg macro_classes[];
+extern const FuncReg macro_prescan[];
+extern const FuncReg macro_pretype[];
+
+void CodeGenContext::PreInit() {
+	setNormalType();
+	AddOrReplaceMacros(macro_prescan);
+}
+
+void CodeGenContext::PreTypeInit() {
+	AddOrReplaceMacros(macro_pretype);
+}
 
 void CodeGenContext::Init() {
 	AddOrReplaceMacros(macro_funcs);
 	AddOrReplaceMacros(macro_classes);
-	setNormalType();
 }
 
 CodeGenContext::CodeGenContext(Node* node) {

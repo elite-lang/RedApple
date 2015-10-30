@@ -92,7 +92,7 @@ char* makestring(const char* data, int len, int s);
 
 "public"|"private"|"protected"  SAVE_TOKEN; return KWS_FWKZ; /* 访问控制 */
 
-"const"|"static"|"virtual"|"abstract"|"in"|"out"        SAVE_TOKEN; return KWS_FUNC_XS; /* 函数修饰符 */
+"const"|"static"|"extern"|"virtual"|"abstract"|"in"|"out"        SAVE_TOKEN; return KWS_FUNC_XS; /* 函数修饰符 */
 
 "void"|"double"|"int"|"float"|"char"|"bool"|"var"|"auto"  SAVE_TOKEN; return KWS_TYPE; /* 基本类型 */
 

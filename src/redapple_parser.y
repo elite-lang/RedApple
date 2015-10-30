@@ -91,7 +91,9 @@ void yyerror(const char *s);
 program : def_statements { programBlock = $1; }
         ;
 
-def_module_statement : KWS_STRUCT ID '{' def_statements '}' { $$ = Node::make_list(3, new StringNode($1), new StringNode($2), $4); } ;
+def_module_statement : KWS_STRUCT ID '{' def_statements '}' { $$ = Node::make_list(3, new StringNode($1), new StringNode($2), $4); }
+                     | KWS_STRUCT ID ';' { $$ = Node::make_list(3, new StringNode($1), new StringNode($2), new Node()); }
+                     ;
 
 def_module_statements  : def_module_statement { $$ = new Node($1); }
                        | def_module_statements def_module_statement { $$ = $1; $$->addChildren($1); }
@@ -152,6 +154,10 @@ func_def : ID ID '(' func_def_args ')' block
             { $$ = Node::make_list(5, new StringNode("function"), new StringNode($1), new StringNode($2), $4, $6); }
          | KWS_TYPE ID '(' func_def_args ')' block
             { $$ = Node::make_list(5, new StringNode("function"), new StringNode($1), new StringNode($2), $4, $6); }
+         | ID ID '(' func_def_args ')' ';'
+            { $$ = Node::make_list(5, new StringNode("function"), new StringNode($1), new StringNode($2), $4); }
+         | KWS_TYPE ID '(' func_def_args ')' ';'
+            { $$ = Node::make_list(5, new StringNode("function"), new StringNode($1), new StringNode($2), $4); }
          ;
 
 func_def_args : var_def { $$ = new Node(new Node($1)); }

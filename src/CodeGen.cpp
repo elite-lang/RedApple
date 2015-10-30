@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:57:41
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-29 11:18:00
+* @Last Modified time: 2015-10-30 12:38:41
 */
 
 #include "CodeGen.h"
@@ -24,9 +24,10 @@ CodeGen::~CodeGen() {
 }
 
 void register_printf(llvm::Module *module);
+void register_malloc(llvm::Module *module);
 void register_echo(CodeGenContext* context, llvm::Function* printfFn);
 
-extern const FuncReg macro_prescan[];
+
 
 void CodeGen::Make(const char* outfile_name) {
 	InitializeNativeTarget();
@@ -37,14 +38,22 @@ void CodeGen::Make(const char* outfile_name) {
 
 	context->setModule(M.get());
 	context->setContext(&Context);
+    register_malloc(M.get());
+    register_printf(M.get());
 
     // prescan流程, 负责优先解析全局函数和类型并存放于符号表
-    context->AddOrReplaceMacros(macro_prescan);
+    context->PreInit();
     context->MakeBegin();
+    printf("-- 预处理流程完成 --\n");
+
+    // pretype流程，负责处理所有类型相关问题并更新符号表
+    context->PreTypeInit();
+    context->MakeBegin();
+    printf("-- 类型化流程完成 --\n");
 
     // 正式流程初始化
     context->Init();
-	register_printf(M.get());
+	
 	// register_echo(context, M->getFunction("printf"));
 	context->MakeBegin();
 
@@ -78,6 +87,22 @@ void register_printf(llvm::Module *module) {
     llvm::Function *func = llvm::Function::Create(
                 printf_type, llvm::Function::ExternalLinkage,
                 llvm::Twine("printf"),
+                module
+           );
+    func->setCallingConv(llvm::CallingConv::C);
+}
+
+void register_malloc(llvm::Module *module) {
+    std::vector<llvm::Type*> arg_types;
+    arg_types.push_back(llvm::Type::getInt64Ty(module->getContext()));
+
+    llvm::FunctionType* printf_type =
+        llvm::FunctionType::get(
+            llvm::Type::getVoidTy(module->getContext())->getPointerTo(), arg_types, false);
+
+    llvm::Function *func = llvm::Function::Create(
+                printf_type, llvm::Function::ExternalLinkage,
+                llvm::Twine("malloc"),
                 module
            );
     func->setCallingConv(llvm::CallingConv::C);

@@ -10,7 +10,7 @@ class IDTable
 public:
     IDTable();
     id* find(string& str) const;
-    void insert(string& str,int type, void* data);
+    void insert(string& str,SymbolType type, void* data);
     void push();
     void pop();
     int getLevel();

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-29 15:25:00
+* @Last Modified time: 2015-10-30 10:45:03
 */
 
 #include "CodeGenContext.h"
@@ -11,8 +11,6 @@
 #include <stdio.h>
 
 static Value* function_macro(CodeGenContext* context, Node* node) {
-	// 第一个参数, 返回类型
-	Type* ret_type = context->FindType(node);
 
 	// 第二个参数, 函数名
 	node = node->getNext();
@@ -21,8 +19,11 @@ static Value* function_macro(CodeGenContext* context, Node* node) {
 		StringNode* str_node = (StringNode*)node;
 		function_name = str_node->getStr();
 	}
+	id* i = context->FindST(function_name);
+	if (i->type != function_t) return NULL;
+	Function* F = (Function*) i->data;
 
-	// 第三个参数, 参数表
+		// 第三个参数, 参数表
 	Node* args_node = node = node->getNext();
 	std::vector<Type*> type_vec;
 	std::vector<std::string> arg_name;
@@ -35,26 +36,6 @@ static Value* function_macro(CodeGenContext* context, Node* node) {
 			type_vec.push_back(t);
 			StringNode* str_node = (StringNode*)(pSec->getNext());
 			arg_name.push_back(str_node->getStr());	
-		}
-	}
-	// 先合成一个函数
-	FunctionType *FT = FunctionType::get(ret_type, type_vec, 
-		/*not vararg*/false);
-
-	Module* M = context->getModule();
-	Function *F = Function::Create(FT, Function::ExternalLinkage, 
-		function_name, M);
-	context->nowFunction(F);
-
-	if (F->getName() != function_name) {
-		// Delete the one we just made and get the existing one.
-		F->eraseFromParent();
-		F = M->getFunction(function_name);
-
-		// If F already has a body, reject this.
-		if (!F->empty()) {
-			fprintf(stderr, "Error: redefinition of function\n");
-			return 0;
 		}
 	}
 
@@ -233,8 +214,8 @@ static Value* opt2_macro(CodeGenContext* context, Node* node) {
 
 
 	if (opt == ".") {
-		Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(*(context->getContext())));
-    	Constant* indices[] = {zero, zero};
+		// Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(*(context->getContext())));
+  //   	Constant* indices[] = {zero, zero};
 		// GetElementPtrInst::CreateInBounds()
 		return NULL;
 	}
@@ -277,6 +258,11 @@ static Value* return_macro(CodeGenContext* context, Node* node) {
 	return ReturnInst::Create(*(context->getContext()), v, context->getNowBlock());
 }
 
+static Value* new_macro(CodeGenContext* context, Node* node) {
+
+	return NULL;
+}
+
 extern const FuncReg macro_funcs[] = {
 	{"function", function_macro},
 	{"struct",   struct_macro},
@@ -287,5 +273,6 @@ extern const FuncReg macro_funcs[] = {
 	{"while",    while_macro},
 	{"if",       if_macro},
 	{"return",   return_macro},
+	{"new",      new_macro},
 	{NULL, NULL}
 };

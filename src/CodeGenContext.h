@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-29 16:30:39
+* @Last Modified time: 2015-10-30 09:51:11
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -51,6 +51,8 @@ public:
 	~CodeGenContext();
 
 	// 必要的初始化方法
+	void PreInit();
+	void PreTypeInit();
 	void Init();
 
 	void MakeBegin() { 
@@ -97,6 +99,9 @@ public:
 	bool isSave() { return _save; }
 	void setIsSave(bool save) { _save = save; }
 
+	id* FindST(string& str) const {
+		return st->find(str);
+	}
 	IDTable* st;
 private:
 	// 语法树根节点
