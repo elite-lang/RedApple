@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-01 19:06:12
+* @Last Modified time: 2015-11-01 19:56:05
 */
 
 #include "CodeGenContext.h"
@@ -205,7 +205,6 @@ static Value* opt2_macro(CodeGenContext* context, Node* node) {
 		Value* ans2 = op2->codeGen(context);
 		return new StoreInst(ans2, ans1, false, context->getNowBlock());
 	}
-
 
 	if (opt == ".") {
 		bool save_bool = false;

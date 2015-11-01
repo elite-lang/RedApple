@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-01 19:19:37
+* @Last Modified time: 2015-11-01 20:26:44
 */
 
 #ifndef NODE_H
@@ -25,10 +25,13 @@ public:
 	Node(Node* n);
 	~Node();
 
+	// 构建列表部分
 	void addChildren(Node* n);
 	void addBrother (Node* n);
-	
+	bool isSingle();
 	static Node* make_list(int num, ...);
+	static Node* getList(Node* node);
+
 
 	void print(int k);
 	Node* getNext() { return next; }

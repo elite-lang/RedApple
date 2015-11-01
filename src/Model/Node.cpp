@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:40
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-01 19:25:05
+* @Last Modified time: 2015-11-01 20:28:52
 */
 
 #include "Node.h"
@@ -68,19 +68,28 @@ NodeType Node::getType() {
 	return node_t;
 }
 
+bool Node::isSingle() {
+	return next != NULL;
+}
+
 Node* Node::make_list(int num, ...) {
 	va_list argp; Node* para = NULL;  
 	Node* ans = NULL;  
 	va_start( argp, num );    
     for (int i = 0; i < num; ++i) {    
         para = va_arg( argp, Node* );  
-        // if (para->isNode()) para = new Node(para);
+        // if (para->isSingle()) para = new Node(para);
         if ( ans == NULL )    
         	ans = para;
         else ans->addBrother(para);
     }    
     va_end( argp );
     return ans;
+}
+
+Node* Node::getList(Node* node) {
+	if (node->isSingle()) return new Node(node);
+	return node;
 }
 
 Type* Node::getLLVMType() {
