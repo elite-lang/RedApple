@@ -88,42 +88,42 @@ void yyerror(const char *s);
 
 %%
 
-program : def_statements { programBlock = $1; }
+program : def_statements { programBlock = Node::getList($1); }
         ;
 
 def_module_statement : KWS_STRUCT ID '{' def_statements '}' { $$ = Node::make_list(3, new StringNode($1), new StringNode($2), $4); }
                      | KWS_STRUCT ID ';' { $$ = Node::make_list(3, new StringNode($1), new StringNode($2), new Node()); }
                      ;
 
-def_module_statements  : def_module_statement { $$ = new Node($1); }
-                       | def_module_statements def_module_statement { $$ = $1; $$->addChildren($1); }
+def_module_statements  : def_module_statement { $$ = Node::getList($1); }
+                       | def_module_statements def_module_statement { $$ = $1; $$->addBrother(Node::getList($2)); }
                        ;
 
-func_def_xs : KWS_FUNC_XS { $$ = new Node(new StringNode($1)); }
-            | func_def_xs KWS_FUNC_XS {$$ = $1; $$->addChildren(new StringNode($2)); }
+func_def_xs : KWS_FUNC_XS { $$ = new StringNode($1); }
+            | func_def_xs KWS_FUNC_XS {$$ = $1; $$->addBrother(new StringNode($2)); }
             ;
 
-def_statement : var_def ';' { $$ = new Node($1); }
-              | func_def { $$ = new Node($1); }
-              | def_module_statement { $$ = new Node($1); }
-              | func_def_xs func_def { $$ = new Node($2); $2->addBrother($1); } 
+def_statement : var_def ';' { $$ = $1; }
+              | func_def 
+              | def_module_statement 
+              | func_def_xs func_def { $$ = $2; $2->addBrother(Node::getList($1)); } 
               ;
 
-def_statements : def_statement { $$ = new Node($1); }
-               | def_statements def_statement { $$ = $1; $$->addChildren($2); }
+def_statements : def_statement { $$ = Node::getList($1); }
+               | def_statements def_statement { $$ = $1; $$->addBrother(Node::getList($2)); }
                ;
 
-statements : statement
-           | statements statement { $$ = $1; $$->addBrother($2); }
+statements : statement { $$ = Node::getList($1); }
+           | statements statement { $$ = $1; $$->addBrother(Node::getList($2)); }
            ;
 
 statement : def_statement 
-          | expr ';' { $$ = new Node($1); } 
+          | expr ';' { $$ = $1; } 
           | block 
-          | if_state { $$ = new Node($1); } 
-          | while_state { $$ = new Node($1); } 
-          | for_state { $$ = new Node($1); } 
-          | return_state { $$ = new Node($1); } 
+          | if_state
+          | while_state
+          | for_state
+          | return_state
           ;
 
 if_state : IF '(' expr ')' statement { $$ = Node::make_list(3, new StringNode("if"), $3, $5); }
@@ -169,30 +169,30 @@ numeric : INTEGER { $$ = new IntNode($1); }
         | DOUBLE { $$ = new FloatNode($1); }
         ;
 
-expr : expr '=' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("="), $1, $3)); }
-     | ID '(' call_args ')' { $$ = new Node(Node::make_list(3, new StringNode("call"), new StringNode($1), $3)); }
+expr : expr '=' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("="), $1, $3); }
+     | ID '(' call_args ')' { $$ = Node::make_list(2, new StringNode("call"), new StringNode($1)); $$->addBrother($3); }
      | ID { $$ = new IDNode($1); }
      | numeric { $$ = $1; }
      | STRING { $$ = new StringNode($1); }
      | CHAR   { $$ = new CharNode($1); }
      | KWS_TSZ 
-     | NEW ID '(' call_args ')' { $$ = new Node(Node::make_list(3, new StringNode("new"), new StringNode($2), $4)); }
-     | expr CEQ expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("=="), $1, $3)); }
-     | expr CNE expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("!="), $1, $3)); }
-     | expr CLE expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("<="), $1, $3)); }
-     | expr CGE expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode(">="), $1, $3)); }
-     | expr '<' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("<"), $1, $3)); }
-     | expr '>' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode(">"), $1, $3)); }
-     | expr '+' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("+"), $1, $3)); }
-     | expr '-' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("-"), $1, $3)); }
-     | expr '*' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("*"), $1, $3)); }
-     | expr '/' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("/"), $1, $3)); }
-     | expr '%' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("%"), $1, $3)); }
-     | expr '^' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("^"), $1, $3)); }
-     | expr '&' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("&"), $1, $3)); }
-     | expr '|' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("|"), $1, $3)); }
-     | expr '.' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("."), $1, $3)); }
-     | '~' expr { $$ = new Node(Node::make_list(4, new StringNode("opt1"), new StringNode("~"), $2)); }
+     | NEW ID '(' call_args ')' { $$ = Node::make_list(3, new StringNode("new"), new StringNode($2), $4); }
+     | expr CEQ expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("=="), $1, $3); }
+     | expr CNE expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("!="), $1, $3); }
+     | expr CLE expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("<="), $1, $3); }
+     | expr CGE expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode(">="), $1, $3); }
+     | expr '<' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("<"), $1, $3); }
+     | expr '>' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode(">"), $1, $3); }
+     | expr '+' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("+"), $1, $3); }
+     | expr '-' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("-"), $1, $3); }
+     | expr '*' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("*"), $1, $3); }
+     | expr '/' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("/"), $1, $3); }
+     | expr '%' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("%"), $1, $3); }
+     | expr '^' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("^"), $1, $3); }
+     | expr '&' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("&"), $1, $3); }
+     | expr '|' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("|"), $1, $3); }
+     | expr '.' expr { $$ = Node::make_list(4, new StringNode("opt2"), new StringNode("."), $1, $3); }
+     | '~' expr { $$ = Node::make_list(4, new StringNode("opt1"), new StringNode("~"), $2); }
      | '(' expr ')'  /* ( expr ) */  { $$ = $2; }
      ;
 
@@ -202,8 +202,8 @@ call_arg  :  expr { $$ = $1;  }
           ;
 
 call_args : %empty { $$ = new Node(); }
-          | call_arg { $$ = $1; }
-          | call_args ',' call_arg  { $$ = $1; $$->addBrother($3); }
+          | call_arg { $$ = Node::getList($1); }
+          | call_args ',' call_arg  { $$ = $1; $$->addBrother(Node::getList($3)); }
           ;
 
 %%
