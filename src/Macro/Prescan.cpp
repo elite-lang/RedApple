@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-29 11:05:42
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-30 19:49:45
+* @Last Modified time: 2015-11-01 19:10:54
 */
 
 #include "CodeGenContext.h"
@@ -14,21 +14,13 @@
 static Value* function_macro(CodeGenContext* context, Node* node) {
 	// 第二个参数, 函数名
 	node = node->getNext();
-	std::string func_name;
-	if (node->getType() == "StringNode") {
-		StringNode* str_node = (StringNode*)node;
-		func_name = str_node->getStr();
-	}
+	std::string func_name = node->getStr();
 	return NULL;
 }
 
 static Value* struct_macro(CodeGenContext* context, Node* node) {
 	// 第一个参数, 结构体名
-	std::string struct_name;
-	if (node->getType() == "StringNode") {
-		StringNode* str_node = (StringNode*)node;
-		struct_name = str_node->getStr();
-	}
+	std::string struct_name = node->getStr();
 	StructType *ans = StructType::create(*(context->getContext()), struct_name);
 	context->st->insert(struct_name, type_t, ans); // 插入符号表中
 	return NULL;
@@ -36,11 +28,7 @@ static Value* struct_macro(CodeGenContext* context, Node* node) {
 
 static Value* struct_type_macro(CodeGenContext* context, Node* node) {
 	// 第一个参数, 结构体名
-	std::string struct_name;
-	if (node->getType() == "StringNode") {
-		StringNode* str_node = (StringNode*)node;
-		struct_name = str_node->getStr();
-	}
+	std::string struct_name = node->getStr();
 	id* i = context->st->find(struct_name);
 	if (i->type != type_t) return NULL;
 	StructType* ans = (StructType*)(i->data);
@@ -75,11 +63,7 @@ static Value* function_type_macro(CodeGenContext* context, Node* node) {
 
 	// 第二个参数, 函数名
 	node = node->getNext();
-	std::string function_name;
-	if (node->getType() == "StringNode") {
-		StringNode* str_node = (StringNode*)node;
-		function_name = str_node->getStr();
-	}
+	std::string function_name = node->getStr();
 
 	// 第三个参数, 参数表
 	Node* args_node = node = node->getNext();

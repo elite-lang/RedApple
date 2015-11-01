@@ -17,3 +17,7 @@ IntNode::IntNode(const char* num) {
 void IntNode::printSelf() {
 	printf("Int %d", value);
 }
+
+NodeType IntNode::getType() {
+	return int_node_t;
+}

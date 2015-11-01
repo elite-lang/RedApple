@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-31 21:07:05
+* @Last Modified time: 2015-11-01 19:09:12
 */
 
 #include "CodeGenContext.h"
@@ -13,7 +13,8 @@
 
 Value* CodeGenContext::MacroMake(Node* node) {
 	if (node == NULL) return NULL;
-	if (node->getType() == "StringNode") {
+
+	if (node->isStringNode()) {
 		StringNode* str_node = (StringNode*)node;
 		CodeGenFunction func = getMacro(str_node->getStr());
 		if (func != NULL) {
@@ -21,7 +22,7 @@ Value* CodeGenContext::MacroMake(Node* node) {
 		} 
 		return NULL;
 	} 
-	if (node->getChild() != NULL && node->getChild()->getType() == "StringNode")
+	if (node->getChild() != NULL && node->getChild()->isStringNode())
 		return MacroMake(node->getChild());
 	Value* ans;
 	for (Node* p = node->getChild(); p != NULL; p = p->getNext()) 
@@ -53,19 +54,11 @@ void CodeGenContext::AddOrReplaceMacros(const FuncReg* macro_funcs) {
 
 
 id* CodeGenContext::FindST(Node* node) const{ 
-	if (node->getType() == "StringNode") {
-		StringNode* str_node = (StringNode*)node;
-		return FindST(str_node->getStr());
-	}
-	return NULL;
+	return FindST(node->getStr());
 }
 
 Type* CodeGenContext::getNormalType(Node* node) {
-	if (node->getType() == "StringNode") {
-		StringNode* str_node = (StringNode*)node;
-		return getNormalType(str_node->getStr());
-	}
-	return 0;
+	return getNormalType(node->getStr());
 }
 
 Type* CodeGenContext::getNormalType(std::string& str) {
@@ -81,11 +74,7 @@ Type* CodeGenContext::getNormalType(std::string& str) {
 }
 
 Function* CodeGenContext::getFunction(Node* node) {
-	if (node->getType() == "StringNode") {
-		StringNode* str_node = (StringNode*)node;
-		return getFunction(str_node->getStr());
-	}
-	return 0;
+	return getFunction(node->getStr());
 }
 
 Function* CodeGenContext::getFunction(std::string& name) {
@@ -144,11 +133,7 @@ Type* CodeGenContext::FindType(string& name) {
 }
 
 Type* CodeGenContext::FindType(Node* node) {
-	if (node->getType() == "StringNode") {
-		StringNode* str_node = (StringNode*)node;
-		return FindType(str_node->getStr());
-	}
-	return 0;
+	return FindType(node->getStr());
 }
 
 void CodeGenContext::setNormalType() {

@@ -13,6 +13,6 @@ void IDNode::printSelf() {
 	printf("ID %s", value.c_str());
 }
 
-std::string IDNode::getType() {
-	return std::string("IDNode");
+NodeType IDNode::getType() {
+	return id_node_t;
 }

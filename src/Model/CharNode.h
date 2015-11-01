@@ -14,6 +14,7 @@ public:
 	char value;
 
 	CharNode(char* v) {
+		value = *v;
 	}
 
 	// virtual Value* codeGen(CodeGenContext* context); 

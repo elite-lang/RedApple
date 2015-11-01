@@ -15,6 +15,7 @@ public:
 	float value;
 	virtual Value* codeGen(CodeGenContext* context); 
 	FloatNode(string num);
+	virtual NodeType getType();
 };
 
 #endif //_FLOATNODE_H

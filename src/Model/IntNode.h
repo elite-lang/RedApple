@@ -15,6 +15,7 @@ public:
 	IntNode(const char* num);
 	virtual Value* codeGen(CodeGenContext* context); 
 	virtual void printSelf();
+	virtual NodeType getType();
 };
 
 #endif //_INTNODE_H

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-01 11:05:21
+* @Last Modified time: 2015-11-01 19:06:12
 */
 
 #include "CodeGenContext.h"
@@ -15,11 +15,7 @@ static Value* function_macro(CodeGenContext* context, Node* node) {
 
 	// 第二个参数, 函数名
 	node = node->getNext();
-	std::string function_name;
-	if (node->getType() == "StringNode") {
-		StringNode* str_node = (StringNode*)node;
-		function_name = str_node->getStr();
-	}
+	std::string function_name = node->getStr();
 	id* i = context->FindST(function_name);
 	if (i->type != function_t) return NULL;
 	Function* F = (Function*) i->data;
@@ -195,9 +191,7 @@ static Value* if_macro(CodeGenContext* context, Node* node) {
 	return branch;
 }
 static Value* opt2_macro(CodeGenContext* context, Node* node) {
-	if (node->getType() != "StringNode") return NULL;
-	StringNode* str_node = (StringNode*)node;
-	std::string opt = str_node->getStr();
+	std::string opt = node->getStr();
 
 	Node* op1 = (node = node->getNext());
 	if (node == NULL) return NULL;

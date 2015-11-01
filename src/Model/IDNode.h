@@ -21,7 +21,7 @@ public:
 	}
 	std::string& getStr() { return value; }
 	virtual Value* codeGen(CodeGenContext* context); 
-	virtual std::string getType();
+	virtual NodeType getType();
 protected:
 	virtual void printSelf();
 private:

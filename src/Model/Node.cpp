@@ -2,12 +2,14 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:40
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-29 09:44:13
+* @Last Modified time: 2015-11-01 19:25:05
 */
 
 #include "Node.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include "nodes.h"
+#include <iostream>
 
 void Node::init() {
 	llvm_type = NULL;
@@ -62,8 +64,8 @@ void Node::printSelf() {
 	printf("Node");
 }
 
-std::string Node::getType() {
-	return std::string("Node");
+NodeType Node::getType() {
+	return node_t;
 }
 
 Node* Node::make_list(int num, ...) {
@@ -72,6 +74,7 @@ Node* Node::make_list(int num, ...) {
 	va_start( argp, num );    
     for (int i = 0; i < num; ++i) {    
         para = va_arg( argp, Node* );  
+        // if (para->isNode()) para = new Node(para);
         if ( ans == NULL )    
         	ans = para;
         else ans->addBrother(para);
@@ -86,4 +89,52 @@ Type* Node::getLLVMType() {
 
 void  Node::setLLVMType(Type* t) {
 	llvm_type = t;
+}
+
+bool Node::isNode() {
+	return getType() == node_t;
+}
+
+bool Node::isIntNode() {
+	return getType() == int_node_t;
+}
+
+bool Node::isFloatNode() {
+	return getType() == float_node_t;
+}
+
+bool Node::isIDNode() {
+	return getType() == id_node_t;
+}
+
+bool Node::isStringNode() {
+	return getType() == string_node_t;
+}
+
+bool Node::isCharNode() {
+	return getType() == char_node_t;
+}
+
+std::string Node::getTypeName() {
+	switch (getType()) {
+		case node_t: return "Node";
+		case int_node_t: return "IntNode";
+		case string_node_t: return "StringNode";
+		case id_node_t: return "IDNode";
+		case char_node_t: return "CharNode";
+		case float_node_t: return "FloatNode";
+	}
+}
+
+std::string& Node::getStr() {
+	if (this->isStringNode()) {
+		StringNode* string_this = (StringNode*)this;
+		return string_this->getStr();
+	} 
+	if (this->isIDNode()) {
+		IDNode* string_this = (IDNode*)this;
+		return string_this->getStr();
+	} 
+	std::cerr << "getStr() - 获取字符串错误, 该类型不正确：" << getTypeName() << std::endl;
+	exit(1);
 }
