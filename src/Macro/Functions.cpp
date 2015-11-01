@@ -2,11 +2,12 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-30 10:45:03
+* @Last Modified time: 2015-10-31 21:10:35
 */
 
 #include "CodeGenContext.h"
 #include "StringNode.h"
+#include "StructModel.h"
 #include "IDNode.h"
 #include <stdio.h>
 
@@ -23,7 +24,7 @@ static Value* function_macro(CodeGenContext* context, Node* node) {
 	if (i->type != function_t) return NULL;
 	Function* F = (Function*) i->data;
 
-		// 第三个参数, 参数表
+	// 第三个参数, 参数表
 	Node* args_node = node = node->getNext();
 	std::vector<Type*> type_vec;
 	std::vector<std::string> arg_name;
@@ -193,7 +194,6 @@ static Value* if_macro(CodeGenContext* context, Node* node) {
 
 	return branch;
 }
-
 static Value* opt2_macro(CodeGenContext* context, Node* node) {
 	if (node->getType() != "StringNode") return NULL;
 	StringNode* str_node = (StringNode*)node;
@@ -214,10 +214,41 @@ static Value* opt2_macro(CodeGenContext* context, Node* node) {
 
 
 	if (opt == ".") {
-		// Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(*(context->getContext())));
-  //   	Constant* indices[] = {zero, zero};
-		// GetElementPtrInst::CreateInBounds()
-		return NULL;
+		Value* ans1 = op1->codeGen(context);
+		StringNode* sn = (StringNode*)op2;
+		string ans2 = sn->getStr();
+		Type* ans1_type = ans1->getType();
+		if (!ans1_type->getPointerElementType()->isStructTy()) {
+			errs() << "‘.’运算前，类型错误： " << *(ans1_type) << "\n";
+			return NULL;
+		}
+		string struct_name = ans1_type->getPointerElementType()->getStructName();
+		// errs() << "符号: " << struct_name << "\n"; 
+		id* i = context->st->find(struct_name);
+		if (i == NULL)  {
+			errs() << "符号未找到: " << struct_name << "\n"; 
+		}
+		if (i->type != struct_t) {
+			errs() << "‘.’运算前，符号表错误\n"; 
+		}
+		StructModel* sm = (StructModel*)(i->data);
+		// errs() << "ans2: " << ans2 << "\n";
+		int n = sm->find(ans2);
+ 
+		// Constant* zero = Constant::getNullValue(Type::getInt64Ty(*(context->getContext())));
+		ConstantInt* zero = ConstantInt::get(Type::getInt32Ty(*(context->getContext())), 0);
+		ConstantInt* num = ConstantInt::get(Type::getInt32Ty(*(context->getContext())), n);
+		// errs() << "0 -> " << *zero << "\n";
+		// errs() << n << " -> " << *num << "\n";
+    	std::vector<Value*> indices;
+    	indices.push_back(zero); 
+    	indices.push_back(num);
+
+    	// Type *t = GetElementPtrInst::getIndexedType(ans1->getType(), indices);
+    	// errs() << "type : " << *(ans1->getType()->getPointerElementType()) << "\n";
+    	// errs() << "type : " << *t << "\n";
+		GetElementPtrInst* ptr = GetElementPtrInst::Create(ans1, indices, "", context->getNowBlock());
+		return new LoadInst(ptr, "", false, context->getNowBlock());			
 	}
 
 	Instruction::BinaryOps instr;
@@ -259,8 +290,28 @@ static Value* return_macro(CodeGenContext* context, Node* node) {
 }
 
 static Value* new_macro(CodeGenContext* context, Node* node) {
+	Type* ITy = Type::getInt64Ty(*(context->getContext()));
+	id* i = context->FindST(node);
+	Type* t;
+	if (i->type == type_t) t = (Type*)(i->data);
+	else if (i->type == struct_t) {
+		StructModel* sm = (StructModel*)(i->data);
+		t = sm->struct_type;
+	} else { 
+		printf("Error: new的类型错误\n");
+		return NULL;
+	}
+	Constant* AllocSize = ConstantExpr::getSizeOf(t);
+	// AllocSize = ConstantExpr::getTruncOrBitCast(AllocSize, ITy);
 
-	return NULL;
+	BasicBlock* bb = context->getNowBlock();
+	Instruction* Malloc = CallInst::CreateMalloc(bb, ITy, t, AllocSize);
+	Malloc->insertAfter(&(bb->back()));
+	// errs() << "type:" << *t << "\n";
+	// errs() << "alloc_size:" << *AllocSize << "\n";
+	// errs() << "BasicBlock:" << *bb << "\n";
+	// errs() << "Malloc:" << *Malloc << "\n";
+	return Malloc;
 }
 
 extern const FuncReg macro_funcs[] = {

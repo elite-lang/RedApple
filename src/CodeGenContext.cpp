@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-30 11:22:31
+* @Last Modified time: 2015-10-31 21:07:05
 */
 
 #include "CodeGenContext.h"
@@ -49,6 +49,15 @@ void CodeGenContext::AddOrReplaceMacros(const FuncReg* macro_funcs) {
 		else macro_map.insert(pair<string, CodeGenFunction>(name, func));
 		++macro_funcs;
 	}
+}
+
+
+id* CodeGenContext::FindST(Node* node) const{ 
+	if (node->getType() == "StringNode") {
+		StringNode* str_node = (StringNode*)node;
+		return FindST(str_node->getStr());
+	}
+	return NULL;
 }
 
 Type* CodeGenContext::getNormalType(Node* node) {
@@ -126,7 +135,7 @@ Type* CodeGenContext::FindType(string& name) {
 		return t;
 	} else if (i != NULL && i->type == struct_t) {
 		StructModel* s = (StructModel*)(i->data);
-		return s->struct_type;
+		return s->struct_type->getPointerTo();
 	} else {
 		errs() <<  "找不到该类型的定义： ";
 		errs() << name << "\n";

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-12 19:21:50
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-29 10:16:18
+* @Last Modified time: 2015-10-31 21:09:13
 */
 
 #include "CodeGenContext.h"
@@ -60,6 +60,7 @@ Value* IDNode::codeGen(CodeGenContext* context) {
         return NULL;
     }
     if (context->isSave()) return v;
+    // if (v->getType()->getPointerElementType()->isStructTy()) return v;
     Value* load = new LoadInst(v, "", false, bb);
     return load;
 }

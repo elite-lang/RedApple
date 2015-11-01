@@ -24,5 +24,5 @@ void IDMap::insert(string& str, int level, SymbolType type, void* data) {
 	i->level = level;
 	i->type = type;
 	i->data = data;
-    ID_map.insert(make_pair(str,i));
+    ID_map[str] = i;
 }

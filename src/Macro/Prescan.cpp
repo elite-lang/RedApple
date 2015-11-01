@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-29 11:05:42
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-30 15:01:37
+* @Last Modified time: 2015-10-30 19:49:45
 */
 
 #include "CodeGenContext.h"
@@ -44,7 +44,7 @@ static Value* struct_type_macro(CodeGenContext* context, Node* node) {
 	id* i = context->st->find(struct_name);
 	if (i->type != type_t) return NULL;
 	StructType* ans = (StructType*)(i->data);
-	
+
 	// 第二个参数, 类型表
 	Node* args_node = node = node->getNext();
 	std::vector<Type*> type_vec;
@@ -56,7 +56,6 @@ static Value* struct_type_macro(CodeGenContext* context, Node* node) {
 			Node* pSec = pC->getChild()->getNext();
 			Type* t = context->FindType(pSec);
 			type_vec.push_back(t);
-			errs() << "type:" <<  *t << "\n";
 			StringNode* str_node = (StringNode*)(pSec->getNext());
 			arg_name.push_back(str_node->getStr());	
 		}
