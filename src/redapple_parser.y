@@ -170,7 +170,7 @@ numeric : INTEGER { $$ = new IntNode($1); }
         ;
 
 expr : expr '=' expr { $$ = new Node(Node::make_list(4, new StringNode("opt2"), new StringNode("="), $1, $3)); }
-     | ID '(' call_args ')' { $$ = Node::make_list(3, new StringNode("call"), new StringNode($1), $3); }
+     | ID '(' call_args ')' { $$ = new Node(Node::make_list(3, new StringNode("call"), new StringNode($1), $3)); }
      | ID { $$ = new IDNode($1); }
      | numeric { $$ = $1; }
      | STRING { $$ = new StringNode($1); }

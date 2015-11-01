@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-31 21:10:35
+* @Last Modified time: 2015-11-01 11:05:21
 */
 
 #include "CodeGenContext.h"
@@ -214,6 +214,12 @@ static Value* opt2_macro(CodeGenContext* context, Node* node) {
 
 
 	if (opt == ".") {
+		bool save_bool = false;
+		if (context->isSave()) {
+			save_bool = true;
+			context->setIsSave(false);
+		}
+
 		Value* ans1 = op1->codeGen(context);
 		StringNode* sn = (StringNode*)op2;
 		string ans2 = sn->getStr();
@@ -248,6 +254,7 @@ static Value* opt2_macro(CodeGenContext* context, Node* node) {
     	// errs() << "type : " << *(ans1->getType()->getPointerElementType()) << "\n";
     	// errs() << "type : " << *t << "\n";
 		GetElementPtrInst* ptr = GetElementPtrInst::Create(ans1, indices, "", context->getNowBlock());
+		if (save_bool) return ptr;
 		return new LoadInst(ptr, "", false, context->getNowBlock());			
 	}
 
