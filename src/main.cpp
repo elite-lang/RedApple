@@ -2,7 +2,7 @@
 #include <fstream>
 #include "Model/nodes.h"
 #include "redapple_parser.hpp"
-#include "CodeGen.h"
+#include "RedCodeGen.h"
 #include <cstring>
 #define maxpath 1000
 using namespace std;
@@ -44,7 +44,8 @@ int main(int argc,const char *argv[])
 
 		// 语法生成
 		char* output_name = make_default_name(file_in_name);
-		CodeGen* codegen = new CodeGen(programBlock);
+		CodeGen* codegen = RedCodeGen::Create(programBlock);
+		codegen->PreScan();
 		codegen->Make(output_name);
 		delete codegen;
 

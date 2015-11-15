@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:40
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-01 21:05:14
+* @Last Modified time: 2015-11-02 15:33:52
 */
 
 #include "Node.h"
@@ -28,6 +28,15 @@ Node::Node(Node* n) {
 Node::~Node() {
 
 }
+
+Node* Node::Create(Node* n) {
+	return new Node(n);
+}
+
+Node* Node::Create() {
+	return new Node();
+}
+
 
 void Node::addChildren(Node* n) {
 	if (child == NULL) {

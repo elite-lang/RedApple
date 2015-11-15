@@ -12,10 +12,13 @@ using namespace std;
 
 class FloatNode: public Node {
 public: 
-	float value;
+	static FloatNode* Create(const char* num);
 	virtual Value* codeGen(CodeGenContext* context); 
-	FloatNode(string num);
 	virtual NodeType getType();
+	float getFloat();
+protected:
+	float value;
+	FloatNode(const char* num);
 };
 
 #endif //_FLOATNODE_H

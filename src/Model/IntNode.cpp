@@ -10,6 +10,10 @@
  * IntNode implementation
  */
 
+IntNode* IntNode::Create(const char* num) {
+	return new IntNode(num);
+}
+
 IntNode::IntNode(const char* num) {
 	value = atoi(num);
 }

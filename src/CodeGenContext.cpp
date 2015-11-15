@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-01 19:09:12
+* @Last Modified time: 2015-11-13 12:36:25
 */
 
 #include "CodeGenContext.h"
@@ -52,25 +52,13 @@ void CodeGenContext::AddOrReplaceMacros(const FuncReg* macro_funcs) {
 	}
 }
 
+void CodeGenContext::RemoveAllMacros() {
+	macro_map.clear();
+}
+
 
 id* CodeGenContext::FindST(Node* node) const{ 
 	return FindST(node->getStr());
-}
-
-Type* CodeGenContext::getNormalType(Node* node) {
-	return getNormalType(node->getStr());
-}
-
-Type* CodeGenContext::getNormalType(std::string& str) {
-	if (str == "void") 
-		return Type::getVoidTy(*Context);
-	if (str == "int") 
-		return Type::getInt64Ty(*Context);
-	if (str == "float") 
-		return Type::getFloatTy(*Context);
-	if (str == "double") 
-		return Type::getDoubleTy(*Context);
-	return 0;
 }
 
 Function* CodeGenContext::getFunction(Node* node) {
@@ -177,8 +165,12 @@ CodeGenContext::CodeGenContext(Node* node) {
 	root = node;
 	_save = false;
 	st = new IDTable();
+	InitializeNativeTarget();
+	Context = new LLVMContext();
 }
 
 CodeGenContext::~CodeGenContext() {
 	delete st;
+	delete Context;
+	llvm_shutdown();
 }

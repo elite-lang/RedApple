@@ -30,15 +30,20 @@ BISON_TARGET(MyParser ${CMAKE_CURRENT_SOURCE_DIR}/src/redapple_parser.y
 					  ${CMAKE_CURRENT_BINARY_DIR}/redapple_parser.cpp)
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
-include_directories(Debug Release build include src src/Model src/Utils)
+include_directories(Debug Release build includes includes/Model includes/Utils includes/MetaModel src/cJSON)
 
 file(GLOB_RECURSE source_files	${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 								${CMAKE_CURRENT_SOURCE_DIR}/src/Model/*.cpp
 								${CMAKE_CURRENT_SOURCE_DIR}/src/Macro/*.cpp
-								${CMAKE_CURRENT_SOURCE_DIR}/src/Utils/*.cpp)
+								${CMAKE_CURRENT_SOURCE_DIR}/src/Utils/*.cpp
+                                ${CMAKE_CURRENT_SOURCE_DIR}/src/MetaModel/*.cpp
+                                ${CMAKE_CURRENT_SOURCE_DIR}/src/cJSON/*.c)
+
+add_library(red STATIC ${source_files} ${BISON_MyParser_OUTPUTS} ${FLEX_MyScanner_OUTPUTS})
 add_executable(redapple ${source_files} 
 						${BISON_MyParser_OUTPUTS} 
 						${FLEX_MyScanner_OUTPUTS})
+
 
 install(TARGETS redapple RUNTIME DESTINATION bin)
 
@@ -50,3 +55,25 @@ llvm_map_components_to_libnames(llvm_libs
 
 # Link against LLVM libraries
 target_link_libraries(redapple ${llvm_libs})
+
+FIND_PACKAGE(Doxygen)  
+OPTION(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})  
+  
+IF(BUILD_DOCUMENTATION)  
+    IF(NOT DOXYGEN_FOUND)  
+        MESSAGE(FATAL_ERROR "Doxygen is needed to build the documentation.")  
+    ENDIF()  
+  
+    SET(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)  
+    SET(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)  
+  
+    CONFIGURE_FILE(${doxyfile_in} ${doxyfile} @ONLY)  
+  
+    ADD_CUSTOM_TARGET(doc  
+        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}  
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}  
+        COMMENT "Generating API documentation with Doxygen"  
+        VERBATIM)  
+  
+    INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)  
+ENDIF()  

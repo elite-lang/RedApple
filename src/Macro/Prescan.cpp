@@ -2,12 +2,12 @@
 * @Author: sxf
 * @Date:   2015-10-29 11:05:42
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-01 19:10:54
+* @Last Modified time: 2015-11-13 12:18:08
 */
 
 #include "CodeGenContext.h"
 #include "StringNode.h"
-#include "Model/StructModel.h"
+#include "MetaModel/StructModel.h"
 #include "IDNode.h"
 #include <stdio.h>
 

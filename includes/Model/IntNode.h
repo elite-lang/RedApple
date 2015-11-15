@@ -10,12 +10,13 @@
 
 class IntNode: public Node {
 public: 
-	int value;
-
-	IntNode(const char* num);
+	static IntNode* Create(const char* num);
 	virtual Value* codeGen(CodeGenContext* context); 
 	virtual void printSelf();
 	virtual NodeType getType();
+protected:
+	IntNode(const char* num);
+	int value;
 };
 
 #endif //_INTNODE_H

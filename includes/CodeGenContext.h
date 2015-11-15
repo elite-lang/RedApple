@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-31 10:02:21
+* @Last Modified time: 2015-11-13 12:35:25
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -68,6 +68,7 @@ public:
 	// C++注册宏
 	// void AddMacros(const FuncReg* macro_funcs); // 为只添加不替换保留
 	void AddOrReplaceMacros(const FuncReg* macro_funcs);
+	void RemoveAllMacros(); // 移除全部宏指令
 
 	// 代码块栈的相关操作
 	BasicBlock* getNowBlock();
@@ -78,10 +79,6 @@ public:
 	Function* getFunction(Node* node);
 	Function* getFunction(std::string& name);
 	void nowFunction(Function* _nowFunc);
-
-	// 以下两函数已废弃
-	Type* getNormalType(Node*);
-	Type* getNormalType(std::string& str);
 
 	void setModule(Module* pM) { M = pM; }
 	Module* getModule() { return M; }

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-22 22:00:32
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-01 18:48:56
+* @Last Modified time: 2015-11-02 15:45:59
 */
 
 #ifndef STRING_NODE_H
@@ -16,20 +16,15 @@ using namespace std;
 class StringNode : public Node
 {
 public:
-	StringNode(const char* _value){
-		this->value = _value;
-	}
-
-	StringNode(char _value){
-		this->value = _value;
-	}
-
+	static StringNode* Create(const char* _value);
+	static StringNode* Create(char _value);
 	std::string& getStr() { return value; }
 	virtual Value* codeGen(CodeGenContext* context); 
 	virtual NodeType getType();
 protected:
 	virtual void printSelf();
-	
+	StringNode(const char* _value);
+	StringNode(char _value);
 private:
 	string value;
 };

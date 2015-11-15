@@ -2,14 +2,19 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-01 20:26:44
+* @Last Modified time: 2015-11-11 19:48:24
 */
 
 #ifndef NODE_H
 #define NODE_H
 
 #include <string>
-#include "llvm/IR/Module.h"
+
+namespace llvm {
+	class Value;
+	class Type;
+} // llvm
+
 using namespace llvm;
 
 enum NodeType
@@ -21,17 +26,14 @@ class CodeGenContext;
 class Node
 {
 public:
-	Node();
-	Node(Node* n);
-	~Node();
-
 	// 构建列表部分
 	void addChildren(Node* n);
 	void addBrother (Node* n);
 	bool isSingle();
 	static Node* make_list(int num, ...);
 	static Node* getList(Node* node);
-
+	static Node* Create(Node* n);
+	static Node* Create();
 
 	void print(int k);
 	Node* getNext() { return next; }
@@ -56,6 +58,10 @@ public:
 	bool isCharNode();
 
 protected:
+	Node();
+	Node(Node* n);
+	~Node();
+
 	virtual void printSelf();
 	void init();
 
