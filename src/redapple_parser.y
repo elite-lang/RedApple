@@ -108,6 +108,7 @@ def_statement : var_def ';' { $$ = $1; }
               | func_def 
               | def_module_statement 
               | func_def_xs func_def { $$ = $2; $2->addBrother(Node::getList($1)); } 
+              | IMPORT STRING { $$ = Node::make_list(2, StringNode::Create("import"), StringNode::Create($2) ); }
               ;
 
 def_statements : def_statement { $$ = Node::getList($1); }

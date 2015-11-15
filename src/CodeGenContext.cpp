@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 16:58:15
+* @Last Modified time: 2015-11-15 19:21:42
 */
 
 #include "CodeGenContext.h"
@@ -38,6 +38,16 @@ CodeGenFunction CodeGenContext::getMacro(string& str) {
 	else return NULL;
 }
 
+void CodeGenContext::ScanOther(Node* node) {
+    PreInit();
+    MacroMake(node);
+    printf("-- 预处理流程完成 --\n");
+    // pretype流程，负责处理所有类型相关问题并更新符号表
+    PreTypeInit();
+    MacroMake(node);
+    printf("-- 类型化流程完成 --\n");
+}
+
 // void CodeGenContext::AddMacros(const FuncReg* macro_funcs) {
 //
 // }
@@ -70,6 +80,15 @@ Function* CodeGenContext::getFunction(Node* node) {
 Function* CodeGenContext::getFunction(std::string& name) {
 	Function* defined_func = M->getFunction(name);
 	if (defined_func != NULL) return defined_func;
+	FunctionModel* fm = getFunctionModel(name);
+	return fm->getFunction(this);
+}
+
+void CodeGenContext::nowFunction(Function* _nowFunc) {
+	nowFunc = _nowFunc;
+}
+
+FunctionModel* CodeGenContext::getFunctionModel(string& name) {
 	id* i = FindST(name);
 	if (i == NULL) {
 		printf("错误: 符号 %s 未找到\n", name.c_str());
@@ -80,11 +99,7 @@ Function* CodeGenContext::getFunction(std::string& name) {
 		return NULL;
 	}
 	FunctionModel* fm = (FunctionModel*) i->data;
-	return fm->getFunction(this);
-}
-
-void CodeGenContext::nowFunction(Function* _nowFunc) {
-	nowFunc = _nowFunc;
+	return fm;
 }
 
 BasicBlock* CodeGenContext::getNowBlock() {
@@ -162,15 +177,17 @@ extern const FuncReg macro_prescan[];
 extern const FuncReg macro_pretype[];
 
 void CodeGenContext::PreInit() {
-	setNormalType();
+	RemoveAllMacros();
 	AddOrReplaceMacros(macro_prescan);
 }
 
 void CodeGenContext::PreTypeInit() {
+	RemoveAllMacros();
 	AddOrReplaceMacros(macro_pretype);
 }
 
 void CodeGenContext::Init() {
+	RemoveAllMacros();
 	AddOrReplaceMacros(macro_funcs);
 	AddOrReplaceMacros(macro_classes);
 }
@@ -181,6 +198,7 @@ CodeGenContext::CodeGenContext(Node* node) {
 	st = new IDTable();
 	InitializeNativeTarget();
 	Context = new LLVMContext();
+	setNormalType();
 }
 
 CodeGenContext::~CodeGenContext() {

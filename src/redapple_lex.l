@@ -126,9 +126,7 @@ char* makestring(const char* data, int len, int s) {
     strncpy(str, data+s-1, len-s);
     str[len-s] = 0;
     if (s == 3) return str;
-    printf("source: %s\n",str);
     char* ans = CharEscape(str);
-    printf("escape: %s\n",ans);
-    delete[] str; // 非常令人惊讶, 这句析构内存居然会导致程序段错误, 也许程序还隐藏着其他问题
+    delete[] str;
     return ans; 
 }

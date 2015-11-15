@@ -24,33 +24,38 @@ char* make_default_name(const char* filename) {
 	return str;
 }
 
+Node* parseFile(const char* path) {
+	FILE* file_in;
+	if ((file_in = fopen(path, "r")) == NULL) {
+		printf("找不到程序源文件: %s\n", path);
+		return 0;
+	}
+	
+	yyin = file_in;
+	yyparse();
+	fclose(file_in);
+
+	// 打印语法树
+	printf("源文件 - %s\n", path);
+	programBlock->print(0);
+	return programBlock;
+}
+
 int main(int argc,const char *argv[])
 {
 	if (argc <= 1) printf(help_message);
 	else {
 		const char *file_in_name = argv[1];
-		FILE* file_in;
-		if ((file_in = fopen(file_in_name, "r")) == NULL) {
-			printf(file_in_name);
-			printf("找不到程序源文件");
-			return 0;
-		}
+		Node* ans = parseFile(file_in_name);
 		
-		yyin = file_in;
-		yyparse();
-
-		// 打印语法树
-		programBlock->print(0);
-
 		// 语法生成
 		char* output_name = make_default_name(file_in_name);
-		CodeGen* codegen = RedCodeGen::Create(programBlock);
+		CodeGen* codegen = RedCodeGen::Create(ans);
 		codegen->PreScan();
 		codegen->Make(output_name);
 		delete codegen;
 
 		/* you should close the file. */
-		fclose(file_in);
 	}
 	return 0;
 }

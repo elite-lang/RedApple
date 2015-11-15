@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:57:41
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 16:45:24
+* @Last Modified time: 2015-11-15 18:51:03
 */
 
 #include "RedCodeGen.h"
@@ -31,8 +31,11 @@ RedCodeGen* RedCodeGen::Create(Node* node) {
 }
 
 void RedCodeGen::Init(Node* node) {
-    if (context != NULL) delete context;
-    context = new CodeGenContext(node); 
+    if (this->context != NULL) {
+        delete context;
+        context = NULL;
+    }
+    this->context = new CodeGenContext(node); 
 }
 
 RedCodeGen::~RedCodeGen() {
@@ -56,7 +59,7 @@ void RedCodeGen::PreScan() {
 }
 
 void RedCodeGen::ScanOther(Node* node) {
-    context->MacroMake(node);
+    context->ScanOther(node);
 }
 
 void RedCodeGen::Make(const char* outfile_name) {
@@ -66,7 +69,6 @@ void RedCodeGen::Make(const char* outfile_name) {
 	context->setModule(M.get());
     // register_malloc(M.get());
     register_printf(M.get());
-
 
     // 正式流程
     context->Init();

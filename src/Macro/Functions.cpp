@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 16:38:36
+* @Last Modified time: 2015-11-15 19:20:41
 */
 
 #include "CodeGenContext.h"
@@ -14,13 +14,11 @@
 #include <stdio.h>
 
 static Value* function_macro(CodeGenContext* context, Node* node) {
-
+	printf("function work\n");
 	// 第二个参数, 函数名
 	node = node->getNext();
 	std::string function_name = node->getStr();
-	id* i = context->FindST(function_name);
-	if (i->type != function_t) return NULL;
-	FunctionModel* fm = (FunctionModel*) i->data;
+	FunctionModel* fm = context->getFunctionModel(function_name);
 	Function* F = fm->getFunction(context);
 
 	// 第三个参数, 参数表
@@ -305,6 +303,16 @@ static Value* new_macro(CodeGenContext* context, Node* node) {
 	return Malloc;
 }
 
+extern Node* parseFile(const char* path);
+
+static Value* import_macro(CodeGenContext* context, Node* node) {
+	string file_name = node->getStr();
+	context->SaveMacros();
+	context->ScanOther(parseFile(file_name.c_str()));
+	context->RecoverMacros();
+	return NULL;
+}
+
 extern const FuncReg macro_funcs[] = {
 	{"function", function_macro},
 	{"struct",   struct_macro},
@@ -316,5 +324,6 @@ extern const FuncReg macro_funcs[] = {
 	{"if",       if_macro},
 	{"return",   return_macro},
 	{"new",      new_macro},
+	{"import",   import_macro}, // 实验型导入功能,最后应从库中删除 
 	{NULL, NULL}
 };
