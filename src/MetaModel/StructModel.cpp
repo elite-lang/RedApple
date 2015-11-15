@@ -2,12 +2,14 @@
 * @Author: sxf
 * @Date:   2015-10-31 18:24:33
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-14 16:48:44
+* @Last Modified time: 2015-11-15 16:51:15
 */
 
 #include "StructModel.h"
+#include "CodeGenContext.h"
 
-StructModel(std::string& name,
+
+StructModel::StructModel(std::string& name,
 		std::vector<std::string>& type_list,
 		std::vector<std::string>& name_list)
 	: MetaModel(name)
@@ -16,7 +18,7 @@ StructModel(std::string& name,
 	this->name_list = name_list;
 }
 
-int StructModel::find(std::string name)
+int StructModel::find(std::string& name)
 {
 	int i = 0;
 	if (name_list.size() == 0) return -1;
@@ -28,8 +30,13 @@ int StructModel::find(std::string name)
 }
 
 void StructModel::insertToST(CodeGenContext* context) {
-	struct_type = StructType::create(*(context->getContext()), name);
 	context->st->insert(name, struct_t, this); // 插入符号表中
+}
+
+llvm::StructType* StructModel::getStruct(CodeGenContext* context) {
+	if (struct_type == NULL)
+		struct_type = StructType::create(*(context->getContext()), name);
+	return struct_type;
 }
 
 Value* StructModel::genCode(CodeGenContext* context) {
@@ -38,7 +45,8 @@ Value* StructModel::genCode(CodeGenContext* context) {
 		Type* t = context->FindType(s);
 		type_vec.push_back(t);
 	}
-	struct_type->setBody(type_vec);
+	StructType* st = getStruct(context);
+	st->setBody(type_vec);
 	return NULL;
 }
 

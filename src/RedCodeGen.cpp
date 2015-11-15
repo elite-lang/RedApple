@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:57:41
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-13 12:37:04
+* @Last Modified time: 2015-11-15 16:45:24
 */
 
 #include "RedCodeGen.h"
@@ -49,15 +49,17 @@ void RedCodeGen::PreScan() {
     context->PreInit();
     context->MakeBegin();
     printf("-- 预处理流程完成 --\n");
-
+    // pretype流程，负责处理所有类型相关问题并更新符号表
+    context->PreTypeInit();
+    context->MakeBegin();
+    printf("-- 类型化流程完成 --\n");
 }
 
 void RedCodeGen::ScanOther(Node* node) {
-    MacroMake(node);
+    context->MacroMake(node);
 }
 
 void RedCodeGen::Make(const char* outfile_name) {
-	
 	// Create some module to put our function into it.
 	std::unique_ptr<Module> M(new Module("", *(context->getContext())));
 
@@ -65,10 +67,6 @@ void RedCodeGen::Make(const char* outfile_name) {
     // register_malloc(M.get());
     register_printf(M.get());
 
-    // pretype流程，负责处理所有类型相关问题并更新符号表
-    context->PreTypeInit();
-    context->MakeBegin();
-    printf("-- 类型化流程完成 --\n");
 
     // 正式流程
     context->Init();

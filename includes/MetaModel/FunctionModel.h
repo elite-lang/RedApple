@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-13 12:07:03
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-14 16:42:01
+* @Last Modified time: 2015-11-15 16:51:49
 */
 
 
@@ -10,20 +10,24 @@
 #define FUNCTION_MODEL_H
 
 #include "MetaModel.h"
+#include <vector>
+#include <string>
 
 namespace llvm {
 	class Function;
 	class FunctionType;
+	class Constant;
 }
-
 
 class FunctionModel : public MetaModel
 {
 public:
-	FunctionModel(std::string& name,
+	FunctionModel(
+		std::string& 			  name,
+		std::string& 			  ret_type,
 		std::vector<std::string>& type_list,
 		std::vector<std::string>& name_list,
-		std::vector<Constant*>&   init_list
+		std::vector<llvm::Constant*>& init_list
 	);
 
 	int find(std::string& name);
@@ -31,16 +35,18 @@ public:
 	std::string return_type;
 	std::vector<std::string> type_list;
 	std::vector<std::string> name_list;
-	std::vector<Constant*>   init_list; // 没有的置为NULL
+	std::vector<llvm::Constant*> init_list; // 没有的置为空数组
 
-	llvm::Function* func;
 	llvm::FunctionType* func_type;
+	llvm::Function* getFunction(CodeGenContext* context);
 
 	virtual void insertToST(CodeGenContext* context);
-	virtual Value* genCode(CodeGenContext* context);
+	virtual llvm::Value* genCode(CodeGenContext* context);
 	virtual cJSON* genJson();
-	virtual Value* genMetaCode(CodeGenContext* context);
+	virtual llvm::Value* genMetaCode(CodeGenContext* context);
 	virtual MetaType getType();
+private:
+	llvm::Function* func = NULL;
 };
 
 

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-13 17:08:01
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-14 16:48:26
+* @Last Modified time: 2015-11-15 15:44:07
 */
 
 
@@ -15,12 +15,15 @@ typedef struct cJSON cJSON;
 
 namespace llvm {
 	class Module;
+	class Value;
 } // llvm
 
 enum MetaType
 {
 	struct_meta_t, function_meta_t
 };
+
+class CodeGenContext;
 
 class MetaModel
 {
@@ -29,15 +32,15 @@ public:
 	~MetaModel();
 
 	virtual void insertToST(CodeGenContext* context) = 0;
-	virtual Value* genCode(CodeGenContext* context) = 0;
+	virtual llvm::Value* genCode(CodeGenContext* context) = 0;
 	virtual cJSON* genJson() = 0;
-	virtual Value* genMetaCode(CodeGenContext* context) = 0;
+	virtual llvm::Value* genMetaCode(CodeGenContext* context) = 0;
 	virtual MetaType getType() = 0;
 
 	static MetaModel* readJson(cJSON*);
-	static MetaModel* readMetaCode(Module*);
+	static MetaModel* readMetaCode(llvm::Module*);
 
-private:
+protected:
 	std::string name;
 };
 

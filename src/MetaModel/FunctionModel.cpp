@@ -2,24 +2,27 @@
 * @Author: sxf
 * @Date:   2015-11-13 16:45:51
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-14 17:00:47
+* @Last Modified time: 2015-11-15 16:29:05
 */
 
 #include "FunctionModel.h"
+#include "CodeGenContext.h"
 
-FunctionModel(std::string& name,
-		std::vector<std::string>& type_list,
-		std::vector<std::string>& name_list,
-		std::vector<Constant*>&   init_list)
-	: MetaType(name)
+FunctionModel::FunctionModel(
+	std::string& 			  name,
+	std::string& 			  ret_type,
+	std::vector<std::string>& type_list,
+	std::vector<std::string>& name_list,
+	std::vector<Constant*>&   init_list
+) : MetaModel(name)
 {
-	meta_type = struct_meta_t;
+	this->return_type = ret_type;
 	this->type_list = type_list;
 	this->name_list = name_list;
 	this->init_list = init_list;
 }
 
-int StructModel::find(std::string name)
+int FunctionModel::find(std::string& name)
 {
 	int i = 0;
 	if (name_list.size() == 0) return -1;
@@ -34,8 +37,16 @@ void FunctionModel::insertToST(CodeGenContext* context) {
 	context->st->insert(name, function_t, this); // 插入符号表中
 }
 
+llvm::Function* FunctionModel::getFunction(CodeGenContext* context) {
+	if (func != NULL) return func;
+	Module* M = context->getModule();
+	func = dyn_cast<Function>(M->getOrInsertFunction(name, func_type));
+	return func;
+}
+
+
 Value* FunctionModel::genCode(CodeGenContext* context) {
-	Type ret_type = context->FindType(return_type);
+	Type* ret_type = context->FindType(return_type);
 	std::vector<Type*> type_vec;
 	for (auto& s : type_list) {
 		Type* t = context->FindType(s);

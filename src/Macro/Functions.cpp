@@ -2,12 +2,14 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-13 12:18:02
+* @Last Modified time: 2015-11-15 16:38:36
 */
 
 #include "CodeGenContext.h"
 #include "StringNode.h"
 #include "StructModel.h"
+#include "MetaModel/StructModel.h"
+#include "MetaModel/FunctionModel.h"
 #include "IDNode.h"
 #include <stdio.h>
 
@@ -18,23 +20,12 @@ static Value* function_macro(CodeGenContext* context, Node* node) {
 	std::string function_name = node->getStr();
 	id* i = context->FindST(function_name);
 	if (i->type != function_t) return NULL;
-	Function* F = (Function*) i->data;
+	FunctionModel* fm = (FunctionModel*) i->data;
+	Function* F = fm->getFunction(context);
 
 	// 第三个参数, 参数表
 	Node* args_node = node = node->getNext();
-	std::vector<Type*> type_vec;
-	std::vector<std::string> arg_name;
-	if (args_node->getChild() != NULL) {
-		for (Node* pC = args_node->getChild(); 
-			 pC != NULL; pC = pC->getNext() ) 
-		{
-			Node* pSec = pC->getChild()->getNext();
-			Type* t = context->FindType(pSec);
-			type_vec.push_back(t);
-			StringNode* str_node = (StringNode*)(pSec->getNext());
-			arg_name.push_back(str_node->getStr());	
-		}
-	}
+	vector<string>& arg_name = fm->name_list;
 
 	// 第四个参数, 代码块
 	node = node->getNext();
@@ -296,7 +287,7 @@ static Value* new_macro(CodeGenContext* context, Node* node) {
 	if (i->type == type_t) t = (Type*)(i->data);
 	else if (i->type == struct_t) {
 		StructModel* sm = (StructModel*)(i->data);
-		t = sm->struct_type;
+		t = sm->getStruct(context);
 	} else { 
 		printf("Error: new的类型错误\n");
 		return NULL;
