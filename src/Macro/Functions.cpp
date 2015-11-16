@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 19:20:41
+* @Last Modified time: 2015-11-16 17:03:09
 */
 
 #include "CodeGenContext.h"
@@ -19,6 +19,7 @@ static Value* function_macro(CodeGenContext* context, Node* node) {
 	node = node->getNext();
 	std::string function_name = node->getStr();
 	FunctionModel* fm = context->getFunctionModel(function_name);
+	fm->genMetaCode(context);
 	Function* F = fm->getFunction(context);
 
 	// 第三个参数, 参数表
@@ -270,6 +271,9 @@ cmpOper:
 }
 
 static Value* struct_macro(CodeGenContext* context, Node* node) {
+	std::string struct_name = node->getStr();
+	StructModel* sm = context->getStructModel(struct_name);
+	sm->genMetaCode(context);
 	return NULL;
 }
 

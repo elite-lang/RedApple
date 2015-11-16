@@ -2,13 +2,12 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 19:21:42
+* @Last Modified time: 2015-11-16 17:05:22
 */
 
 #include "CodeGenContext.h"
 #include "StringNode.h"
 #include "IDNode.h"
-#include "StructModel.h"
 #include <stdio.h>
 #include "MetaModel/StructModel.h"
 #include "MetaModel/FunctionModel.h"
@@ -100,6 +99,20 @@ FunctionModel* CodeGenContext::getFunctionModel(string& name) {
 	}
 	FunctionModel* fm = (FunctionModel*) i->data;
 	return fm;
+}
+
+StructModel* CodeGenContext::getStructModel(string& name) {
+	id* i = FindST(name);
+	if (i == NULL) {
+		printf("错误: 符号 %s 未找到\n", name.c_str());
+		return NULL;
+	}
+	if (i->type != struct_t) { 
+		printf("错误: 符号 %s 类型不是结构体\n", name.c_str());
+		return NULL;
+	}
+	StructModel* sm = (StructModel*) i->data;
+	return sm;
 }
 
 BasicBlock* CodeGenContext::getNowBlock() {

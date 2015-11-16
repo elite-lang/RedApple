@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-31 18:24:33
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 16:51:15
+* @Last Modified time: 2015-11-16 16:22:45
 */
 
 #include "StructModel.h"
@@ -55,7 +55,7 @@ cJSON* StructModel::genJson() {
 }
 
 Value* StructModel::genMetaCode(CodeGenContext* context) {
-
+	
 }
 
 MetaType StructModel::getType() {

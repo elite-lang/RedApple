@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-16 10:43:41
+* @Last Modified time: 2015-11-16 17:06:03
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -37,6 +37,7 @@ using namespace llvm;
 
 class CodeGenContext;
 class FunctionModel;
+class StructModel;
 
 typedef Value* (*CodeGenFunction)(CodeGenContext*, Node*);
 typedef struct _funcReg
@@ -83,6 +84,7 @@ public:
 	void nowFunction(Function* _nowFunc);
 
 	FunctionModel* getFunctionModel(std::string& name);
+	StructModel* getStructModel(std::string& name);
 
 	void setModule(Module* pM) { M = pM; }
 	void setMetaModule(Module* pM) { meta_M = pM; }

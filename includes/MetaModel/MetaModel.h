@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-13 17:08:01
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 15:44:07
+* @Last Modified time: 2015-11-16 16:59:30
 */
 
 
@@ -16,6 +16,7 @@ typedef struct cJSON cJSON;
 namespace llvm {
 	class Module;
 	class Value;
+	class Constant;
 } // llvm
 
 enum MetaType
@@ -42,6 +43,7 @@ public:
 
 protected:
 	std::string name;
+	llvm::Constant* geti8StrVal(llvm::Module& M, char const* str);
 };
 
 

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-13 16:45:51
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 16:29:05
+* @Last Modified time: 2015-11-16 17:33:31
 */
 
 #include "FunctionModel.h"
@@ -63,7 +63,29 @@ cJSON* FunctionModel::genJson() {
 }
 
 Value* FunctionModel::genMetaCode(CodeGenContext* context) {
-
+	Module* M = context->getMetaModule();
+	Function* F = M->getFunction("elite_meta_init");
+	vector<Value*> args_list;
+	args_list.push_back(geti8StrVal(*M, name.c_str()));
+	args_list.push_back(geti8StrVal(*M, return_type.c_str()));
+	vector<Metadata*> init_meta_list;
+	for (int i = 0; i < name_list.size(); ++i) {
+		args_list.push_back(geti8StrVal(*M, type_list[i].c_str()));
+		args_list.push_back(geti8StrVal(*M, name_list[i].c_str()));
+		Constant* c = init_list[i];
+		if (c != NULL)
+			init_meta_list.push_back(ConstantAsMetadata::get(c));
+		else
+			init_meta_list.push_back(MDString::get(M->getContext(), "NULL"));
+	}
+	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
+	Function* nowFunc = dyn_cast<Function>(M->getOrInsertFunction(name, func_type));
+	Type* nowType = func_type->getPointerTo();
+	args_list.push_back(ConstantExpr::getBitCast(nowFunc, nowType));
+	BasicBlock& bb = F->getEntryBlock();
+	Function* FuncF = M->getFunction("elite_meta_function");
+	CallInst::Create(FuncF, args_list, "", &bb);
+	return NULL;
 }
 
 MetaType FunctionModel::getType() {
