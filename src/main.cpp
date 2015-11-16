@@ -50,9 +50,11 @@ int main(int argc,const char *argv[])
 		
 		// 语法生成
 		char* output_name = make_default_name(file_in_name);
-		CodeGen* codegen = RedCodeGen::Create(ans);
-		codegen->PreScan();
-		codegen->Make(output_name);
+		CodeGen* codegen = RedCodeGen::Create();
+		codegen->Init();
+		codegen->PreScan(ans);
+		codegen->Make(ans, output_name);
+		codegen->MakeMeta("meta.bc", "Meta");
 		delete codegen;
 
 		/* you should close the file. */

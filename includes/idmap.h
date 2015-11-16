@@ -22,6 +22,7 @@ public:
     IDMap();
     ~IDMap();
     id* find(string& str) const;
+    map<string,id*>& getAll();
     void insert(string& str, int level, SymbolType type, void* data);
 private:
     map<string,id*> ID_map;

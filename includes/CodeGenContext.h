@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 19:21:19
+* @Last Modified time: 2015-11-16 10:43:41
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -85,7 +85,10 @@ public:
 	FunctionModel* getFunctionModel(std::string& name);
 
 	void setModule(Module* pM) { M = pM; }
+	void setMetaModule(Module* pM) { meta_M = pM; }
 	Module* getModule() { return M; }
+	Module* getMetaModule() { return meta_M; }
+	
 	void setContext(LLVMContext* pC) { Context = pC; }
 	LLVMContext* getContext() { return Context; }
 	void ScanOther(Node* node);
@@ -113,6 +116,9 @@ private:
 
 	// 当前的LLVM Module
 	Module* M;
+	// 模块元数据 Module
+	Module* meta_M;
+
 	LLVMContext* Context;
 	Function* nowFunc;
 	BasicBlock* nowBlock;

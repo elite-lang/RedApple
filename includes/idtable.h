@@ -10,6 +10,7 @@ class IDTable
 public:
     IDTable();
     id* find(string& str) const;
+    map<string,id*>& getAll(int level);
     void insert(string& str,SymbolType type, void* data);
     void push();
     void pop();
