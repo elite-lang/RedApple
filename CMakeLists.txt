@@ -56,6 +56,12 @@ llvm_map_components_to_libnames(llvm_libs
 # Link against LLVM libraries
 target_link_libraries(redapple ${llvm_libs})
 
+
+add_subdirectory(runtime)
+
+
+
+
 FIND_PACKAGE(Doxygen)  
 OPTION(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})  
   

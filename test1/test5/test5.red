@@ -1,11 +1,8 @@
 
 void print(int k) {
-	for (int i = 1; i <= k; i = i+1) {
-		printf("hello-%d\n",i);
-	} 
+	printf("hello-%d\n",k);
 }
 
 void main() {
-	printf("hello world\n");
-	print(5);
+	FunctionCall("print", 5);
 }

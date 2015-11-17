@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:57:41
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-16 15:56:44
+* @Last Modified time: 2015-11-17 11:20:19
 */
 
 #include "RedCodeGen.h"
@@ -95,6 +95,7 @@ void RedCodeGen::Make(Node* node, const char* outfile_name, const char* module_n
 	context->setModule(M.get());
     // register_malloc(M.get());
     register_printf(M.get());
+    register_functioncall(M.get());
 
     // 正式流程
     context->Init();
@@ -133,6 +134,22 @@ void RedCodeGen::register_printf(llvm::Module *module) {
     llvm::Function *func = llvm::Function::Create(
                 printf_type, llvm::Function::ExternalLinkage,
                 llvm::Twine("printf"),
+                module
+           );
+    func->setCallingConv(llvm::CallingConv::C);
+}
+
+void RedCodeGen::register_functioncall(llvm::Module *module) {
+    std::vector<llvm::Type*> arg_types;
+    arg_types.push_back(llvm::Type::getInt8PtrTy(module->getContext()));
+
+    llvm::FunctionType* func_type =
+        llvm::FunctionType::get(
+            llvm::Type::getVoidTy(module->getContext())->getPointerTo(), arg_types, true);
+
+    llvm::Function *func = llvm::Function::Create(
+                func_type, llvm::Function::ExternalLinkage,
+                llvm::Twine("FunctionCall"),
                 module
            );
     func->setCallingConv(llvm::CallingConv::C);

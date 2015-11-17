@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:55:30
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-16 15:19:16
+* @Last Modified time: 2015-11-17 11:19:15
 * 
 * 代码生成部分的引导类
 */
@@ -46,6 +46,7 @@ private:
 	void register_elite_meta_function(llvm::Module *module);
 	void register_elite_meta_struct(llvm::Module *module);
 	void register_elite_meta_init(llvm::Module *module);
+	void register_functioncall(llvm::Module *module);
 };
 
 
