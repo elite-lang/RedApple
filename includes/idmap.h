@@ -7,7 +7,7 @@ using namespace std;
 
 enum SymbolType
 {
-	var_t, type_t, struct_t, enum_t, delegate_t, function_t
+	var_t, type_t, struct_t, enum_t, delegate_t, function_t, macro_t
 };
 
 struct id {

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-22 22:00:32
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-02 15:45:59
+* @Last Modified time: 2015-11-17 19:22:39
 */
 
 #ifndef STRING_NODE_H
@@ -21,6 +21,9 @@ public:
 	std::string& getStr() { return value; }
 	virtual Value* codeGen(CodeGenContext* context); 
 	virtual NodeType getType();
+	virtual Node* copy() {
+		return new StringNode(*this);
+	}
 protected:
 	virtual void printSelf();
 	StringNode(const char* _value);

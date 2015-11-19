@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-16 17:06:03
+* @Last Modified time: 2015-11-17 20:25:30
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -54,6 +54,7 @@ public:
 	~CodeGenContext();
 
 	// 必要的初始化方法
+	void PreMacro();
 	void PreInit();
 	void PreTypeInit();
 	void Init();
@@ -82,6 +83,10 @@ public:
 	Function* getFunction(Node* node);
 	Function* getFunction(std::string& name);
 	void nowFunction(Function* _nowFunc);
+
+	// 用户宏的查找与声明设置
+	Node* getUserMacro(std::string& name);
+	void  setUserMacro(std::string& name, Node* node);
 
 	FunctionModel* getFunctionModel(std::string& name);
 	StructModel* getStructModel(std::string& name);

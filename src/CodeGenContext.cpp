@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-16 17:05:22
+* @Last Modified time: 2015-11-17 20:39:59
 */
 
 #include "CodeGenContext.h"
@@ -11,19 +11,28 @@
 #include <stdio.h>
 #include "MetaModel/StructModel.h"
 #include "MetaModel/FunctionModel.h"
+#include "MacroTranslate.h"
 
 Value* CodeGenContext::MacroMake(Node* node) {
 	if (node == NULL) return NULL;
 
-	if (node->isStringNode()) {
-		StringNode* str_node = (StringNode*)node;
-		CodeGenFunction func = getMacro(str_node->getStr());
+	if (node->isIDNode()) {
+		Node* user_macro_node = getUserMacro(node->getStr());
+		if (user_macro_node != NULL) {
+			MacroTranslate translater;
+			Node* replace = translater.Marco(user_macro_node, node->getNext());
+			replace->print(1);
+			Value* ans = MacroMake(replace);
+			Node::FreeAll(replace);
+			return ans;
+		}
+		CodeGenFunction func = getMacro(node->getStr());
 		if (func != NULL) {
 			return func(this, node->getNext());
 		} 
 		return NULL;
 	} 
-	if (node->getChild() != NULL && node->getChild()->isStringNode())
+	if (node->getChild() != NULL && node->getChild()->isIDNode())
 		return MacroMake(node->getChild());
 	Value* ans;
 	for (Node* p = node->getChild(); p != NULL; p = p->getNext()) 
@@ -38,6 +47,9 @@ CodeGenFunction CodeGenContext::getMacro(string& str) {
 }
 
 void CodeGenContext::ScanOther(Node* node) {
+	PreMacro();
+    MacroMake(node);
+    printf("-- 宏解析流程完成 --\n");
     PreInit();
     MacroMake(node);
     printf("-- 预处理流程完成 --\n");
@@ -100,6 +112,20 @@ FunctionModel* CodeGenContext::getFunctionModel(string& name) {
 	FunctionModel* fm = (FunctionModel*) i->data;
 	return fm;
 }
+
+Node* CodeGenContext::getUserMacro(std::string& name) {
+	id* i = FindST(name);
+	if (i == NULL) return NULL;
+	if (i->type != macro_t) return NULL;
+	return (Node*) i->data;
+}
+
+void  CodeGenContext::setUserMacro(std::string& name, Node* node) {
+	st->insert(name, macro_t, node);
+}
+
+
+
 
 StructModel* CodeGenContext::getStructModel(string& name) {
 	id* i = FindST(name);
@@ -188,6 +214,7 @@ extern const FuncReg macro_funcs[];
 extern const FuncReg macro_classes[];
 extern const FuncReg macro_prescan[];
 extern const FuncReg macro_pretype[];
+extern const FuncReg macro_defmacro[];
 
 void CodeGenContext::PreInit() {
 	RemoveAllMacros();
@@ -197,6 +224,11 @@ void CodeGenContext::PreInit() {
 void CodeGenContext::PreTypeInit() {
 	RemoveAllMacros();
 	AddOrReplaceMacros(macro_pretype);
+}
+
+void CodeGenContext::PreMacro() {
+	RemoveAllMacros();
+	AddOrReplaceMacros(macro_defmacro);
 }
 
 void CodeGenContext::Init() {

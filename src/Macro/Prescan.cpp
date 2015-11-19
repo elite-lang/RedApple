@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-29 11:05:42
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 16:48:40
+* @Last Modified time: 2015-11-17 20:16:02
 */
 
 #include "CodeGenContext.h"
@@ -90,6 +90,11 @@ static Value* function_type_macro(CodeGenContext* context, Node* node) {
 	return NULL;
 }
 
+static Value* defmacro_macro(CodeGenContext* context, Node* node) {
+	context->setUserMacro(node->getStr(), node->getNext());
+	return NULL;
+}
+
 extern const FuncReg macro_prescan[] = {
 	{"function", function_macro},
 	{"struct",   struct_macro},
@@ -99,5 +104,10 @@ extern const FuncReg macro_prescan[] = {
 extern const FuncReg macro_pretype[] = {
 	{"function", function_type_macro},
 	{"struct",   struct_type_macro},
+	{NULL, NULL}
+};
+
+extern const FuncReg macro_defmacro[] = {
+	{"defmacro",   defmacro_macro},
 	{NULL, NULL}
 };

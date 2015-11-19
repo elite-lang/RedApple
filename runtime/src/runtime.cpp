@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-15 10:19:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-17 11:09:00
+* @Last Modified time: 2015-11-19 09:24:00
 */
 
 #include <string>
@@ -116,10 +116,10 @@ extern "C" {
 			NormalType t = EliteMeta::getNormalType(s);
 			switch (t) {
 				case int_t:     dcArgInt(vm, va_arg(argp, int));  break;
-				// case float_t :  dcArgFloat(vm, va_arg(argp, float)); break;
+				case float_t :  dcArgFloat(vm, (float)va_arg(argp, double)); break; // 默认参数提升
 				case double_t : dcArgDouble(vm, va_arg(argp, double)); break;
-				// case char_t :   dcArgShort(vm, va_arg(argp, short int)); break;
-				// case byte_t :   dcArgChar(vm, va_arg(argp, char)); break;
+				case char_t :   dcArgShort(vm, (short)va_arg(argp, int)); break;
+				case byte_t :   dcArgChar(vm, (char)va_arg(argp, int)); break;
 				case ptr_t :    dcArgPointer(vm, va_arg(argp, void*)); break;
 				default:
 					printf("函数类型异常: %s 类型不能作为参数\n", s.c_str());

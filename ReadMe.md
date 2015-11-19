@@ -13,7 +13,9 @@ C++编写的一款简单的类C风格的编译语言
 * 简化的指针，所有结构体变量声明的都是指针
 * 支持常量字符串
 * for while if 等逻辑控制语句
-
+* import 其他文件
+* meta元数据和反射调用
+* 用户自定义宏
 
 示例代码：
 ```
@@ -43,5 +45,37 @@ void main() {
 	printf("hello world\n");
 	hello(1,2);
 	print(9);
+}
+```
+
+
+反射调用：
+```
+void print(int k) {
+	printf("hello-%d\n",k);
+}
+
+void main() {
+	FunctionCall("print", 5);
+}
+
+```
+
+自定义宏的使用：
+```
+void print(int k) {
+	@for_n (i, k) {
+		printf("hello-%d\n", i);
+	}
+}
+
+defmacro for_n (p, size, code)  {
+	for (int p = 1; p <= size; p = p+1)
+		code;
+}
+
+
+void main() {
+	FunctionCall("print", 5);
 }
 ```

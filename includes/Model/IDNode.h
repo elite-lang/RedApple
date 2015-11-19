@@ -18,6 +18,9 @@ public:
 	std::string& getStr() { return value; }
 	virtual Value* codeGen(CodeGenContext* context); 
 	virtual NodeType getType();
+	virtual Node* copy() {
+		return new IDNode(*this);
+	}
 protected:
 	IDNode(const char* _value);
 	IDNode(char _value);

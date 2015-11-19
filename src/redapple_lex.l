@@ -27,15 +27,39 @@ char* makestring(const char* data, int len, int s);
 
 [ \t\v\n\f]             ; /* 过滤空白字符 */
 
+    /* 一些双元运算符 */
+"++"                    return PP;
+"--"                    return SS;
+"<-"                    return LF;
+"->"                    return RF;
+"&&"                    return AND;
+"||"                    return OR;
+"!"                     return '!';
+"::"                    return NSP;
 
+
+"+="                    return PE;
+"-="                    return SE;
+"*="                    return ME;
+"/="                    return DE;
+"&="                    return AE;
+"|="                    return OE;
+"^="                    return XE;
+"%="                    return MODE;
+"<<="                   return FLE;
+">>="                   return FRE;
+
+
+    /* 比较运算符 */
 "=="                    return CEQ;
 "<="                    return CLE;
 ">="                    return CGE;
 "!="                    return CNE;
-
 "<"                     return '<';
-"="                     return '=';
 ">"                     return '>';
+
+
+    /* 界符 */
 "("                     return '(';
 ")"                     return ')';
 "["                     return '[';
@@ -44,8 +68,12 @@ char* makestring(const char* data, int len, int s);
 "}"                     return '}';
 "."                     return '.';
 ","                     return ',';
+"?"                     return '?';
 ":"                     return ':';
 ";"                     return ';';
+
+    /* 基本运算符 */
+"="                     return '=';
 "+"                     return '+';
 "-"                     return '-';
 "*"                     return '*';
@@ -67,6 +95,7 @@ char* makestring(const char* data, int len, int s);
 "else"                  return ELSE;
 "while"                 return WHILE;
 "do"                    return DO;
+"until"                 return UNTIL;
 "goto"                  return GOTO;
 "for"                   return FOR;
 "foreach"               return FOREACH;
@@ -84,6 +113,7 @@ char* makestring(const char* data, int len, int s);
 "delegate"              return DELEGATE;
 "def"                   return DEF;
 "define"                return DEFINE;
+"defmacro"              return DEFMACRO;
 "import"                return IMPORT;
 "using"                 return USING;
 "namespace"             return NAMESPACE;
@@ -102,8 +132,9 @@ char* makestring(const char* data, int len, int s);
 
 [a-zA-Z_][a-zA-Z0-9_]*  SAVE_TOKEN; return ID; /* 标识符 */
 
-[0-9]*\.[0-9]*          SAVE_TOKEN; return DOUBLE;
-[0-9]+                  SAVE_TOKEN; return INTEGER;
+-?[0-9]*\.[0-9]*        SAVE_TOKEN; return DOUBLE;
+-?[0-9]+                SAVE_TOKEN; return INTEGER;
+0x[0-9A-Fa-f]+          SAVE_TOKEN; return INTEGER;
 
 \"(\\.|[^\\"])*\"       SAVE_STRING; return STRING; /* 字符串 */
 @\"(\\.|[^\\"])*\"      SAVE_STRING_NC; return STRING; /* 无转义字符串 */

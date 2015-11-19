@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-11 19:48:24
+* @Last Modified time: 2015-11-17 19:39:06
 */
 
 #ifndef NODE_H
@@ -30,19 +30,31 @@ public:
 	void addChildren(Node* n);
 	void addBrother (Node* n);
 	bool isSingle();
+
+	// 便捷的构造list的方法
 	static Node* make_list(int num, ...);
 	static Node* getList(Node* node);
+	
+	// 全局构造析构
 	static Node* Create(Node* n);
 	static Node* Create();
+	static void Free(Node*& p);
+	static void FreeAll(Node*& p);
+
+	// 拷贝函数
+	virtual Node* copy();
+	virtual Node* copyAll();
+	virtual Node* copyChild();
+
+	// 节点的替换
+	void replaceNext(Node* node);
+	void replaceChild(Node* node);
+	void replaceChildFirst(Node* node);
 
 	void print(int k);
 	Node* getNext() { return next; }
 	Node* getChild() { return child; }
 	virtual Value* codeGen(CodeGenContext* context); 
-
-	// 这里负责获取或设置当前节点的LLVM类型, 未知类型返回NULL
-	virtual Type* getLLVMType();
-	virtual void  setLLVMType(Type* t);
 
 	// 如果是含有字符串的节点，则返回所含字符串，否则将报错
 	std::string& getStr();
@@ -60,12 +72,11 @@ public:
 protected:
 	Node();
 	Node(Node* n);
-	~Node();
+	virtual ~Node();
 
 	virtual void printSelf();
 	void init();
 
-	Type* llvm_type;
 	Node* next;
 	Node* child;
 };
