@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:40
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-17 20:29:14
+* @Last Modified time: 2015-11-19 19:43:22
 */
 
 #include "Node.h"
@@ -183,6 +183,11 @@ bool Node::isCharNode() {
 	return getType() == char_node_t;
 }
 
+bool Node::isTypeNode() {
+	return getType() == type_node_t;
+}
+
+
 std::string Node::getTypeName() {
 	switch (getType()) {
 		case node_t: return "Node";
@@ -191,18 +196,11 @@ std::string Node::getTypeName() {
 		case id_node_t: return "IDNode";
 		case char_node_t: return "CharNode";
 		case float_node_t: return "FloatNode";
+		case type_node_t: return "TypeNode";
 	}
 }
 
 std::string& Node::getStr() {
-	if (this->isStringNode()) {
-		StringNode* string_this = (StringNode*)this;
-		return string_this->getStr();
-	} 
-	if (this->isIDNode()) {
-		IDNode* string_this = (IDNode*)this;
-		return string_this->getStr();
-	} 
 	std::cerr << "getStr() - 获取字符串错误, 该类型不正确：" << getTypeName() << std::endl;
 	exit(1);
 }

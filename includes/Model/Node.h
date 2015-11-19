@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-17 19:39:06
+* @Last Modified time: 2015-11-19 19:43:36
 */
 
 #ifndef NODE_H
@@ -19,7 +19,7 @@ using namespace llvm;
 
 enum NodeType
 {
-	node_t = 0, int_node_t, float_node_t, char_node_t, id_node_t, string_node_t
+	node_t = 0, int_node_t, float_node_t, char_node_t, id_node_t, string_node_t, type_node_t
 };
 
 class CodeGenContext;
@@ -57,7 +57,7 @@ public:
 	virtual Value* codeGen(CodeGenContext* context); 
 
 	// 如果是含有字符串的节点，则返回所含字符串，否则将报错
-	std::string& getStr();
+	virtual std::string& getStr();
 
 	// 类型相关
 	std::string getTypeName();
@@ -68,6 +68,8 @@ public:
 	bool isIDNode();
 	bool isStringNode();
 	bool isCharNode();
+	bool isTypeNode();
+
 
 protected:
 	Node();

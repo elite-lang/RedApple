@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-17 20:39:59
+* @Last Modified time: 2015-11-19 19:41:48
 */
 
 #include "CodeGenContext.h"
@@ -173,19 +173,29 @@ void CodeGenContext::DefType(string name, Type* t) {
 }
 
 Type* CodeGenContext::FindType(string& name) {
-	id* i = st->find(name);
+	string find_name = name; int d = 0;
+	while (find_name.back() == ']') {
+		find_name.pop_back();
+		find_name.pop_back();
+		++d;
+	}
+
+	id* i = st->find(find_name);
+	Type* ret_type;
 	if (i != NULL && i->type == type_t) {
 		Type* t = (Type*)(i->data);
 		if (t->isStructTy()) t = t->getPointerTo();
-		return t;
+		ret_type = t;
 	} else if (i != NULL && i->type == struct_t) {
 		StructModel* s = (StructModel*)(i->data);
-		return s->getStruct(this)->getPointerTo();
+		ret_type = s->getStruct(this)->getPointerTo();
 	} else {
-		errs() <<  "找不到该类型的定义： ";
+		errs() << "找不到该类型的定义： ";
 		errs() << name << "\n";
 		return NULL;
 	}
+	if (d > 1) ret_type = ret_type->getPointerTo();
+	return ret_type;
 }
 
 Type* CodeGenContext::FindType(Node* node) {
@@ -197,6 +207,21 @@ void CodeGenContext::setNormalType() {
 	DefType("int",    Type::getInt64Ty(*Context));
 	DefType("float",  Type::getFloatTy(*Context));
 	DefType("double", Type::getDoubleTy(*Context));
+
+	DefType("int8",   Type::getInt8Ty(*Context));
+	DefType("int16",  Type::getInt16Ty(*Context));
+	DefType("int32",  Type::getInt32Ty(*Context));
+	DefType("int64",  Type::getInt64Ty(*Context));
+
+	DefType("uint",    Type::getInt64Ty(*Context));
+	DefType("uint8",   Type::getInt8Ty(*Context));
+	DefType("uint16",  Type::getInt16Ty(*Context));
+	DefType("uint32",  Type::getInt32Ty(*Context));
+	DefType("uint64",  Type::getInt64Ty(*Context));
+
+	DefType("byte",   Type::getInt8Ty(*Context));
+	DefType("char",   Type::getInt8Ty(*Context));
+	DefType("wchar",  Type::getInt32Ty(*Context));
 }
 
 

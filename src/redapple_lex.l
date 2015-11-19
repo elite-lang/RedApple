@@ -71,6 +71,8 @@ char* makestring(const char* data, int len, int s);
 "?"                     return '?';
 ":"                     return ':';
 ";"                     return ';';
+"[]"                    return SZ;
+
 
     /* 基本运算符 */
 "="                     return '=';
@@ -117,6 +119,9 @@ char* makestring(const char* data, int len, int s);
 "import"                return IMPORT;
 "using"                 return USING;
 "namespace"             return NAMESPACE;
+"const"                 return CONST;
+"packed"                return PACKED;
+"volatile"              return VOLATILE;
 
 "try"|"catch"|"finally"|"throw"  SAVE_TOKEN; return KWS_ERROR; /* 异常控制 */
 
@@ -126,9 +131,9 @@ char* makestring(const char* data, int len, int s);
 
 "public"|"private"|"protected"  SAVE_TOKEN; return KWS_FWKZ; /* 访问控制 */
 
-"const"|"static"|"extern"|"virtual"|"abstract"|"in"|"out"        SAVE_TOKEN; return KWS_FUNC_XS; /* 函数修饰符 */
+"static"|"extern"|"virtual"|"abstract"|"in"|"out"        SAVE_TOKEN; return KWS_FUNC_XS; /* 函数修饰符 */
 
-"void"|"double"|"int"|"float"|"char"|"bool"|"var"|"auto"  SAVE_TOKEN; return KWS_TYPE; /* 基本类型 */
+"var"|"auto"            SAVE_TOKEN; return KWS_TYPE; /* 基本类型 */
 
 [a-zA-Z_][a-zA-Z0-9_]*  SAVE_TOKEN; return ID; /* 标识符 */
 

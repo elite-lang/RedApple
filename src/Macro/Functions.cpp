@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-16 17:03:09
+* @Last Modified time: 2015-11-19 18:31:20
 */
 
 #include "CodeGenContext.h"
@@ -10,7 +10,7 @@
 #include "StructModel.h"
 #include "MetaModel/StructModel.h"
 #include "MetaModel/FunctionModel.h"
-#include "IDNode.h"
+#include "nodes.h"
 #include <stdio.h>
 
 static Value* function_macro(CodeGenContext* context, Node* node) {
@@ -55,12 +55,11 @@ static Value* function_macro(CodeGenContext* context, Node* node) {
 
 static Value* set_macro(CodeGenContext* context, Node* node) {
 	// 参数一 类型
-	Type* t = context->FindType(node);
-	if (t == NULL) {
-		errs() <<  "找不到该类型的定义：";
-		errs() << ((StringNode*)node)->getStr().c_str() << "\n";
-		exit(1);
-	}
+	Type* t;
+	if (node->isTypeNode()) {
+		TypeNode* tn = (TypeNode*) node;
+		t = tn->typeGen(context);
+	} else printf("错误的节点类型\n");
 
 	// 参数二 变量名
 	Node* var_node = node->getNext();
@@ -295,15 +294,9 @@ static Value* new_macro(CodeGenContext* context, Node* node) {
 		return NULL;
 	}
 	Constant* AllocSize = ConstantExpr::getSizeOf(t);
-	// AllocSize = ConstantExpr::getTruncOrBitCast(AllocSize, ITy);
-
 	BasicBlock* bb = context->getNowBlock();
 	Instruction* Malloc = CallInst::CreateMalloc(bb, ITy, t, AllocSize);
 	Malloc->insertAfter(&(bb->back()));
-	// errs() << "type:" << *t << "\n";
-	// errs() << "alloc_size:" << *AllocSize << "\n";
-	// errs() << "BasicBlock:" << *bb << "\n";
-	// errs() << "Malloc:" << *Malloc << "\n";
 	return Malloc;
 }
 

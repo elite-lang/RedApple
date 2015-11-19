@@ -4,4 +4,4 @@
 #include "IDNode.h"
 #include "IntNode.h"
 #include "StringNode.h"
-
+#include "TypeNode.h"

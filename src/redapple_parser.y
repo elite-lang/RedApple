@@ -39,10 +39,10 @@ void yyerror(const char *s);
 %token <str> ID INTEGER DOUBLE
 %token <token> CEQ CNE CGE CLE MBK
 %token <token> '<' '>' '=' '+' '-' '*' '/' '%' '^' '&' '|' '~' '@' '?' ':'
-%token <token> PP SS LF RF AND OR '!' NSP PE SE ME DE AE OE XE MODE FLE FRE
+%token <token> PP SS LF RF AND OR '!' NSP PE SE ME DE AE OE XE MODE FLE FRE SZ
 %token <str> STRING CHAR
 %token <token> IF ELSE WHILE DO UNTIL GOTO FOR FOREACH 
-%token <token> DELEGATE DEF DEFINE IMPORT USING NAMESPACE DEFMACRO
+%token <token> DELEGATE DEF DEFINE IMPORT USING NAMESPACE DEFMACRO CONST PACKED VOLATILE
 %token <token> RETURN NEW THIS 
 %token <str> KWS_EXIT KWS_ERROR KWS_TSZ KWS_STRUCT KWS_FWKZ KWS_FUNC_XS KWS_TYPE
 
@@ -66,6 +66,7 @@ void yyerror(const char *s);
 %type <nodes> statement
 %type <nodes> statements
 %type <nodes> block
+%type <nodes> types
 %type <nodes> var_def
 %type <nodes> marco_def
 %type <nodes> macro_def_args
@@ -78,6 +79,12 @@ void yyerror(const char *s);
 %type <nodes> call_arg 
 %type <nodes> call_args 
 %type <nodes> return_state
+%type <nodes> new_expr
+%type <nodes> var_exp
+%type <nodes> macro_call_args
+
+
+
 
 //%type <token> operator 这个设计容易引起规约冲突，舍弃
 /* Operator precedence for mathematical operators */
@@ -89,6 +96,7 @@ void yyerror(const char *s);
 %left '+' '-'
 %left '*' '/' '%' '^'
 %left '.'
+%left '(' '[' ')' ']'
 %left MBK '@'
 
 %start program
@@ -115,7 +123,7 @@ def_statement : var_def ';' { $$ = $1; }
               | marco_def
               | macro_call
               | def_module_statement 
-              | func_def_xs func_def { $$ = $2; $2->addBrother(Node::getList($1)); } 
+              | func_def_xs func_def { $$ = $2; $2->addBrother(Node::Create($1)); } 
               | IMPORT STRING { $$ = Node::make_list(2, IDNode::Create("import"), IDNode::Create($2) ); }
               ;
 
@@ -136,6 +144,7 @@ statement : def_statement
           | dountil_state
           | for_state
           | return_state
+          | macro_call ';'
           ;
 
 if_state : IF '(' expr ')' statement { $$ = Node::make_list(3, IDNode::Create("if"), $3, $5); }
@@ -161,10 +170,13 @@ block : '{' statements '}' { $$ = Node::Create($2); }
       | '{' '}' { $$ = Node::Create(); }
       ; 
 
-var_def : KWS_TYPE ID { $$ = Node::make_list(3, IDNode::Create("set"), IDNode::Create($1), IDNode::Create($2)); }
-        | ID ID { $$ = Node::make_list(3, IDNode::Create("set"), IDNode::Create($1), IDNode::Create($2)); }
-        | KWS_TYPE ID '=' expr { $$ = Node::make_list(4, IDNode::Create("set"), IDNode::Create($1), IDNode::Create($2), $4); }
-        | ID ID '=' expr { $$ = Node::make_list(4, IDNode::Create("set"), IDNode::Create($1), IDNode::Create($2), $4); }
+types : ID { $$ = TypeNode::Create($1); }
+      | CONST ID { $$ = TypeNode::Create($2, true); }
+      | types SZ { $$ = $1; ((TypeNode*)$1)->addDimension(); }
+      ;
+
+var_def : types ID { $$ = Node::make_list(3, IDNode::Create("set"), $1, IDNode::Create($2)); }
+        | types ID '=' expr { $$ = Node::make_list(4, IDNode::Create("set"), $1, IDNode::Create($2), $4); }
         ;
 
 macro_def_args : ID { $$ = IDNode::Create($1); }
@@ -176,19 +188,15 @@ marco_def : DEFMACRO ID '(' macro_def_args ')' block
           ;
 
 macro_call : '@' ID { $$ = IDNode::Create($2); }
-           | macro_call '(' call_args ')' { $$ = $1; $$->addBrother($3); }
+           | macro_call '(' macro_call_args ')' { $$ = $1; $$->addBrother($3); }
            | macro_call block { $$ = $1; $$->addBrother(Node::getList($2)); }
            | macro_call ID block { $$ = $1; $$->addBrother(IDNode::Create($2)); $$->addBrother(Node::getList($3)); }
            ;
 
-func_def : ID ID '(' func_def_args ')' block
-            { $$ = Node::make_list(5, IDNode::Create("function"), IDNode::Create($1), IDNode::Create($2), $4, $6); }
-         | KWS_TYPE ID '(' func_def_args ')' block
-            { $$ = Node::make_list(5, IDNode::Create("function"), IDNode::Create($1), IDNode::Create($2), $4, $6); }
-         | ID ID '(' func_def_args ')' ';'
-            { $$ = Node::make_list(5, IDNode::Create("function"), IDNode::Create($1), IDNode::Create($2), $4); }
-         | KWS_TYPE ID '(' func_def_args ')' ';'
-            { $$ = Node::make_list(5, IDNode::Create("function"), IDNode::Create($1), IDNode::Create($2), $4); }
+func_def : types ID '(' func_def_args ')' block
+            { $$ = Node::make_list(5, IDNode::Create("function"), $1, IDNode::Create($2), $4, $6); }
+         | types ID '(' func_def_args ')' ';'
+            { $$ = Node::make_list(5, IDNode::Create("function"), $1, IDNode::Create($2), $4, Node::Create()); }
          ;
 
 func_def_args : var_def { $$ = Node::Create(Node::Create($1)); }
@@ -200,14 +208,22 @@ numeric : INTEGER { $$ = IntNode::Create($1); }
         | DOUBLE { $$ = FloatNode::Create($1); }
         ;
 
+new_expr : NEW types { $$ = Node::make_list(2, IDNode::Create("new"), $2); }
+         | NEW types '(' call_args ')'  { $$ = Node::make_list(2, IDNode::Create("new"), $2, $4); }
+         | new_expr '[' expr ']' { $$ = $1; $1->addBrother(Node::getList($3)); }
+         ;
+
+var_exp : ID { $$ = IDNode::Create($1); }
+        | '(' expr ')'  /* ( expr ) */  { $$ = $2; }
+        ;
+
 expr : expr '=' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("="), $1, $3); }
-     | ID '(' call_args ')' { $$ = Node::make_list(2, IDNode::Create("call"), IDNode::Create($1)); $$->addBrother($3); }
-     | ID { $$ = IDNode::Create($1); }
+     | expr '(' call_args ')' { $$ = Node::make_list(2, IDNode::Create("call"), $1); $$->addBrother($3); }
+     | expr '[' call_args ']' { $$ = Node::make_list(2, IDNode::Create("select"), $1); $$->addBrother($3); } 
      | numeric 
-     | macro_call
      | STRING { $$ = StringNode::Create($1); }
      | KWS_TSZ 
-     | NEW ID '(' call_args ')' { $$ = Node::make_list(3, IDNode::Create("new"), IDNode::Create($2), $4); }
+     | new_expr
      | expr CEQ expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("=="), $1, $3); }
      | expr CNE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("!="), $1, $3); }
      | expr CLE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("<="), $1, $3); }
@@ -224,7 +240,7 @@ expr : expr '=' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::C
      | expr '|' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("|"), $1, $3); }
      | expr '.' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("."), $1, $3); }
      | '~' expr { $$ = Node::make_list(4, IDNode::Create("opt1"), IDNode::Create("~"), $2); }
-     | '(' expr ')'  /* ( expr ) */  { $$ = $2; }
+     | var_exp
      ;
 
 
@@ -237,6 +253,12 @@ call_args : %empty { $$ = Node::Create(); }
           | call_args ',' call_arg  { $$ = $1; $$->addBrother(Node::getList($3)); }
           ;
 
+macro_call_args : %empty { $$ = Node::Create(); }
+                | call_arg { $$ = Node::getList($1); }
+                | macro_call { $$ = Node::getList($1); }
+                | macro_call_args ',' call_arg  { $$ = $1; $$->addBrother(Node::getList($3)); }
+                | macro_call_args ',' macro_call  { $$ = $1; $$->addBrother(Node::getList($3)); }
+                ;
 %%
 
 void yyerror(const char* s){
