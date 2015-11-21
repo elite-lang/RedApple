@@ -90,12 +90,15 @@ void yyerror(const char *s);
 /* Operator precedence for mathematical operators */
 
 
-%left '~'
+%left AE OE XE MODE FLE FRE
+%left PE SE    
+%left ME DE
 %left '&' '|'
 %left CEQ CNE CLE CGE '<' '>' '='
 %left '+' '-'
 %left '*' '/' '%' '^'
 %left '.'
+%right '~' PP SS
 %left '(' '[' ')' ']'
 %left MBK '@'
 
@@ -230,6 +233,8 @@ expr : expr '=' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::C
      | expr CGE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create(">="), $1, $3); }
      | expr '<' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("<"), $1, $3); }
      | expr '>' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create(">"), $1, $3); }
+     | expr '<' '<' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("<<"), $1, $3); }
+     | expr '>' '>' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create(">>"), $1, $3); }
      | expr '+' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("+"), $1, $3); }
      | expr '-' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("-"), $1, $3); }
      | expr '*' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("*"), $1, $3); }
@@ -238,11 +243,24 @@ expr : expr '=' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::C
      | expr '^' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("^"), $1, $3); }
      | expr '&' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("&"), $1, $3); }
      | expr '|' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("|"), $1, $3); }
+     | expr PE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("+="), $1, $3); }
+     | expr SE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("-="), $1, $3); }
+     | expr ME expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("*="), $1, $3); }
+     | expr DE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("/="), $1, $3); }
+     | expr MODE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("%="), $1, $3); }
+     | expr XE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("^="), $1, $3); }
+     | expr AE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("&="), $1, $3); }
+     | expr OE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("|="), $1, $3); }
+     | expr FLE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("<<="), $1, $3); }
+     | expr FRE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create(">>="), $1, $3); }
      | expr '.' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("."), $1, $3); }
-     | '~' expr { $$ = Node::make_list(4, IDNode::Create("opt1"), IDNode::Create("~"), $2); }
+     | '~' expr { $$ = Node::make_list(3, IDNode::Create("opt1"), IDNode::Create("~"), $2); }
+     | PP expr { $$ = Node::make_list(3, IDNode::Create("opt1"), IDNode::Create("++"), $2); }
+     | SS expr { $$ = Node::make_list(3, IDNode::Create("opt1"), IDNode::Create("--"), $2); }
+     | expr PP { $$ = Node::make_list(3, IDNode::Create("opt1"), IDNode::Create("b++"), $2); }
+     | expr SS { $$ = Node::make_list(3, IDNode::Create("opt1"), IDNode::Create("b--"), $2); }
      | var_exp
      ;
-
 
 call_arg  :  expr { $$ = $1;  }
           |  ID '=' expr { $$ = Node::make_list(3, IDNode::Create("="), $1, $3); }

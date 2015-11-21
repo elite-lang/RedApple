@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-17 20:25:30
+* @Last Modified time: 2015-11-21 14:34:19
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -104,6 +104,9 @@ public:
 	void DefType(string name, Type* t);
 	Type* FindType(string& name);
 	Type* FindType(Node*);
+	Type* FindSrcType(string& name);
+	Type* FindSrcType(Node*);
+	
 
 	void SaveMacros();
 	void RecoverMacros();

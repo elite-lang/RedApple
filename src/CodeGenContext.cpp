@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-19 19:41:48
+* @Last Modified time: 2015-11-21 14:33:40
 */
 
 #include "CodeGenContext.h"
@@ -172,6 +172,27 @@ void CodeGenContext::DefType(string name, Type* t) {
 	st->insert(name, type_t, t);
 }
 
+Type* CodeGenContext::FindSrcType(string& name) {
+	id* i = st->find(name);
+	Type* ret_type;
+	if (i != NULL && i->type == type_t) {
+		Type* t = (Type*)(i->data);
+		ret_type = t;
+	} else if (i != NULL && i->type == struct_t) {
+		StructModel* s = (StructModel*)(i->data);
+		ret_type = s->getStruct(this);
+	} else {
+		errs() << "找不到该类型的定义： ";
+		errs() << name << "\n";
+		return NULL;
+	}
+	return ret_type;
+}
+
+Type* CodeGenContext::FindSrcType(Node* node) {
+	return FindSrcType(node->getStr());
+}
+
 Type* CodeGenContext::FindType(string& name) {
 	string find_name = name; int d = 0;
 	while (find_name.back() == ']') {
@@ -179,23 +200,10 @@ Type* CodeGenContext::FindType(string& name) {
 		find_name.pop_back();
 		++d;
 	}
-
-	id* i = st->find(find_name);
-	Type* ret_type;
-	if (i != NULL && i->type == type_t) {
-		Type* t = (Type*)(i->data);
-		if (t->isStructTy()) t = t->getPointerTo();
-		ret_type = t;
-	} else if (i != NULL && i->type == struct_t) {
-		StructModel* s = (StructModel*)(i->data);
-		ret_type = s->getStruct(this)->getPointerTo();
-	} else {
-		errs() << "找不到该类型的定义： ";
-		errs() << name << "\n";
-		return NULL;
-	}
-	if (d > 1) ret_type = ret_type->getPointerTo();
-	return ret_type;
+	Type* t = FindSrcType(find_name);
+	if (t->isStructTy()) t = t->getPointerTo();
+	if (d > 1) t = t->getPointerTo();
+	return t;
 }
 
 Type* CodeGenContext::FindType(Node* node) {

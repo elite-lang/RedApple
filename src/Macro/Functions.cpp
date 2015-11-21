@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-19 18:31:20
+* @Last Modified time: 2015-11-21 16:44:21
 */
 
 #include "CodeGenContext.h"
@@ -179,6 +179,58 @@ static Value* if_macro(CodeGenContext* context, Node* node) {
 
 	return branch;
 }
+
+
+
+
+static Value* opt1_macro(CodeGenContext* context, Node* node) {
+	std::string opt = node->getStr();
+
+	node = node->getNext();
+	if (node == NULL) return NULL;
+	context->setIsSave(true); // 这两句设置的目前是为下面的节点解析时,返回指针而不是load后的值
+	Value* ans = node->codeGen(context);
+	context->setIsSave(false);
+	AtomicRMWInst::BinOp bop; 
+	Value* one = ConstantInt::get(Type::getInt64Ty(*(context->getContext())), 1); 
+	if (opt == "~") { return BinaryOperator::CreateNot(ans, "", context->getNowBlock()); }
+	if (opt == "++") { bop = AtomicRMWInst::BinOp::Add;  goto selfWork; }
+	if (opt == "--") { bop = AtomicRMWInst::BinOp::Sub;  goto selfWork; }
+	if (opt == "b++") { bop = AtomicRMWInst::BinOp::Add; goto saveWork; }
+	if (opt == "b--") { bop = AtomicRMWInst::BinOp::Sub; goto saveWork; }
+
+	return NULL;
+
+selfWork:
+	new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent, 
+		SynchronizationScope::CrossThread, context->getNowBlock());
+	return new LoadInst(ans, "", false, context->getNowBlock());	
+
+saveWork:
+	return new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent, 
+		SynchronizationScope::CrossThread, context->getNowBlock());
+}
+
+static Value* getCast(Value* v, Type* t, BasicBlock* bb) {
+	Instruction::CastOps cops = CastInst::getCastOpcode(v, true, t, true);
+	CastInst::Create(cops, v, t, "", bb);
+}
+
+static void normalize_type(Value*& v1, Value*& v2, BasicBlock* bb) {
+	Type* t1 = v1->getType();
+	Type* t2 = v2->getType();
+	if (t1->isDoubleTy() || t2->isDoubleTy()) {
+		if (!t1->isDoubleTy()) v1 = getCast(v1, t2, bb);
+		if (!t2->isDoubleTy()) v2 = getCast(v2, t1, bb);
+		return;
+	}
+	if (t1->isFloatTy() || t2->isFloatTy()) {
+		if (!t1->isFloatTy()) v1 = getCast(v1, t2, bb);
+		if (!t2->isFloatTy()) v2 = getCast(v2, t1, bb);
+		return;
+	}
+}
+
 static Value* opt2_macro(CodeGenContext* context, Node* node) {
 	std::string opt = node->getStr();
 
@@ -187,6 +239,7 @@ static Value* opt2_macro(CodeGenContext* context, Node* node) {
 	Node* op2 = (node = node->getNext());
 	if (node == NULL) return NULL;
 
+
 	if (opt == "=") {
 		context->setIsSave(true); // 这两句设置的目前是为下面的节点解析时,返回指针而不是load后的值
 		Value* ans1 = op1->codeGen(context);
@@ -194,6 +247,22 @@ static Value* opt2_macro(CodeGenContext* context, Node* node) {
 		Value* ans2 = op2->codeGen(context);
 		return new StoreInst(ans2, ans1, false, context->getNowBlock());
 	}
+	AtomicRMWInst::BinOp bop; 
+	if (opt == "+=") { bop = AtomicRMWInst::BinOp::Add; goto rmwOper; }
+	if (opt == "-=") { bop = AtomicRMWInst::BinOp::Sub; goto rmwOper; }
+	if (opt == "&=") { bop = AtomicRMWInst::BinOp::And; goto rmwOper; }
+	if (opt == "|=") { bop = AtomicRMWInst::BinOp::Or;  goto rmwOper; }
+	if (opt == "^=") { bop = AtomicRMWInst::BinOp::Xor; goto rmwOper; }
+	goto Next;
+rmwOper:{
+	context->setIsSave(true);
+	Value* ans1 = op1->codeGen(context);
+	context->setIsSave(false);
+	Value* ans2 = op2->codeGen(context);
+	return new AtomicRMWInst(bop, ans1, ans2, AtomicOrdering::SequentiallyConsistent, 
+		SynchronizationScope::CrossThread, context->getNowBlock());
+}
+Next:
 
 	if (opt == ".") {
 		bool save_bool = false;
@@ -211,7 +280,6 @@ static Value* opt2_macro(CodeGenContext* context, Node* node) {
 			return NULL;
 		}
 		string struct_name = ans1_type->getPointerElementType()->getStructName();
-		// errs() << "符号: " << struct_name << "\n"; 
 		id* i = context->st->find(struct_name);
 		if (i == NULL)  {
 			errs() << "符号未找到: " << struct_name << "\n"; 
@@ -220,53 +288,57 @@ static Value* opt2_macro(CodeGenContext* context, Node* node) {
 			errs() << "‘.’运算前，符号表错误\n"; 
 		}
 		StructModel* sm = (StructModel*)(i->data);
-		// errs() << "ans2: " << ans2 << "\n";
 		int n = sm->find(ans2);
  
-		// Constant* zero = Constant::getNullValue(Type::getInt64Ty(*(context->getContext())));
 		ConstantInt* zero = ConstantInt::get(Type::getInt32Ty(*(context->getContext())), 0);
 		ConstantInt* num = ConstantInt::get(Type::getInt32Ty(*(context->getContext())), n);
-		// errs() << "0 -> " << *zero << "\n";
-		// errs() << n << " -> " << *num << "\n";
     	std::vector<Value*> indices;
     	indices.push_back(zero); 
     	indices.push_back(num);
 
-    	// Type *t = GetElementPtrInst::getIndexedType(ans1->getType(), indices);
-    	// errs() << "type : " << *(ans1->getType()->getPointerElementType()) << "\n";
-    	// errs() << "type : " << *t << "\n";
 		GetElementPtrInst* ptr = GetElementPtrInst::Create(ans1, indices, "", context->getNowBlock());
 		if (save_bool) return ptr;
 		return new LoadInst(ptr, "", false, context->getNowBlock());			
 	}
 
+	Value* ans1 = op1->codeGen(context);
+	Value* ans2 = op2->codeGen(context);
+
 	Instruction::BinaryOps instr;
-	if (opt == "+") { instr = Instruction::Add;  goto binOper; }
-	if (opt == "-") { instr = Instruction::Sub;  goto binOper; }
-	if (opt == "*") { instr = Instruction::Mul;  goto binOper; }
-	if (opt == "/") { instr = Instruction::SDiv; goto binOper; }
+	if (ans1->getType()->isIntegerTy() && ans2->getType()->isIntegerTy() ) { // 还需考虑整数位长度
+		if (opt == "+") { instr = Instruction::Add;  goto binOper; }
+		if (opt == "-") { instr = Instruction::Sub;  goto binOper; }
+		if (opt == "*") { instr = Instruction::Mul;  goto binOper; }
+		if (opt == "/") { instr = Instruction::SDiv; goto binOper; }
+		if (opt == "<<") { instr = Instruction::Shl; goto binOper; }
+		if (opt == ">>") { instr = Instruction::LShr; goto binOper; } // 注意，这里没处理有符号数和无符号数的问题 AShr(arithmetic)
+		if (opt == "&") { instr = Instruction::And; goto binOper; }
+		if (opt == "|") { instr = Instruction::Or; goto binOper; }
+		if (opt == "^") { instr = Instruction::Xor; goto binOper; }
+	} else {
+		normalize_type(ans1, ans2, context->getNowBlock());
+		if (opt == "+") { instr = Instruction::FAdd;  goto binOper; }
+		if (opt == "-") { instr = Instruction::FSub;  goto binOper; }
+		if (opt == "*") { instr = Instruction::FMul;  goto binOper; }
+		if (opt == "/") { instr = Instruction::FDiv; goto binOper; }
+	}
 
 	CmpInst::Predicate instp;
-	if (opt == "==") { instp = CmpInst::Predicate::ICMP_EQ;  goto cmpOper; } 
-	if (opt == "!=") { instp = CmpInst::Predicate::ICMP_NE;  goto cmpOper; } 
-	if (opt == "<=") { instp = CmpInst::Predicate::ICMP_SLE; goto cmpOper; } 
-	if (opt == ">=") { instp = CmpInst::Predicate::ICMP_SGE; goto cmpOper; } 
-	if (opt == "<")  { instp = CmpInst::Predicate::ICMP_SLT; goto cmpOper; } 
-	if (opt == ">")  { instp = CmpInst::Predicate::ICMP_SGT; goto cmpOper; } 
+	if (ans1->getType()->isIntegerTy() && ans2->getType()->isIntegerTy() ) {
+		if (opt == "==") { instp = CmpInst::Predicate::ICMP_EQ;  goto cmpOper; } 
+		if (opt == "!=") { instp = CmpInst::Predicate::ICMP_NE;  goto cmpOper; } 
+		if (opt == "<=") { instp = CmpInst::Predicate::ICMP_SLE; goto cmpOper; } 
+		if (opt == ">=") { instp = CmpInst::Predicate::ICMP_SGE; goto cmpOper; } 
+		if (opt == "<")  { instp = CmpInst::Predicate::ICMP_SLT; goto cmpOper; } 
+		if (opt == ">")  { instp = CmpInst::Predicate::ICMP_SGT; goto cmpOper; } 
+	}
 	return NULL;
 
 binOper:
-	// errs() << opt << ":\t" << *(op1->codeGen(context)) << " " << *(op2->codeGen(context)) << "\n";
-	return BinaryOperator::Create(instr, op1->codeGen(context), 
-		op2->codeGen(context), "", context->getNowBlock());
+	return BinaryOperator::Create(instr, ans1, ans2, "", context->getNowBlock());
 
 cmpOper:
-	Value* ans1 = op1->codeGen(context);
-	Value* ans2 = op2->codeGen(context);
-	// errs() << opt << ":\t" << *ans1 << " " << *ans2 << "\n";
-	return CmpInst::Create(Instruction::ICmp, instp, 
-		ans1, ans2, 
-		"", context->getNowBlock());
+	return CmpInst::Create(Instruction::ICmp, instp, ans1, ans2, "", context->getNowBlock());
 }
 
 static Value* struct_macro(CodeGenContext* context, Node* node) {
@@ -315,6 +387,7 @@ extern const FuncReg macro_funcs[] = {
 	{"struct",   struct_macro},
 	{"set",      set_macro},
 	{"call",     call_macro},
+	{"opt1",     opt1_macro},
 	{"opt2",     opt2_macro},
 	{"for",      for_macro},
 	{"while",    while_macro},
