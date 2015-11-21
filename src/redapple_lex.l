@@ -89,7 +89,7 @@ char* makestring(const char* data, int len, int s);
     /* 宏运算符 */
 "@"                     return '@';
 ",@"                    return MBK;
-
+"`"                     return '`';
     /* 下面声明要用到的关键字 */
 
     /* 控制流 */

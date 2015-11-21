@@ -82,7 +82,7 @@ void yyerror(const char *s);
 %type <nodes> new_expr
 %type <nodes> var_exp
 %type <nodes> macro_call_args
-
+%type <nodes> list full_list
 
 
 
@@ -125,6 +125,7 @@ def_statement : var_def ';' { $$ = $1; }
               | func_def 
               | marco_def
               | macro_call
+              | '`' full_list { $$ = $2; }
               | def_module_statement 
               | func_def_xs func_def { $$ = $2; $2->addBrother(Node::Create($1)); } 
               | IMPORT STRING { $$ = Node::make_list(2, IDNode::Create("import"), IDNode::Create($2) ); }
@@ -147,7 +148,6 @@ statement : def_statement
           | dountil_state
           | for_state
           | return_state
-          | macro_call ';'
           ;
 
 if_state : IF '(' expr ')' statement { $$ = Node::make_list(3, IDNode::Create("if"), $3, $5); }
@@ -207,26 +207,27 @@ func_def_args : var_def { $$ = Node::Create(Node::Create($1)); }
               | %empty  { $$ = Node::Create(); }
               ;
 
+
+new_expr : NEW types { $$ = Node::make_list(3, IDNode::Create("new"), $2, Node::Create()); }
+         | NEW types '(' call_args ')'  { $$ = Node::make_list(3, IDNode::Create("new"), $2, Node::Create($4)); }
+         | new_expr '[' call_args ']' { $$ = $1; $1->addBrother(Node::Create($3)); }
+         ;
+
 numeric : INTEGER { $$ = IntNode::Create($1); }
         | DOUBLE { $$ = FloatNode::Create($1); }
         ;
 
-new_expr : NEW types { $$ = Node::make_list(2, IDNode::Create("new"), $2); }
-         | NEW types '(' call_args ')'  { $$ = Node::make_list(2, IDNode::Create("new"), $2, $4); }
-         | new_expr '[' expr ']' { $$ = $1; $1->addBrother(Node::getList($3)); }
-         ;
-
 var_exp : ID { $$ = IDNode::Create($1); }
-        | '(' expr ')'  /* ( expr ) */  { $$ = $2; }
+        | numeric 
+        | STRING { $$ = StringNode::Create($1); }
+        | KWS_TSZ { $$ = IDNode::Create($1); }
         ;
 
 expr : expr '=' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("="), $1, $3); }
      | expr '(' call_args ')' { $$ = Node::make_list(2, IDNode::Create("call"), $1); $$->addBrother($3); }
      | expr '[' call_args ']' { $$ = Node::make_list(2, IDNode::Create("select"), $1); $$->addBrother($3); } 
-     | numeric 
-     | STRING { $$ = StringNode::Create($1); }
-     | KWS_TSZ 
      | new_expr
+     | var_exp
      | expr CEQ expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("=="), $1, $3); }
      | expr CNE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("!="), $1, $3); }
      | expr CLE expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::Create("<="), $1, $3); }
@@ -259,7 +260,7 @@ expr : expr '=' expr { $$ = Node::make_list(4, IDNode::Create("opt2"), IDNode::C
      | SS expr { $$ = Node::make_list(3, IDNode::Create("opt1"), IDNode::Create("--"), $2); }
      | expr PP { $$ = Node::make_list(3, IDNode::Create("opt1"), IDNode::Create("b++"), $2); }
      | expr SS { $$ = Node::make_list(3, IDNode::Create("opt1"), IDNode::Create("b--"), $2); }
-     | var_exp
+     | '(' expr ')'  /* ( expr ) */  { $$ = $2; }
      ;
 
 call_arg  :  expr { $$ = $1;  }
@@ -277,6 +278,17 @@ macro_call_args : %empty { $$ = Node::Create(); }
                 | macro_call_args ',' call_arg  { $$ = $1; $$->addBrother(Node::getList($3)); }
                 | macro_call_args ',' macro_call  { $$ = $1; $$->addBrother(Node::getList($3)); }
                 ;
+
+list : var_exp
+     | full_list
+     | '!' types { $$ = $2; }
+     | list var_exp { $$ = $1; $$->addBrother($2); }
+     | list full_list { $$ = $1; $$->addBrother($2); }
+     | list '!' types  { $$ = $1; $$->addBrother($3); }
+     ;
+
+full_list : '(' list ')' { $$ = Node::Create($2); }
+          ;
 %%
 
 void yyerror(const char* s){

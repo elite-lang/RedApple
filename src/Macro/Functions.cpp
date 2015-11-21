@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-21 16:44:21
+* @Last Modified time: 2015-11-22 07:05:01
 */
 
 #include "CodeGenContext.h"
@@ -77,6 +77,23 @@ static Value* set_macro(CodeGenContext* context, Node* node) {
 	}
 	new StoreInst(init_expr, alloc, false, context->getNowBlock());
 	return alloc;
+}
+
+static Value* select_macro(CodeGenContext* context, Node* node) {
+	context->setIsSave(true);
+	Value* value = node->codeGen(context);
+	context->setIsSave(false);
+
+    Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(*(context->getContext())));
+	std::vector<Value*> args;
+	for (Node* p = node->getNext(); p != NULL; p = p->getNext()) {
+		Value* v = p->codeGen(context);
+		if (v != NULL) {
+			args.push_back(v);
+			args.push_back(zero);
+		}
+	}
+	return GetElementPtrInst::CreateInBounds(value, args, "", context->getNowBlock());
 }
 
 static Value* call_macro(CodeGenContext* context, Node* node) {
@@ -355,21 +372,29 @@ static Value* return_macro(CodeGenContext* context, Node* node) {
 
 static Value* new_macro(CodeGenContext* context, Node* node) {
 	Type* ITy = Type::getInt64Ty(*(context->getContext()));
-	id* i = context->FindST(node);
-	Type* t;
-	if (i->type == type_t) t = (Type*)(i->data);
-	else if (i->type == struct_t) {
-		StructModel* sm = (StructModel*)(i->data);
-		t = sm->getStruct(context);
-	} else { 
-		printf("Error: new的类型错误\n");
-		return NULL;
-	}
+	TypeNode* tn = (TypeNode*) node;
+	Type* t = context->FindSrcType(tn->getTypeName());
+
+	// 第二个参数，构造函数表
+	node = node->getNext();
+
+	// 第三个参数，维度信息
+	vector<Value*> v;
+	node = node->getNext();
+	if (node != NULL)
+		for (Node* p = node->getChild(); p != NULL; p = p->getNext()) {
+			v.push_back(p->codeGen(context));
+		}
 	Constant* AllocSize = ConstantExpr::getSizeOf(t);
 	BasicBlock* bb = context->getNowBlock();
-	Instruction* Malloc = CallInst::CreateMalloc(bb, ITy, t, AllocSize);
-	Malloc->insertAfter(&(bb->back()));
-	return Malloc;
+	if (v.size() == 0) {
+		Instruction* Malloc = CallInst::CreateMalloc(bb, ITy, t, AllocSize);
+		Malloc->insertAfter(&(bb->back()));
+		return Malloc;
+	} else {
+		// 这里实现自定义的数组malloc函数
+		// CallInst::Create()
+	}
 }
 
 extern Node* parseFile(const char* path);
@@ -387,6 +412,7 @@ extern const FuncReg macro_funcs[] = {
 	{"struct",   struct_macro},
 	{"set",      set_macro},
 	{"call",     call_macro},
+	{"select",   select_macro},
 	{"opt1",     opt1_macro},
 	{"opt2",     opt2_macro},
 	{"for",      for_macro},
