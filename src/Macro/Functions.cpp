@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-22 15:07:32
+* @Last Modified time: 2015-11-22 16:45:51
 */
 
 #include "CodeGenContext.h"
@@ -27,6 +27,10 @@ static Value* function_macro(CodeGenContext* context, Node* node) {
 
 	// 第四个参数, 代码块
 	node = node->getNext();
+	if (node->getChild() == NULL) {
+		errs() << "function:" << function_name << '\n';
+		return F;
+	}
 	BasicBlock* bb = context->createBlock(F); // 创建新的Block
 
 	// 特殊处理参数表, 这个地方特别坑，你必须给每个函数的参数

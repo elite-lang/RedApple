@@ -267,7 +267,7 @@ call_arg  :  expr { $$ = $1;  }
           |  ID '=' expr { $$ = Node::make_list(3, IDNode::Create("="), $1, $3); }
           ;
 
-call_args : %empty { $$ = Node::Create(); }
+call_args : %empty { $$ = NULL; }
           | call_arg { $$ = Node::getList($1); }
           | call_args ',' call_arg  { $$ = $1; $$->addBrother(Node::getList($3)); }
           ;
