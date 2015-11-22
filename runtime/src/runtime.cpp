@@ -2,13 +2,14 @@
 * @Author: sxf
 * @Date:   2015-11-15 10:19:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-19 09:24:00
+* @Last Modified time: 2015-11-22 14:40:24
 */
 
 #include <string>
 #include <map>
 #include <vector>
 #include <cstdio>
+#include <malloc.h>
 #include <cstdarg>
 #include "dyncall.h"
 
@@ -145,6 +146,30 @@ extern "C" {
 			}
 		return ans;
 	}
+
+	void* malloc_array(int size, ...) {
+		va_list argp;                   /* 定义保存函数参数的结构 */    
+	    va_start( argp, size );
+	    std::vector<int> wd;
+	    int v; int num = 1;
+		do {
+			v = va_arg(argp, int);
+			if (v != 0) {
+				wd.push_back(v);
+				num *= v;
+			}
+		} while (v != 0);
+	    va_end( argp );                                   /* 将argp置为NULL */    
+
+		int full_size = wd.size()*sizeof(int) + size* num;
+		int* ans = (int*) malloc(full_size);
+		int* i = ans;
+		for (auto p = wd.begin(); p != wd.end(); ++p, ++i) {
+			*i = *p;
+		}
+		return (void*) i;
+	}
+
 }
 
 

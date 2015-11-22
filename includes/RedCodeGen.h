@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:55:30
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-17 11:19:15
+* @Last Modified time: 2015-11-22 10:19:27
 * 
 * 代码生成部分的引导类
 */
@@ -41,7 +41,8 @@ private:
 	void register_printf(llvm::Module *module);
 	void register_malloc(llvm::Module *module);
 	void register_echo(CodeGenContext* context, llvm::Function* printfFn);
-
+	void register_malloc_array(Module *module);
+	
 	// 处理Meta数据相关函数
 	void register_elite_meta_function(llvm::Module *module);
 	void register_elite_meta_struct(llvm::Module *module);

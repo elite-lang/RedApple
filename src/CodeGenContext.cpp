@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-21 14:33:40
+* @Last Modified time: 2015-11-22 12:55:08
 */
 
 #include "CodeGenContext.h"
@@ -202,7 +202,10 @@ Type* CodeGenContext::FindType(string& name) {
 	}
 	Type* t = FindSrcType(find_name);
 	if (t->isStructTy()) t = t->getPointerTo();
-	if (d > 1) t = t->getPointerTo();
+	if (d > 1) {
+		// t = ArrayType::get(t, 0);
+		t = t->getPointerTo();
+	}
 	return t;
 }
 

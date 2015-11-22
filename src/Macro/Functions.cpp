@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-22 07:05:01
+* @Last Modified time: 2015-11-22 15:07:32
 */
 
 #include "CodeGenContext.h"
@@ -14,7 +14,6 @@
 #include <stdio.h>
 
 static Value* function_macro(CodeGenContext* context, Node* node) {
-	printf("function work\n");
 	// 第二个参数, 函数名
 	node = node->getNext();
 	std::string function_name = node->getStr();
@@ -80,20 +79,28 @@ static Value* set_macro(CodeGenContext* context, Node* node) {
 }
 
 static Value* select_macro(CodeGenContext* context, Node* node) {
-	context->setIsSave(true);
-	Value* value = node->codeGen(context);
-	context->setIsSave(false);
+	bool save_bool = false;
+	if (context->isSave()) {
+		save_bool = true;
+		context->setIsSave(false);
+	}
 
-    Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(*(context->getContext())));
-	std::vector<Value*> args;
+	Value* value = node->codeGen(context);
+	Type* t_i32 = IntegerType::getInt32Ty(*(context->getContext()));
+	Constant* zero = Constant::getNullValue(t_i32);
+	BasicBlock* bb = context->getNowBlock();
+
+	std::vector<Value*> args; 
 	for (Node* p = node->getNext(); p != NULL; p = p->getNext()) {
 		Value* v = p->codeGen(context);
 		if (v != NULL) {
 			args.push_back(v);
-			args.push_back(zero);
 		}
 	}
-	return GetElementPtrInst::CreateInBounds(value, args, "", context->getNowBlock());
+
+	Value* ptr = GetElementPtrInst::Create(value, args, "", context->getNowBlock());
+	if (save_bool) return ptr;
+	return new LoadInst(ptr, "", false, context->getNowBlock());		
 }
 
 static Value* call_macro(CodeGenContext* context, Node* node) {
@@ -379,21 +386,28 @@ static Value* new_macro(CodeGenContext* context, Node* node) {
 	node = node->getNext();
 
 	// 第三个参数，维度信息
-	vector<Value*> v;
+	vector<Value*> args;
 	node = node->getNext();
 	if (node != NULL)
 		for (Node* p = node->getChild(); p != NULL; p = p->getNext()) {
-			v.push_back(p->codeGen(context));
+			args.push_back(p->codeGen(context));
 		}
 	Constant* AllocSize = ConstantExpr::getSizeOf(t);
 	BasicBlock* bb = context->getNowBlock();
-	if (v.size() == 0) {
+	if (args.size() == 0) {
 		Instruction* Malloc = CallInst::CreateMalloc(bb, ITy, t, AllocSize);
 		Malloc->insertAfter(&(bb->back()));
 		return Malloc;
 	} else {
 		// 这里实现自定义的数组malloc函数
-		// CallInst::Create()
+		ConstantInt* zero = ConstantInt::get(Type::getInt64Ty(*(context->getContext())), 0);
+		args.push_back(zero);
+		string func_name = "malloc_array";
+		CallInst *call = CallInst::Create(context->getFunction(func_name), 
+			args, "", bb);
+		// t = ArrayType::get(t, 0);
+		t = t->getPointerTo();
+		return CastInst::CreatePointerCast(call, t, "", bb);
 	}
 }
 

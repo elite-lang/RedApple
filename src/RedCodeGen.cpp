@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:57:41
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-17 20:39:18
+* @Last Modified time: 2015-11-22 12:33:22
 */
 
 #include "RedCodeGen.h"
@@ -96,7 +96,8 @@ void RedCodeGen::Make(Node* node, const char* outfile_name, const char* module_n
     // register_malloc(M.get());
     register_printf(M.get());
     register_functioncall(M.get());
-
+    register_malloc_array(M.get());
+    
     // 正式流程
     context->Init();
 	context->MacroMake(node);
@@ -263,4 +264,20 @@ void RedCodeGen::register_elite_meta_init(Module *module) {
     func->setCallingConv(CallingConv::C);
 
     BasicBlock::Create(module->getContext(), "entry", func);
+}
+
+void RedCodeGen::register_malloc_array(Module *module) {
+    std::vector<Type*> arg_types;
+    arg_types.push_back(Type::getInt64Ty(module->getContext()));
+
+    FunctionType* meta_type =
+        FunctionType::get(
+            Type::getVoidTy(module->getContext())->getPointerTo(), arg_types, true);
+
+    Function *func = Function::Create(
+                meta_type, Function::ExternalLinkage,
+                Twine("malloc_array"),
+                module
+           );
+    func->setCallingConv(CallingConv::C);
 }
