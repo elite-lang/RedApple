@@ -2,15 +2,15 @@
 * @Author: sxf
 * @Date:   2015-11-19 13:40:13
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-22 12:54:46
+* @Last Modified time: 2015-11-22 22:15:23
 */
 
 #include "TypeNode.h"
 #include "stdio.h"
 #include "CodeGenContext.h"
 
-TypeNode* TypeNode::Create(const char* name, bool is_const) {
-	return new TypeNode(name, is_const);
+TypeNode* TypeNode::Create(const char* name, bool is_const, bool is_source) {
+	return new TypeNode(name, is_const, is_source);
 }
 
 Type* TypeNode::typeGen(CodeGenContext* context) {
@@ -51,8 +51,9 @@ void TypeNode::printSelf() {
 	printf("%s", str.c_str());
 }
 
-TypeNode::TypeNode(const char* name, bool is_const) {
+TypeNode::TypeNode(const char* name, bool is_const, bool is_source) {
 	this->str = name;
 	this->name = name;
 	this->is_const = is_const;
+	this->is_source = is_source;
 }

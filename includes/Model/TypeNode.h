@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-19 11:22:12
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-19 19:29:57
+* @Last Modified time: 2015-11-22 22:16:06
 */
 
 #ifndef TYPE_NODE_H
@@ -18,7 +18,7 @@ namespace llvm {
 
 class TypeNode: public Node {
 public: 
-	static TypeNode* Create(const char* name, bool is_const = false);
+	static TypeNode* Create(const char* name, bool is_const = false, bool is_source = false);
 	Type* typeGen(CodeGenContext* context); 
 	void addDimension();
 	bool isArray() {
@@ -37,8 +37,9 @@ protected:
 	string str;	
 	string name;
 	bool is_const = false;
+	bool is_source = false; // 这个只在函数是结构体时有用，来设置真正的原型类型
 	int dimension = 0;
-	TypeNode(const char* name, bool is_const = false);
+	TypeNode(const char* name, bool is_const = false, bool is_source = false);
 };
 
 

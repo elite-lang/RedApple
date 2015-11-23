@@ -122,6 +122,7 @@ char* makestring(const char* data, int len, int s);
 "const"                 return CONST;
 "packed"                return PACKED;
 "volatile"              return VOLATILE;
+"woven"                 return WOVEN;
 
 "try"|"catch"|"finally"|"throw"  SAVE_TOKEN; return KWS_ERROR; /* 异常控制 */
 

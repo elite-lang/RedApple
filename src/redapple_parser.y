@@ -42,7 +42,7 @@ void yyerror(const char *s);
 %token <token> PP SS LF RF AND OR '!' NSP PE SE ME DE AE OE XE MODE FLE FRE SZ
 %token <str> STRING CHAR
 %token <token> IF ELSE WHILE DO UNTIL GOTO FOR FOREACH 
-%token <token> DELEGATE DEF DEFINE IMPORT USING NAMESPACE DEFMACRO CONST PACKED VOLATILE
+%token <token> DELEGATE DEF DEFINE IMPORT USING NAMESPACE DEFMACRO CONST PACKED VOLATILE WOVEN
 %token <token> RETURN NEW THIS 
 %token <str> KWS_EXIT KWS_ERROR KWS_TSZ KWS_STRUCT KWS_FWKZ KWS_FUNC_XS KWS_TYPE
 
@@ -82,7 +82,7 @@ void yyerror(const char *s);
 %type <nodes> new_expr
 %type <nodes> var_exp
 %type <nodes> macro_call_args
-%type <nodes> list full_list
+%type <nodes> list full_list woven_state
 
 
 
@@ -169,12 +169,17 @@ for_state : FOR '(' expr ';' expr ';' expr ')' statement { $$ = Node::make_list(
 return_state : RETURN ';' { $$ = IDNode::Create("return"); }
              | RETURN expr ';' { $$ = IDNode::Create("return"); $$->addBrother($2); }              
 
+woven_state : WOVEN ID '(' call_args ')' { $$ = Node::make_list(2, IDNode::Create("woven"), IDNode::Create($2)); $$->addBrother($4); }
+            ;
+
 block : '{' statements '}' { $$ = Node::Create($2); }
       | '{' '}' { $$ = Node::Create(); }
       ; 
 
-types : ID { $$ = TypeNode::Create($1); }
+types : ID { $$ = TypeNode::Create($1, false); }
       | CONST ID { $$ = TypeNode::Create($2, true); }
+      | '*' ID { $$ = TypeNode::Create($2, false, true); }
+      | CONST '*' ID { $$ = TypeNode::Create($3, true, true); }
       | types SZ { $$ = $1; ((TypeNode*)$1)->addDimension(); }
       ;
 
