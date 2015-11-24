@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:41:19
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-24 14:51:04
+* @Last Modified time: 2015-11-24 21:39:32
 */
 
 #include "llcg_llvm.h"
@@ -10,6 +10,12 @@
 #include "llvm_value.h"
 #include "llvm_type.h"
 
+llcg_llvm::llcg_llvm() {
+}
+
+llcg_llvm::~llcg_llvm() {
+
+}
 
 LValue llcg_llvm::FuncType(FunctionModel* fmodel) {
 
@@ -51,15 +57,15 @@ void   llcg_llvm::FunctionBodyEnd() {
 } // 处理函数结束
 
 LValue llcg_llvm::Call(FunctionModel* fmodel, vector<LValue>& args) {
-	LLVMValue _func = LLVALUE(fmodel->getFunction());
+	// LLVMValue _func = LLVALUE(fmodel->getFunction());
 	vector<Value*> fargs;
 	for (auto p : args) {
 		LLVMValue t = LLVALUE(p);
 		fargs.push_back(*t);
 	}
 
-	CallInst *call = CallInst::Create(_func, fargs, "", nowBlock);
-	return LValue(new llvm_value(call));
+	// CallInst *call = CallInst::Create(_func, fargs, "", nowBlock);
+	// return LValue(new llvm_value(call));
 } // 返回CallInst
 
 LValue llcg_llvm::Call(LValue func, vector<LValue>& args) {
@@ -78,40 +84,252 @@ LValue llcg_llvm::Struct(StructModel* smodel) {
 
 } // 返回StructType
 
-LValue llcg_llvm::Struct(string& name, vector<LValue>& types) {
+LValue llcg_llvm::Struct(LValue _struct, vector<LValue>& types) {
+	std::vector<Type*> type_vec;
+	for (auto p : types) {
+		Type* t = *LLTYPE(p);
+		type_vec.push_back(t);
+	}
+	Type* struct_type = *LLTYPE(_struct);
+	StructType* st = dyn_cast<StructType>(struct_type);
+	st->setBody(type_vec);
+	return LValue(new llvm_type(st));
+}
 
+LValue llcg_llvm::DeclareStruct(string& name) {
+	StructType* st = StructType::create(context, name);
+	return LValue(new llvm_type(st));
 }
 
 
 LValue llcg_llvm::DefVar(LValue var_type, string& name) {
+	Type* t = *LLTYPE(var_type);
+	AllocaInst *alloc = new AllocaInst(t, name, nowBlock);
+	return LValue(new llvm_value(alloc));
+}
 
+LValue llcg_llvm::DefVar(LValue var_type, string& name, LValue init) {
+	Type* t = *LLTYPE(var_type);
+	Value* v = *LLVALUE(init);
+	AllocaInst *alloc = new AllocaInst(t, name, nowBlock);
+	new StoreInst(v, alloc, false, nowBlock);
+	return LValue(new llvm_value(alloc));
 }
 
 LValue llcg_llvm::DefGlobalVar(LValue var_type, string& name) {
+	Type* t = *LLTYPE(var_type);
+	Value* v = new GlobalVariable(*M, t, false, GlobalValue::LinkageTypes::ExternalLinkage, NULL, name);
+	return LValue(new llvm_value(v));
 
+}
+
+LValue llcg_llvm::DefGlobalVar(LValue var_type, string& name, LValue init) {
+	Type* t = *LLTYPE(var_type);
+	Value* v = *LLVALUE(init);
+	Value* g = new GlobalVariable(*M, t, false, GlobalValue::LinkageTypes::ExternalLinkage, 
+									dyn_cast<Constant>(v), name);
+	return LValue(new llvm_value(g));
 }
 
 LValue llcg_llvm::Load(LValue var_addr) {
-
+	Value* ptr = *LLVALUE(var_addr);
+	Value* v = new LoadInst(ptr, "", false, nowBlock);		
+	return LValue(new llvm_value(v));
 }
 
 LValue llcg_llvm::Store(LValue var_addr, LValue value) {
-
+	Value* addr = *LLVALUE(var_addr);
+	Value* v = *LLVALUE(value);
+	new StoreInst(v, addr, false, nowBlock);
+	return value;
 }
 
 LValue llcg_llvm::Opt1(string& opt, LValue value) {
+	Value* ans = *LLVALUE(value);
 
+	AtomicRMWInst::BinOp bop; 
+	Value* one = ConstantInt::get(Type::getInt64Ty(context), 1); 
+	Value* ret;
+	if (opt == "~") { ret = BinaryOperator::CreateNot(ans, "", nowBlock); 
+						return LValue(new llvm_value(ret));  }
+	if (opt == "++") { bop = AtomicRMWInst::BinOp::Add;  goto selfWork; }
+	if (opt == "--") { bop = AtomicRMWInst::BinOp::Sub;  goto selfWork; }
+	if (opt == "b++") { bop = AtomicRMWInst::BinOp::Add; goto saveWork; }
+	if (opt == "b--") { bop = AtomicRMWInst::BinOp::Sub; goto saveWork; }
+
+selfWork:
+	new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent, 
+		SynchronizationScope::CrossThread, nowBlock);
+	ret = new LoadInst(ans, "", false, nowBlock);	
+	return LValue(new llvm_value(ret));
+
+saveWork:
+	ret = new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent, 
+		SynchronizationScope::CrossThread, nowBlock);
+	return LValue(new llvm_value(ret));
 }
+
+static Value* getCast(Value* v, Type* t, BasicBlock* bb) {
+	Instruction::CastOps cops = CastInst::getCastOpcode(v, true, t, true);
+	CastInst::Create(cops, v, t, "", bb);
+}
+
+static void normalize_type(Value*& v1, Value*& v2, BasicBlock* bb) {
+	Type* t1 = v1->getType();
+	Type* t2 = v2->getType();
+	if (t1->isDoubleTy() || t2->isDoubleTy()) {
+		if (!t1->isDoubleTy()) v1 = getCast(v1, t2, bb);
+		if (!t2->isDoubleTy()) v2 = getCast(v2, t1, bb);
+		return;
+	}
+	if (t1->isFloatTy() || t2->isFloatTy()) {
+		if (!t1->isFloatTy()) v1 = getCast(v1, t2, bb);
+		if (!t2->isFloatTy()) v2 = getCast(v2, t1, bb);
+		return;
+	}
+}
+
 
 LValue llcg_llvm::Opt2(string& opt, LValue value1, LValue value2) {
+	Value* ans1 = *LLVALUE(value1);
+	Value* ans2 = *LLVALUE(value2);
+	Type* t1 = ans1->getType();
+	Type* t2 = ans2->getType();
+	Instruction::BinaryOps instr;
+	if (t1->isIntegerTy() && t2->isIntegerTy() && t1->getIntegerBitWidth()==t2->getIntegerBitWidth() ) {
+		if (opt == "+") { instr = Instruction::Add;  goto binOper; }
+		if (opt == "-") { instr = Instruction::Sub;  goto binOper; }
+		if (opt == "*") { instr = Instruction::Mul;  goto binOper; }
+		if (opt == "/") { instr = Instruction::SDiv; goto binOper; }
+		if (opt == "<<") { instr = Instruction::Shl; goto binOper; }
+		if (opt == ">>") { instr = Instruction::LShr; goto binOper; } // 注意，这里没处理有符号数和无符号数的问题 AShr(arithmetic)
+		if (opt == "&") { instr = Instruction::And; goto binOper; }
+		if (opt == "|") { instr = Instruction::Or; goto binOper; }
+		if (opt == "^") { instr = Instruction::Xor; goto binOper; }
+	} else {
+		normalize_type(ans1, ans2, nowBlock);
+		if (opt == "+") { instr = Instruction::FAdd;  goto binOper; }
+		if (opt == "-") { instr = Instruction::FSub;  goto binOper; }
+		if (opt == "*") { instr = Instruction::FMul;  goto binOper; }
+		if (opt == "/") { instr = Instruction::FDiv; goto binOper; }
+	}
 
+binOper:
+	Value* ret = BinaryOperator::Create(instr, ans1, ans2, "", nowBlock);
+	return LValue(new llvm_value(ret));
 }
 
-LValue llcg_llvm::For(LValue cond, LValue init, LValue pd, LValue work, LValue statement) {
-	Value* condition = *LLVALUE(cond);
-	Value* _init = *LLVALUE(init);
-	Value* _pd   = *LLVALUE(pd);
-	Value* _work = *LLVALUE(work);
+LValue llcg_llvm::Cmp(string& opt, LValue value1, LValue value2) {
+	Value* ans1 = *LLVALUE(value1);
+	Value* ans2 = *LLVALUE(value2);
+	Type* t1 = ans1->getType();
+	Type* t2 = ans2->getType();
+	CmpInst::Predicate instp;
+	if (t1->isIntegerTy() && t2->isIntegerTy() && t1->getIntegerBitWidth()==t2->getIntegerBitWidth() ) {
+		if (opt == "==") { instp = CmpInst::Predicate::ICMP_EQ;  goto cmpOper; } 
+		if (opt == "!=") { instp = CmpInst::Predicate::ICMP_NE;  goto cmpOper; } 
+		if (opt == "<=") { instp = CmpInst::Predicate::ICMP_SLE; goto cmpOper; } 
+		if (opt == ">=") { instp = CmpInst::Predicate::ICMP_SGE; goto cmpOper; } 
+		if (opt == "<")  { instp = CmpInst::Predicate::ICMP_SLT; goto cmpOper; } 
+		if (opt == ">")  { instp = CmpInst::Predicate::ICMP_SGT; goto cmpOper; } 
+	} else {
+		normalize_type(ans1, ans2, nowBlock);
+		if (opt == "==") { instp = CmpInst::Predicate::FCMP_OEQ;  goto cmpOper; } 
+		if (opt == "!=") { instp = CmpInst::Predicate::FCMP_ONE;  goto cmpOper; } 
+		if (opt == "<=") { instp = CmpInst::Predicate::FCMP_OLE; goto cmpOper; } 
+		if (opt == ">=") { instp = CmpInst::Predicate::FCMP_OGE; goto cmpOper; } 
+		if (opt == "<")  { instp = CmpInst::Predicate::FCMP_OLT; goto cmpOper; } 
+		if (opt == ">")  { instp = CmpInst::Predicate::FCMP_OGT; goto cmpOper; }
+	}
+
+cmpOper:
+	Value* ret = CmpInst::Create(Instruction::ICmp, instp, ans1, ans2, "", nowBlock);
+	return LValue(new llvm_value(ret));
+}
+
+LValue llcg_llvm::Assignment(string& opt, LValue value1, LValue value2) {
+	Value* ans1 = *LLVALUE(value1);
+	Value* ans2 = *LLVALUE(value2);
+	if (opt == "=") {
+		Value* ret = new StoreInst(ans2, ans1, false, nowBlock);
+		return LValue(new llvm_value(ret));
+	}
+	AtomicRMWInst::BinOp bop; 
+	if (opt == "+=") { bop = AtomicRMWInst::BinOp::Add; goto rmwOper; }
+	if (opt == "-=") { bop = AtomicRMWInst::BinOp::Sub; goto rmwOper; }
+	if (opt == "&=") { bop = AtomicRMWInst::BinOp::And; goto rmwOper; }
+	if (opt == "|=") { bop = AtomicRMWInst::BinOp::Or;  goto rmwOper; }
+	if (opt == "^=") { bop = AtomicRMWInst::BinOp::Xor; goto rmwOper; }
+rmwOper:
+	Value* ret = new AtomicRMWInst(bop, ans1, ans2, AtomicOrdering::SequentiallyConsistent, 
+		SynchronizationScope::CrossThread, nowBlock);
+	return LValue(new llvm_value(ret));
+}
+
+LValue llcg_llvm::Dot(LValue value, int num) {
+	Value* ans = *LLVALUE(value);
+	ConstantInt* zero = ConstantInt::get(Type::getInt32Ty(context), 0);
+	ConstantInt* n    = ConstantInt::get(Type::getInt32Ty(context), num);
+	std::vector<Value*> indices;
+	indices.push_back(zero); 
+	indices.push_back(n);
+
+	GetElementPtrInst* ptr = GetElementPtrInst::Create(ans, indices, "", nowBlock);
+	return LValue(new llvm_value(ptr));
+}
+
+LValue llcg_llvm::Select(LValue value, vector<LValue>& args) {
+	Value* v = *LLVALUE(value);
+	Value* len_array = CastInst::CreatePointerCast(v, Type::getInt64PtrTy(context));
+	Value* index;
+	if (args.size() != 0) {
+		index = *LLVALUE(args[0]);
+		for (int i = -2, j = 0; j < args.size()-1; --i, ++j) {
+			Value* len = new LoadInst(ptrMove(len_array, i), "", false, nowBlock);
+			index = BinaryOperator::Create(Instruction::Mul, index, len, "", nowBlock);
+			Value* other = *LLVALUE(args[j+1]);	
+			index = BinaryOperator::Create(Instruction::Add, index, other, "", nowBlock);
+		}
+	} else { errs() << "error index\n"; }
+
+	std::vector<Value*> indices;
+	indices.push_back(index);
+	GetElementPtrInst* ptr = GetElementPtrInst::Create(v, indices, "", nowBlock);
+	return LValue(new llvm_value(ptr));
+}
+
+GetElementPtrInst* llcg_llvm::ptrMove(Value* v, int n) {
+	std::vector<Value*> indices;
+	ConstantInt* num = ConstantInt::get(Type::getInt64Ty(context), n);
+	indices.push_back(num);
+	GetElementPtrInst* p1 = GetElementPtrInst::Create(v, indices, "", nowBlock);
+}
+
+
+void llcg_llvm::If(LValue cond, LValue father, LValue true_block, LValue false_block, bool isElseWork) {
+	Value* condition    = *LLVALUE(cond);
+	Value* _father      = *LLVALUE(father);
+	Value* _true_block  = *LLVALUE(true_block);
+	Value* _false_block = *LLVALUE(false_block);
+	BasicBlock* father_block  = dyn_cast<BasicBlock>(_father);
+	BasicBlock* _true_block_  = dyn_cast<BasicBlock>(_true_block);
+	BasicBlock* _false_block_ = dyn_cast<BasicBlock>(_false_block);
+
+	if (isElseWork) {
+		BasicBlock* end_block = createBlock();
+		BranchInst::Create(end_block, _true_block_);
+		BranchInst::Create(end_block, _false_block_);
+	} else {
+		BranchInst::Create(_false_block_, _true_block_);
+	}
+	BranchInst* branch = BranchInst::Create(_true_block_, _false_block_, condition, father_block);
+}
+
+void llcg_llvm::For(LValue cond, LValue init, LValue pd, LValue work, LValue statement) {
+	Value* condition  = *LLVALUE(cond);
+	Value* _init      = *LLVALUE(init);
+	Value* _pd        = *LLVALUE(pd);
+	Value* _work      = *LLVALUE(work);
 	Value* _statement = *LLVALUE(statement);
 	BasicBlock* init_block = dyn_cast<BasicBlock>(_init);
 	BasicBlock* end_block  = dyn_cast<BasicBlock>(_pd);
@@ -119,23 +337,34 @@ LValue llcg_llvm::For(LValue cond, LValue init, LValue pd, LValue work, LValue s
 	BasicBlock* do_block   = dyn_cast<BasicBlock>(_statement);
 	
 	BasicBlock* false_block = createBlock();
-
 	BranchInst* branch = BranchInst::Create(work_block, false_block, condition, end_block);
 	BranchInst::Create(end_block, init_block);
 	BranchInst::Create(do_block,  work_block);
 	BranchInst::Create(end_block, do_block);
+}
+
+void llcg_llvm::While(LValue cond, LValue father, LValue pd, LValue statement) {
+	Value* condition  = *LLVALUE(cond);
+	Value* _father    = *LLVALUE(father);
+	Value* _pd        = *LLVALUE(pd);
+	Value* _statement = *LLVALUE(statement);
+
+	BasicBlock* father_block = dyn_cast<BasicBlock>(_father);
+	BasicBlock* pd_block     = dyn_cast<BasicBlock>(_pd);
+	BasicBlock* true_block   = dyn_cast<BasicBlock>(_statement);
+
+	// 生成while循环
+	BasicBlock* false_block = createBlock();
+	BranchInst* branch = BranchInst::Create(true_block, false_block, condition, pd_block);
+	BranchInst::Create(pd_block, father_block);
+	BranchInst::Create(pd_block, true_block);
+}
+
+void llcg_llvm::DoWhile(LValue statement, LValue pd) {
 
 }
 
-LValue llcg_llvm::While(LValue pd, LValue statement) {
-
-}
-
-LValue llcg_llvm::DoWhile(LValue statement, LValue pd) {
-
-}
-
-LValue llcg_llvm::DoUntil(LValue statement, LValue pd) {
+void llcg_llvm::DoUntil(LValue statement, LValue pd) {
 
 }
 

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 10:53:22
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-24 14:48:08
+* @Last Modified time: 2015-11-24 20:10:52
 */
 
 #ifndef LLCG_H
@@ -36,17 +36,24 @@ public:
 	virtual LValue Call(FunctionModel* fmodel, vector<LValue>& args) = 0; // 返回CallInst
 	virtual LValue Call(LValue func, vector<LValue>& args) = 0;
 	virtual LValue Struct(StructModel* smodel) = 0; // 返回StructType
-	virtual LValue Struct(string& name, vector<LValue>& types) = 0;
+	virtual LValue Struct(LValue _struct, vector<LValue>& types) = 0;
+	virtual LValue DeclareStruct(string& name) = 0;
 	virtual LValue DefVar(LValue var_type, string& name) = 0; // 返回分配的地址
 	virtual LValue DefGlobalVar(LValue var_type, string& name) = 0;
+	virtual LValue DefGlobalVar(LValue var_type, string& name, LValue init) = 0;	
 	virtual LValue Load(LValue var_addr) = 0;
 	virtual LValue Store(LValue var_addr, LValue value) = 0;
 	virtual LValue Opt1(string& opt, LValue value) = 0;
 	virtual LValue Opt2(string& opt, LValue value1, LValue value2) = 0;
-	virtual LValue For(LValue cond, LValue init, LValue pd, LValue work, LValue statement) = 0;
-	virtual LValue While(LValue pd, LValue statement) = 0;
-	virtual LValue DoWhile(LValue statement, LValue pd) = 0;
-	virtual LValue DoUntil(LValue statement, LValue pd) = 0;
+	virtual LValue Cmp(string& opt, LValue value1, LValue value2) = 0;
+	virtual LValue Assignment(string& opt, LValue value1, LValue value2) = 0;
+	virtual LValue Dot(LValue value, int num) = 0;
+	virtual LValue Select(LValue value, vector<LValue>& args) = 0;
+	virtual void   If(LValue cond, LValue father, LValue true_block, LValue false_block, bool isElseWork) = 0;	
+	virtual void   For(LValue cond, LValue init, LValue pd, LValue work, LValue statement) = 0;
+	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement) = 0;
+	virtual void   DoWhile(LValue statement, LValue pd) = 0;
+	virtual void   DoUntil(LValue statement, LValue pd) = 0;
 	virtual LValue New(LValue var_type, vector<LValue>& args) = 0;
 	virtual LValue NewArray(LValue var_type, vector<LValue>& wd) = 0;
 
@@ -64,6 +71,10 @@ public:
 
 	virtual void   BeginModule(string& name) = 0;
 	virtual void   VerifyAndWrite(string& outfile_name) = 0;
+
+	virtual LValue GetNowBasicBlock() = 0;
+	virtual LValue CreateBasicBlock() = 0;
+	virtual LValue CreateBasicBlock(LValue func) = 0;
 
 	static llcg* CreateLLVM();
 

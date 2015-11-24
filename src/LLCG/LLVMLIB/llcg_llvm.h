@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:37:15
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-24 14:46:07
+* @Last Modified time: 2015-11-24 21:24:15
 */
 
 
@@ -47,17 +47,25 @@ public:
 	virtual LValue Call(FunctionModel* fmodel, vector<LValue>& args); // 返回CallInst
 	virtual LValue Call(LValue func, vector<LValue>& args);
 	virtual LValue Struct(StructModel* smodel); // 返回StructType
-	virtual LValue Struct(string& name, vector<LValue>& types);
+	virtual LValue Struct(LValue _struct, vector<LValue>& types);
+	virtual LValue DeclareStruct(string& name);
 	virtual LValue DefVar(LValue var_type, string& name); // 返回分配的地址
+	virtual LValue DefVar(LValue var_type, string& name, LValue init);
 	virtual LValue DefGlobalVar(LValue var_type, string& name);
+	virtual LValue DefGlobalVar(LValue var_type, string& name, LValue init);
 	virtual LValue Load(LValue var_addr);
 	virtual LValue Store(LValue var_addr, LValue value);
 	virtual LValue Opt1(string& opt, LValue value);
 	virtual LValue Opt2(string& opt, LValue value1, LValue value2);
-	virtual LValue For(LValue cond, LValue init, LValue pd, LValue work, LValue statement);
-	virtual LValue While(LValue pd, LValue statement);
-	virtual LValue DoWhile(LValue statement, LValue pd);
-	virtual LValue DoUntil(LValue statement, LValue pd);
+	virtual LValue Cmp(string& opt, LValue value1, LValue value2);
+	virtual LValue Assignment(string& opt, LValue value1, LValue value2);
+	virtual LValue Dot(LValue value, int num);
+	virtual LValue Select(LValue value, vector<LValue>& args);
+	virtual void   If(LValue cond, LValue father, LValue true_block, LValue false_block, bool isElseWork);
+	virtual void   For(LValue cond, LValue init, LValue pd, LValue work, LValue statement);
+	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement);
+	virtual void   DoWhile(LValue statement, LValue pd);
+	virtual void   DoUntil(LValue statement, LValue pd);
 	virtual LValue New(LValue var_type, vector<LValue>& args);
 	virtual LValue NewArray(LValue var_type, vector<LValue>& wd);
 
@@ -88,12 +96,13 @@ protected:
 	// 模块元数据 Module
 	unique_ptr<Module> meta_M;
 
-	LLVMContext& context;
+	LLVMContext context;
 	Function* nowFunc;
 	BasicBlock* nowBlock;
 
 	void register_stdlib(const LibFunc*);
 	void verifyModuleAndWrite(llvm::Module* M, string& outfile_name);
+	GetElementPtrInst* ptrMove(Value* v, int n);
 	BasicBlock* createBlock();
 	BasicBlock* createBlock(Function* f);
 };
