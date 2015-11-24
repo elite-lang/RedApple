@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-21 14:34:19
+* @Last Modified time: 2015-11-23 19:37:26
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -138,9 +138,6 @@ private:
 
 	// 这个栈是用来临时保存上面的查询表的
 	stack<map<string, CodeGenFunction> > macro_save_stack;
-
-	// 这个表是用来查询自定义类型的
-	// map<string, Type*> type_map;
 
 	void setNormalType();
 

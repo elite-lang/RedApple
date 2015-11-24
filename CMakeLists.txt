@@ -30,13 +30,16 @@ BISON_TARGET(MyParser ${CMAKE_CURRENT_SOURCE_DIR}/src/redapple_parser.y
 					  ${CMAKE_CURRENT_BINARY_DIR}/redapple_parser.cpp)
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
-include_directories(Debug Release build includes includes/Model src src/Utils src/MetaModel src/cJSON)
+include_directories(Debug Release build includes includes/Model src src/Utils src/MetaModel src/cJSON 
+    src/LLCG/ src/LLCG/LLVMLIB)
 
 file(GLOB_RECURSE source_files	${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 								${CMAKE_CURRENT_SOURCE_DIR}/src/Model/*.cpp
 								${CMAKE_CURRENT_SOURCE_DIR}/src/Macro/*.cpp
 								${CMAKE_CURRENT_SOURCE_DIR}/src/Utils/*.cpp
                                 ${CMAKE_CURRENT_SOURCE_DIR}/src/MetaModel/*.cpp
+                                ${CMAKE_CURRENT_SOURCE_DIR}/src/LLCG/*.cpp
+                                ${CMAKE_CURRENT_SOURCE_DIR}/src/LLCG/*/*.cpp
                                 ${CMAKE_CURRENT_SOURCE_DIR}/src/cJSON/*.c)
 
 add_library(red STATIC ${source_files} ${BISON_MyParser_OUTPUTS} ${FLEX_MyScanner_OUTPUTS})

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-13 12:07:03
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 16:51:49
+* @Last Modified time: 2015-11-24 14:59:41
 */
 
 
@@ -37,8 +37,8 @@ public:
 	std::vector<std::string> name_list;
 	std::vector<llvm::Constant*> init_list; // 没有的置为空数组
 
-	llvm::FunctionType* func_type;
 	llvm::Function* getFunction(CodeGenContext* context);
+	llvm::FunctionType* getFunctionType() { return func_type; }
 
 	virtual void insertToST(CodeGenContext* context);
 	virtual llvm::Value* genCode(CodeGenContext* context);
@@ -47,6 +47,7 @@ public:
 	virtual MetaType getType();
 private:
 	llvm::Function* func = NULL;
+	llvm::FunctionType* func_type;
 };
 
 

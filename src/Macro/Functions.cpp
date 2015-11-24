@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-22 16:45:51
+* @Last Modified time: 2015-11-24 14:26:44
 */
 
 #include "CodeGenContext.h"
@@ -130,8 +130,7 @@ static Value* call_macro(CodeGenContext* context, Node* node) {
 
 static Value* for_macro(CodeGenContext* context, Node* node) {
 	// 参数一 初始化
-	BasicBlock* father_block = context->getNowBlock();
-	BasicBlock* init_block   = context->createBlock();
+	BasicBlock* init_block   = context->getNowBlock();
 	context->MacroMake(node);
 
 	// 参数二 终止条件
@@ -152,7 +151,7 @@ static Value* for_macro(CodeGenContext* context, Node* node) {
 	// 生成for循环
 	BasicBlock* false_block = context->createBlock();
 	BranchInst* branch      = BranchInst::Create(work_block, false_block, condition, end_block);
-	BranchInst::Create(init_block, father_block);
+	// BranchInst::Create(init_block, father_block);
 	BranchInst::Create(end_block, init_block);
 	BranchInst::Create(do_block,   work_block);
 	BranchInst::Create(end_block,  do_block);
