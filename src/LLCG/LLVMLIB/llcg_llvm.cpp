@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:41:19
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 09:49:29
+* @Last Modified time: 2015-11-25 21:49:20
 */
 
 #include "llcg_llvm.h"
@@ -11,11 +11,12 @@
 #include "llvm_type.h"
 
 llcg_llvm::llcg_llvm() {
-	
+	meta_M = make_unique<Module>("", context);
+	register_metalib();
 }
 
 llcg_llvm::~llcg_llvm() {
-
+	llvm_shutdown();
 }
 
 LValue llcg_llvm::FuncType(FunctionModel* fmodel) {
@@ -49,13 +50,28 @@ LValue llcg_llvm::GetOrInsertFunction(string& name, LValue ret_type, vector<LVal
 
 }
 
-void   llcg_llvm::FunctionBodyBegin(LValue func) {
-
+void   llcg_llvm::FunctionBodyBegin(LValue func, vector<string>& name_list) {
+	Value* _func = *LLVALUE(func);
+	Function* F = dyn_cast<Function>(_func);
+	int i = 0;
+	for (auto arg = F->arg_begin(); i != name_list.size(); ++arg, ++i) {
+		arg->setName(name_list[i]);
+		Value* argumentValue = arg;
+		ValueSymbolTable* st = nowBlock->getValueSymbolTable();
+		Value* v = st->lookup(name_list[i]);
+		new StoreInst(argumentValue, v, false, nowBlock);
+	}
 } // 设置当前BasicBlock
 
 void   llcg_llvm::FunctionBodyEnd() {
-
+	if (nowBlock->getTerminator() == NULL)
+		ReturnInst::Create(context, nowBlock);
 } // 处理函数结束
+
+LValue llcg_llvm::getFunction(string& name) {
+	Function* f = M->getFunction(name);
+	return LValue(new llvm_value(f));
+}
 
 LValue llcg_llvm::Call(FunctionModel* fmodel, vector<LValue>& args) {
 	// LLVMValue _func = LLVALUE(fmodel->getFunction());
@@ -440,7 +456,7 @@ LValue llcg_llvm::Void() {
 }
 
 
-Constant* geti8StrVal(Module& M, char const* str, Twine const& name) {
+Constant* llcg_llvm::geti8StrVal(Module& M, char const* str, Twine const& name) {
     LLVMContext& ctx = M.getContext(); // 千万别用Global Context
     Constant* strConstant = ConstantDataArray::getString(ctx, str);
     GlobalVariable* GVStr =
@@ -480,6 +496,12 @@ void llcg_llvm::register_stdlib(const LibFunc* libs_func) {
 	}
 }
 
+extern const LibFunc metalibs[];
+
+void llcg_llvm::register_metalib() {
+	register_stdlib(metalibs);
+}
+
 LValue llcg_llvm::GetNowBasicBlock() {
 	return LValue(new llvm_value(nowBlock));
 }
@@ -517,6 +539,41 @@ void llcg_llvm::verifyModuleAndWrite(llvm::Module* M, string& outfile_name) {
     out->flush(); delete out;
 }
 
+void llcg_llvm::MakeMetaModule(string& outfile_name, string& module_name) {
+	Module* M = meta_M.get();
+    M->setModuleIdentifier(module_name);
+
+    Function *F = M->getFunction("elite_meta_init");
+    BasicBlock& bb = F->getEntryBlock(); // 仅有一个BasicBlock,所以这样写可以
+    if (bb.getTerminator() == NULL) // 处理函数结尾返回
+        ReturnInst::Create(context, &bb);
+    Type* function_ptr = F->getFunctionType()->getPointerTo(); // 获取函数指针类型
+
+    vector<Type*> type_list;
+    type_list.push_back(Type::getInt32Ty(M->getContext()));
+    type_list.push_back(function_ptr);
+    type_list.push_back(Type::getInt8PtrTy(M->getContext()));
+
+    vector<Constant*> init_list;
+    init_list.push_back(ConstantInt::get(Type::getInt32Ty(M->getContext()), 65535));
+    init_list.push_back(ConstantExpr::getBitCast(F, function_ptr));
+    init_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
+
+    StructType* st = StructType::create(type_list, "");
+    ArrayType* at = ArrayType::get(st, 1);
+    vector<Constant*> array_init_list;
+    array_init_list.push_back(ConstantStruct::get(st, init_list));
+    Constant* init_var = ConstantArray::get(at, array_init_list);
+
+    GlobalVariable* gv = new GlobalVariable(
+        *M, at, false, GlobalValue::AppendingLinkage, init_var, "llvm.global_ctors"
+    );
+
+    verifyModuleAndWrite(M, outfile_name);
+}
+
+
+
 BasicBlock* llcg_llvm::createBlock() {
 	return nowBlock = BasicBlock::Create(context, "", nowFunc);
 }
@@ -524,4 +581,39 @@ BasicBlock* llcg_llvm::createBlock() {
 BasicBlock* llcg_llvm::createBlock(Function* f) {
 	nowFunc = f;
 	return nowBlock = BasicBlock::Create(context, "entry", f);
+}
+
+void llcg_llvm::MakeMetaList(vector<string>& list) {
+	Module* M = meta_M.get();
+	Function* F = M->getFunction("elite_meta_init");
+	vector<Value*> args_list;
+	for (int i = 0; i < list.size(); ++i) {
+		args_list.push_back(geti8StrVal(*M, list[i].c_str(), ""));
+	}
+	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
+	BasicBlock& bb = F->getEntryBlock();
+	Function* FuncF = M->getFunction("elite_meta_list");
+	CallInst::Create(FuncF, args_list, "", &bb);
+}
+
+void llcg_llvm::MakeMetaList(vector<string>& list, LValue fp) {
+	Module* M = meta_M.get();
+	Function* F = M->getFunction("elite_meta_init");
+	vector<Value*> args_list;
+	for (int i = 0; i < list.size(); ++i) {
+		args_list.push_back(geti8StrVal(*M, list[i].c_str(), ""));
+		// Constant* c = init_list[i];
+		// if (c != NULL)
+		// 	init_meta_list.push_back(ConstantAsMetadata::get(c));
+		// else
+		// 	init_meta_list.push_back(MDString::get(M->getContext(), "NULL"));
+	}
+	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
+	Value* f = *LLVALUE(fp);
+	Function* nowFunc = dyn_cast<Function>(f);
+	Type* nowType = Type::getInt8PtrTy(M->getContext());
+	args_list.push_back(ConstantExpr::getBitCast(nowFunc, nowType));
+	BasicBlock& bb = F->getEntryBlock();
+	Function* FuncF = M->getFunction("elite_meta_function");
+	CallInst::Create(FuncF, args_list, "", &bb);
 }

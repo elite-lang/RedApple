@@ -2,22 +2,23 @@
 * @Author: sxf
 * @Date:   2015-11-19 13:40:13
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-22 22:15:23
+* @Last Modified time: 2015-11-25 21:59:09
 */
 
 #include "TypeNode.h"
-#include "stdio.h"
 #include "CodeGenContext.h"
+#include <iostream>
+using namespace std;
 
 TypeNode* TypeNode::Create(const char* name, bool is_const, bool is_source) {
 	return new TypeNode(name, is_const, is_source);
 }
 
-Type* TypeNode::typeGen(CodeGenContext* context) {
-	Type* t = context->FindType(str);
+LValue TypeNode::typeGen(CodeGenContext* context) {
+	LValue t = context->FindType(str);
 	if (t == NULL) {
-		errs() << "找不到该类型的定义：";
-		errs() << str.c_str() << "\n";
+		cerr << "找不到该类型的定义：";
+		cerr << str.c_str() << endl;
 		exit(1);
 	}
 	if (dimension > 0) {

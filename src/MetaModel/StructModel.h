@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-29 10:47:04
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-15 16:51:40
+* @Last Modified time: 2015-11-25 15:31:53
 */
 
 #ifndef STRUCT_MODEL_H
@@ -11,10 +11,6 @@
 #include "MetaModel.h"
 #include <vector>
 #include <string>
-
-namespace llvm {
-	class StructType;
-}
 
 class StructModel : public MetaModel
 {
@@ -27,15 +23,15 @@ public:
 
 	std::vector<std::string> type_list;
 	std::vector<std::string> name_list;
-	llvm::StructType* getStruct(CodeGenContext* context);
+	LValue getStruct(CodeGenContext* context);
 
 	virtual void insertToST(CodeGenContext* context);
-	virtual llvm::Value* genCode(CodeGenContext* context);
+	virtual void genCode(CodeGenContext* context);
 	virtual cJSON* genJson();
-	virtual llvm::Value* genMetaCode(CodeGenContext* context);
-	virtual MetaType getType();
+	virtual void genMetaCode(CodeGenContext* context);
+	virtual MetaType getMetaType();
 private:
-	llvm::StructType* struct_type = NULL;
+	LValue struct_type;
 };
 
 

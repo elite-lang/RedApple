@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 10:54:27
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-24 11:11:42
+* @Last Modified time: 2015-11-25 16:41:47
 */
 
 
@@ -21,8 +21,14 @@ typedef shared_ptr<lvalue> LValue;
 class lvalue
 {
 public:
+
+	virtual bool isStructType(){};
+
 	// 当前为值时，获取当前的类型
 	virtual LValue getType(){};
+
+	// 当前为值或类型,都能获得对应的名称
+	virtual string getTypeName(){};
 
 	// 当前为类型时, 返回一个新的指针类型
 	virtual LValue getPointerTo(){};

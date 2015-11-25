@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-19 11:22:12
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-22 22:16:06
+* @Last Modified time: 2015-11-25 15:47:07
 */
 
 #ifndef TYPE_NODE_H
@@ -19,7 +19,7 @@ namespace llvm {
 class TypeNode: public Node {
 public: 
 	static TypeNode* Create(const char* name, bool is_const = false, bool is_source = false);
-	Type* typeGen(CodeGenContext* context); 
+	LValue typeGen(CodeGenContext* context); 
 	void addDimension();
 	bool isArray() {
 		return dimension == 0;

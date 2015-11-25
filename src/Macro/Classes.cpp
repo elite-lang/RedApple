@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:05:30
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-10-26 20:52:11
+* @Last Modified time: 2015-11-25 15:35:28
 */
 
 #include "CodeGenContext.h"
@@ -12,7 +12,7 @@
 
 extern const FuncReg macro_classes_replace[];
 
-static Value* class_macro(CodeGenContext* context, Node* node) {
+static LValue class_macro(CodeGenContext* context, Node* node) {
 	context->SaveMacros();
 	context->AddOrReplaceMacros(macro_classes_replace);
 
@@ -21,7 +21,7 @@ static Value* class_macro(CodeGenContext* context, Node* node) {
 	return NULL;
 }
 
-static Value* module_macro(CodeGenContext* context, Node* node) {
+static LValue module_macro(CodeGenContext* context, Node* node) {
 	
 
 	return NULL;
@@ -29,7 +29,7 @@ static Value* module_macro(CodeGenContext* context, Node* node) {
 
 extern const FuncReg macro_funcs[];
 
-static Value* function_macro(CodeGenContext* context, Node* node) {
+static LValue function_macro(CodeGenContext* context, Node* node) {
 	context->SaveMacros();
 	context->AddOrReplaceMacros(macro_funcs);
 
@@ -37,7 +37,7 @@ static Value* function_macro(CodeGenContext* context, Node* node) {
 	return NULL;
 }
 
-static Value* set_macro(CodeGenContext* context, Node* node) {
+static LValue set_macro(CodeGenContext* context, Node* node) {
 	return NULL;
 }
 

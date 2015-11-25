@@ -16,7 +16,7 @@ public:
 	static IDNode* Create(const char* _value);
 	static IDNode* Create(char _value);
 	std::string& getStr() { return value; }
-	virtual Value* codeGen(CodeGenContext* context); 
+	virtual LValue codeGen(CodeGenContext* context); 
 	virtual NodeType getType();
 	virtual Node* copy() {
 		return new IDNode(*this);

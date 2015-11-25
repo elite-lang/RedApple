@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-24 10:21:35
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-24 11:22:46
+* @Last Modified time: 2015-11-25 21:41:38
 */
 
 #include "llcg_llvm.h"
@@ -58,7 +58,7 @@ static void register_elite_meta_function(Module *module) {
     func->setCallingConv(CallingConv::C);
 }
 
-static void register_elite_meta_struct(Module *module) {
+static void register_elite_meta_list(Module *module) {
     std::vector<Type*> arg_types;
     arg_types.push_back(Type::getInt8PtrTy(module->getContext()));
 
@@ -68,7 +68,7 @@ static void register_elite_meta_struct(Module *module) {
 
     Function *func = Function::Create(
                 meta_type, Function::ExternalLinkage,
-                Twine("elite_meta_struct"),
+                Twine("elite_meta_list"),
                 module
            );
     func->setCallingConv(CallingConv::C);
@@ -117,7 +117,7 @@ extern const LibFunc stdlibs[] = {
 
 extern const LibFunc metalibs[] = {
 	register_elite_meta_function,
-	register_elite_meta_struct,
+	register_elite_meta_list,
 	register_elite_meta_init,
 	NULL
 };

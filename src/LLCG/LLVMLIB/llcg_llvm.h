@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:37:15
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 09:46:48
+* @Last Modified time: 2015-11-25 21:48:37
 */
 
 
@@ -42,8 +42,9 @@ public:
 	virtual LValue GetOrInsertFunction(FunctionModel* fmodel); // 返回Function
 	virtual LValue GetOrInsertFunction(string& name, LValue func_type);
 	virtual LValue GetOrInsertFunction(string& name, LValue ret_type, vector<LValue>& types, bool isNotSure = false);
-	virtual void   FunctionBodyBegin(LValue func); // 设置当前BasicBlock
+	virtual void   FunctionBodyBegin(LValue func, vector<string>& name_list); // 设置当前BasicBlock
 	virtual void   FunctionBodyEnd(); // 处理函数结束
+	virtual LValue getFunction(string& name); // 从当前模块中获取一个函数
 	virtual LValue Call(FunctionModel* fmodel, vector<LValue>& args); // 返回CallInst
 	virtual LValue Call(LValue func, vector<LValue>& args);
 	virtual LValue Struct(StructModel* smodel); // 返回StructType
@@ -85,11 +86,14 @@ public:
 
 	virtual void   BeginModule(string& name);
 	virtual void   VerifyAndWrite(string& outfile_name);
+	virtual void   MakeMetaModule(string& outfile_name, string& module_name);
 
 	virtual LValue GetNowBasicBlock();
 	virtual LValue CreateBasicBlock();
 	virtual LValue CreateBasicBlock(LValue func);
 
+	virtual void MakeMetaList(vector<string>& list);
+	virtual void MakeMetaList(vector<string>& list, LValue fp);
 
 protected:
 
@@ -103,7 +107,9 @@ protected:
 	BasicBlock* nowBlock;
 
 	void register_stdlib(const LibFunc*);
+	void register_metalib();
 	void verifyModuleAndWrite(llvm::Module* M, string& outfile_name);
+	Constant* geti8StrVal(Module& M, char const* str, Twine const& name);
 	GetElementPtrInst* ptrMove(Value* v, int n);
 	BasicBlock* createBlock();
 	BasicBlock* createBlock(Function* f);

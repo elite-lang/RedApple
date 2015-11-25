@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-31 18:24:33
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-17 10:36:30
+* @Last Modified time: 2015-11-25 21:49:43
 */
 
 #include "StructModel.h"
@@ -32,47 +32,39 @@ int StructModel::find(std::string& name)
 }
 
 void StructModel::insertToST(CodeGenContext* context) {
-	context->st->insert(name, struct_t, this); // 插入符号表中
+	context->st->insert(name, struct_t, LValue(this)); // 插入符号表中
 }
 
-llvm::StructType* StructModel::getStruct(CodeGenContext* context) {
+LValue StructModel::getStruct(CodeGenContext* context) {
 	if (struct_type == NULL)
-		struct_type = StructType::create(*(context->getContext()), name);
+		struct_type = context->getLLCG()->DeclareStruct(name);
 	return struct_type;
 }
 
-Value* StructModel::genCode(CodeGenContext* context) {
-	std::vector<Type*> type_vec;
+void StructModel::genCode(CodeGenContext* context) {
+	std::vector<LValue> type_vec;
 	for (auto& s : type_list) {
-		Type* t = context->FindType(s);
+		LValue t = context->FindType(s);
 		type_vec.push_back(t);
 	}
-	StructType* st = getStruct(context);
-	st->setBody(type_vec);
-	return NULL;
+	struct_type = context->getLLCG()->Struct(struct_type, type_vec);
 }
 
 cJSON* StructModel::genJson() {
 
 }
 
-Value* StructModel::genMetaCode(CodeGenContext* context) {
-	Module* M = context->getMetaModule();
-	Function* F = M->getFunction("elite_meta_init");
-	vector<Value*> args_list;
-	args_list.push_back(geti8StrVal(*M, name.c_str()));
-	vector<Metadata*> init_meta_list;
+void StructModel::genMetaCode(CodeGenContext* context) {
+	vector<string> data;
+	data.push_back("struct");
+	data.push_back(name);
 	for (int i = 0; i < name_list.size(); ++i) {
-		args_list.push_back(geti8StrVal(*M, type_list[i].c_str()));
-		args_list.push_back(geti8StrVal(*M, name_list[i].c_str()));
+		data.push_back(type_list[i]);
+		data.push_back(name_list[i]);
 	}
-	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
-	BasicBlock& bb = F->getEntryBlock();
-	Function* FuncF = M->getFunction("elite_meta_struct");
-	CallInst::Create(FuncF, args_list, "", &bb);
-	return NULL;
+	context->getLLCG()->MakeMetaList(data);
 }
 
-MetaType StructModel::getType() {
+MetaType StructModel::getMetaType() {
 	return struct_meta_t;
 }

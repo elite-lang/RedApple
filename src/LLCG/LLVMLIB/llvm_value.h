@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 22:03:33
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-24 11:10:31
+* @Last Modified time: 2015-11-25 16:42:19
 */
 
 #ifndef LLVM_VALUE_H
@@ -26,7 +26,8 @@ public:
 	virtual ~llvm_value();
 	
 	operator llvm::Value* () const { return data; }
-
+	virtual string getTypeName();
+	
 private:
 	llvm::Value* data;
 };

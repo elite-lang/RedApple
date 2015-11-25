@@ -2,27 +2,29 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-22 12:55:08
+* @Last Modified time: 2015-11-25 21:55:11
 */
 
 #include "CodeGenContext.h"
 #include "StringNode.h"
 #include "IDNode.h"
-#include <stdio.h>
-#include "MetaModel/StructModel.h"
-#include "MetaModel/FunctionModel.h"
+#include <iostream>
+
 #include "MacroTranslate.h"
 
-Value* CodeGenContext::MacroMake(Node* node) {
+using namespace std;
+
+LValue CodeGenContext::MacroMake(Node* node) {
 	if (node == NULL) return NULL;
 
 	if (node->isIDNode()) {
-		Node* user_macro_node = getUserMacro(node->getStr());
+		shared_ptr<MacroModel> p = getUserMacro(node->getStr());
+		Node* user_macro_node = p->getData();
 		if (user_macro_node != NULL) {
 			MacroTranslate translater;
 			Node* replace = translater.Marco(user_macro_node, node->getNext());
 			replace->print(1);
-			Value* ans = MacroMake(replace);
+			LValue ans = MacroMake(replace);
 			Node::FreeAll(replace);
 			return ans;
 		}
@@ -34,7 +36,7 @@ Value* CodeGenContext::MacroMake(Node* node) {
 	} 
 	if (node->getChild() != NULL && node->getChild()->isIDNode())
 		return MacroMake(node->getChild());
-	Value* ans;
+	LValue ans;
 	for (Node* p = node->getChild(); p != NULL; p = p->getNext()) 
 		ans = MacroMake(p);
 	return ans;
@@ -59,10 +61,6 @@ void CodeGenContext::ScanOther(Node* node) {
     printf("-- 类型化流程完成 --\n");
 }
 
-// void CodeGenContext::AddMacros(const FuncReg* macro_funcs) {
-//
-// }
-
 void CodeGenContext::AddOrReplaceMacros(const FuncReg* macro_funcs) {
 	while (true) {
 		const char*     name = macro_funcs->name;
@@ -84,22 +82,20 @@ id* CodeGenContext::FindST(Node* node) const{
 	return FindST(node->getStr());
 }
 
-Function* CodeGenContext::getFunction(Node* node) {
+LValue CodeGenContext::getFunction(Node* node) {
 	return getFunction(node->getStr());
 }
 
-Function* CodeGenContext::getFunction(std::string& name) {
-	Function* defined_func = M->getFunction(name);
+LValue CodeGenContext::getFunction(std::string& name) {
+	shared_ptr<FunctionModel> fm = getFunctionModel(name);
+	if (fm != NULL) return fm->getFunction(this);
+	LValue defined_func = getLLCG()->getFunction(name);
 	if (defined_func != NULL) return defined_func;
-	FunctionModel* fm = getFunctionModel(name);
-	return fm->getFunction(this);
+	cerr << "函数未定义：" << name << '\n';
+	return NULL;
 }
 
-void CodeGenContext::nowFunction(Function* _nowFunc) {
-	nowFunc = _nowFunc;
-}
-
-FunctionModel* CodeGenContext::getFunctionModel(string& name) {
+shared_ptr<FunctionModel> CodeGenContext::getFunctionModel(string& name) {
 	id* i = FindST(name);
 	if (i == NULL) {
 		printf("错误: 符号 %s 未找到\n", name.c_str());
@@ -109,25 +105,22 @@ FunctionModel* CodeGenContext::getFunctionModel(string& name) {
 		printf("错误: 符号 %s 类型不是函数\n", name.c_str());
 		return NULL;
 	}
-	FunctionModel* fm = (FunctionModel*) i->data;
-	return fm;
+	return dynamic_pointer_cast<FunctionModel>(i->data);
 }
 
-Node* CodeGenContext::getUserMacro(std::string& name) {
+shared_ptr<MacroModel> CodeGenContext::getUserMacro(std::string& name) {
 	id* i = FindST(name);
 	if (i == NULL) return NULL;
 	if (i->type != macro_t) return NULL;
-	return (Node*) i->data;
+	return dynamic_pointer_cast<MacroModel>(i->data);
 }
 
 void  CodeGenContext::setUserMacro(std::string& name, Node* node) {
-	st->insert(name, macro_t, node);
+	LValue p(new MacroModel(name, node));
+	st->insert(name, macro_t, p);
 }
 
-
-
-
-StructModel* CodeGenContext::getStructModel(string& name) {
+shared_ptr<StructModel> CodeGenContext::getStructModel(string& name) {
 	id* i = FindST(name);
 	if (i == NULL) {
 		printf("错误: 符号 %s 未找到\n", name.c_str());
@@ -137,71 +130,44 @@ StructModel* CodeGenContext::getStructModel(string& name) {
 		printf("错误: 符号 %s 类型不是结构体\n", name.c_str());
 		return NULL;
 	}
-	StructModel* sm = (StructModel*) i->data;
-	return sm;
+	return dynamic_pointer_cast<StructModel>(i->data);
 }
 
-BasicBlock* CodeGenContext::getNowBlock() {
-	return nowBlock;
-}
 
-BasicBlock* CodeGenContext::createBlock() {
-	return nowBlock = BasicBlock::Create(*Context, "", nowFunc);
-}
-
-BasicBlock* CodeGenContext::createBlock(Function* f) {
-	nowFunc = f;
-	return nowBlock = BasicBlock::Create(*Context, "entry", f);
-}
-/*
-void CodeGenContext::DefFunction(string name, Function* f) {
-	st->insert(name, 3, f);
-}
-
-Function* CodeGenContext::FindFunction(string& name) {
-	id* i = st->find(name);
-	if (i != NULL && i->type == 3) return (Function*)(i->data);
-	else {
-		errs() <<  "找不到该函数的定义： ";
-		errs() << name << "\n";
-		return NULL;
-	}
-}
-*/
-void CodeGenContext::DefType(string name, Type* t) {
+void CodeGenContext::DefType(string name, LValue t) {
 	st->insert(name, type_t, t);
 }
 
-Type* CodeGenContext::FindSrcType(string& name) {
+LValue CodeGenContext::FindSrcType(string& name) {
 	id* i = st->find(name);
-	Type* ret_type;
+	LValue ret_type;
 	if (i != NULL && i->type == type_t) {
-		Type* t = (Type*)(i->data);
+		LValue t = i->data;
 		ret_type = t;
 	} else if (i != NULL && i->type == struct_t) {
-		StructModel* s = (StructModel*)(i->data);
+		auto s = dynamic_pointer_cast<StructModel>(i->data);
 		ret_type = s->getStruct(this);
 	} else {
-		errs() << "找不到该类型的定义： ";
-		errs() << name << "\n";
+		cerr << "找不到该类型的定义： ";
+		cerr << name << "\n";
 		return NULL;
 	}
 	return ret_type;
 }
 
-Type* CodeGenContext::FindSrcType(Node* node) {
+LValue CodeGenContext::FindSrcType(Node* node) {
 	return FindSrcType(node->getStr());
 }
 
-Type* CodeGenContext::FindType(string& name) {
+LValue CodeGenContext::FindType(string& name) {
 	string find_name = name; int d = 0;
 	while (find_name.back() == ']') {
 		find_name.pop_back();
 		find_name.pop_back();
 		++d;
 	}
-	Type* t = FindSrcType(find_name);
-	if (t->isStructTy()) t = t->getPointerTo();
+	LValue t = FindSrcType(find_name);
+	if (t->isStructType()) t = t->getPointerTo();
 	if (d > 1) {
 		// t = ArrayType::get(t, 0);
 		t = t->getPointerTo();
@@ -209,30 +175,44 @@ Type* CodeGenContext::FindType(string& name) {
 	return t;
 }
 
-Type* CodeGenContext::FindType(Node* node) {
+LValue CodeGenContext::FindType(Node* node) {
 	return FindType(node->getStr());
 }
 
+void CodeGenContext::DefVar(string& name, LValue addr) {
+	st->insert(name, var_t, addr);
+}
+
+LValue CodeGenContext::FindVar(string& name) {
+	id* i = st->find(name);
+	if (i != NULL && i->type == var_t) {
+		return i->data;
+	}
+	cerr << "变量未找到: " << name << endl;
+	return NULL;
+}
+
+
 void CodeGenContext::setNormalType() {
-	DefType("void",   Type::getVoidTy(*Context));
-	DefType("int",    Type::getInt64Ty(*Context));
-	DefType("float",  Type::getFloatTy(*Context));
-	DefType("double", Type::getDoubleTy(*Context));
+	DefType("void",   codeGenerator->Void());
+	DefType("int",    codeGenerator->Int64());
+	DefType("float",  codeGenerator->Float());
+	DefType("double", codeGenerator->Double());
 
-	DefType("int8",   Type::getInt8Ty(*Context));
-	DefType("int16",  Type::getInt16Ty(*Context));
-	DefType("int32",  Type::getInt32Ty(*Context));
-	DefType("int64",  Type::getInt64Ty(*Context));
+	DefType("int8",   codeGenerator->Int8());
+	DefType("int16",  codeGenerator->Int16());
+	DefType("int32",  codeGenerator->Int32());
+	DefType("int64",  codeGenerator->Int64());
 
-	DefType("uint",    Type::getInt64Ty(*Context));
-	DefType("uint8",   Type::getInt8Ty(*Context));
-	DefType("uint16",  Type::getInt16Ty(*Context));
-	DefType("uint32",  Type::getInt32Ty(*Context));
-	DefType("uint64",  Type::getInt64Ty(*Context));
+	DefType("uint64",  codeGenerator->Int64());
+	DefType("uint8",   codeGenerator->Int8());
+	DefType("uint16",  codeGenerator->Int16());
+	DefType("uint32",  codeGenerator->Int32());
+	DefType("uint64",  codeGenerator->Int64());
 
-	DefType("byte",   Type::getInt8Ty(*Context));
-	DefType("char",   Type::getInt8Ty(*Context));
-	DefType("wchar",  Type::getInt32Ty(*Context));
+	DefType("byte",   codeGenerator->Int8());
+	DefType("char",   codeGenerator->Int8());
+	DefType("wchar",  codeGenerator->Int32());
 }
 
 
@@ -277,13 +257,10 @@ CodeGenContext::CodeGenContext(Node* node) {
 	root = node;
 	_save = false;
 	st = new IDTable();
-	InitializeNativeTarget();
-	Context = new LLVMContext();
+	codeGenerator = llcg::CreateLLVM();
 	setNormalType();
 }
 
 CodeGenContext::~CodeGenContext() {
-	delete st;
-	delete Context;
-	llvm_shutdown();
+	delete st;	
 }

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:55:30
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-22 10:19:27
+* @Last Modified time: 2015-11-25 12:26:13
 * 
 * 代码生成部分的引导类
 */
@@ -13,10 +13,6 @@
 #include "Model/Node.h"
 #include "CodeGen.h"
 
-namespace llvm {
-	class Module;
-	class Function;
-} // llvm
 
 class CodeGenContext;
 class RedCodeGen : public CodeGen
@@ -27,8 +23,6 @@ public:
 	virtual void Make(Node* node, const char* outfile_name, const char* module_name);
 	virtual void MakeMeta(const char* outfile_name, const char* module_name);
 
-	void VerifyAndWrite(llvm::Module* M, const char* outfile_name);
-
 	static RedCodeGen* Create();
 	static RedCodeGen* Create(Node* node);
 private:
@@ -36,18 +30,6 @@ private:
 	RedCodeGen(Node* node);
 	~RedCodeGen();
 	CodeGenContext* context = NULL;
-
-
-	void register_printf(llvm::Module *module);
-	void register_malloc(llvm::Module *module);
-	void register_echo(CodeGenContext* context, llvm::Function* printfFn);
-	void register_malloc_array(Module *module);
-	
-	// 处理Meta数据相关函数
-	void register_elite_meta_function(llvm::Module *module);
-	void register_elite_meta_struct(llvm::Module *module);
-	void register_elite_meta_init(llvm::Module *module);
-	void register_functioncall(llvm::Module *module);
 };
 
 

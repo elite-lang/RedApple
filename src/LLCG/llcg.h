@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 10:53:22
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 09:46:44
+* @Last Modified time: 2015-11-25 22:00:01
 */
 
 #ifndef LLCG_H
@@ -31,14 +31,16 @@ public:
 	virtual LValue GetOrInsertFunction(FunctionModel* fmodel) = 0; // 返回Function
 	virtual LValue GetOrInsertFunction(string& name, LValue func_type) = 0;
 	virtual LValue GetOrInsertFunction(string& name, LValue ret_type, vector<LValue>& types, bool isNotSure = false) = 0;
-	virtual void   FunctionBodyBegin(LValue func) = 0; // 设置当前BasicBlock
+	virtual void   FunctionBodyBegin(LValue func, vector<string>& name_list) = 0; // 设置当前BasicBlock
 	virtual void   FunctionBodyEnd() = 0; // 处理函数结束
+	virtual LValue getFunction(string& name) = 0; // 从当前模块中获取一个函数
 	virtual LValue Call(FunctionModel* fmodel, vector<LValue>& args) = 0; // 返回CallInst
 	virtual LValue Call(LValue func, vector<LValue>& args) = 0;
 	virtual LValue Struct(StructModel* smodel) = 0; // 返回StructType
 	virtual LValue Struct(LValue _struct, vector<LValue>& types) = 0;
 	virtual LValue DeclareStruct(string& name) = 0;
 	virtual LValue DefVar(LValue var_type, string& name) = 0; // 返回分配的地址
+	virtual LValue DefVar(LValue var_type, string& name, LValue init) = 0;
 	virtual LValue DefGlobalVar(LValue var_type, string& name) = 0;
 	virtual LValue DefGlobalVar(LValue var_type, string& name, LValue init) = 0;	
 	virtual LValue Load(LValue var_addr) = 0;
@@ -73,10 +75,14 @@ public:
 
 	virtual void   BeginModule(string& name) = 0;
 	virtual void   VerifyAndWrite(string& outfile_name) = 0;
+	virtual void   MakeMetaModule(string& outfile_name, string& module_name) = 0;
 
 	virtual LValue GetNowBasicBlock() = 0;
 	virtual LValue CreateBasicBlock() = 0;
 	virtual LValue CreateBasicBlock(LValue func) = 0;
+
+	virtual void MakeMetaList(vector<string>& list) = 0;
+	virtual void MakeMetaList(vector<string>& list, LValue fp) = 0;
 
 	static llcg* CreateLLVM();
 

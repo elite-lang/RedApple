@@ -2,20 +2,14 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-19 19:43:36
+* @Last Modified time: 2015-11-25 15:46:10
 */
 
 #ifndef NODE_H
 #define NODE_H
 
 #include <string>
-
-namespace llvm {
-	class Value;
-	class Type;
-} // llvm
-
-using namespace llvm;
+#include "LLCG/lvalue.h"
 
 enum NodeType
 {
@@ -54,7 +48,7 @@ public:
 	void print(int k);
 	Node* getNext() { return next; }
 	Node* getChild() { return child; }
-	virtual Value* codeGen(CodeGenContext* context); 
+	virtual LValue codeGen(CodeGenContext* context); 
 
 	// 如果是含有字符串的节点，则返回所含字符串，否则将报错
 	virtual std::string& getStr();
@@ -62,6 +56,7 @@ public:
 	// 类型相关
 	std::string getTypeName();
 	virtual NodeType getType();
+
 	bool isNode();
 	bool isIntNode();
 	bool isFloatNode();
