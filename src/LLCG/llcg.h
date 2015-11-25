@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 10:53:22
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-24 20:10:52
+* @Last Modified time: 2015-11-25 09:46:44
 */
 
 #ifndef LLCG_H
@@ -56,6 +56,8 @@ public:
 	virtual void   DoUntil(LValue statement, LValue pd) = 0;
 	virtual LValue New(LValue var_type, vector<LValue>& args) = 0;
 	virtual LValue NewArray(LValue var_type, vector<LValue>& wd) = 0;
+	virtual LValue Return() = 0;
+	virtual LValue Return(LValue var) = 0;
 
 	virtual LValue Int8() = 0;
 	virtual LValue Int16() = 0;

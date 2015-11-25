@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:41:19
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-24 21:39:32
+* @Last Modified time: 2015-11-25 09:49:29
 */
 
 #include "llcg_llvm.h"
@@ -11,6 +11,7 @@
 #include "llvm_type.h"
 
 llcg_llvm::llcg_llvm() {
+	
 }
 
 llcg_llvm::~llcg_llvm() {
@@ -369,12 +370,46 @@ void llcg_llvm::DoUntil(LValue statement, LValue pd) {
 }
 
 LValue llcg_llvm::New(LValue var_type, vector<LValue>& args) {
-
+	Type* t = *LLTYPE(var_type);
+	Type* ITy = Type::getInt64Ty(context);
+	Constant* AllocSize = ConstantExpr::getSizeOf(t);
+	Instruction* Malloc = CallInst::CreateMalloc(nowBlock, ITy, t, AllocSize);
+	Malloc->insertAfter(&(nowBlock->back()));
+	return LValue(new llvm_value(Malloc));
 }
 
 LValue llcg_llvm::NewArray(LValue var_type, vector<LValue>& wd) {
-
+	// 这里实现自定义的数组malloc函数
+	Type* t = *LLTYPE(var_type);
+	ConstantInt* zero = ConstantInt::get(Type::getInt64Ty(context), 0);
+	vector<Value*> args;
+	for (auto p : wd) {
+		Value* v = *LLVALUE(p);
+		args.push_back(v);
+	}
+	args.push_back(zero);
+	string func_name = "malloc_array";
+	CallInst *call = CallInst::Create(M->getFunction(func_name), 
+		args, "", nowBlock);
+	// t = ArrayType::get(t, 0);
+	t = t->getPointerTo();
+	Value* ret = CastInst::CreatePointerCast(call, t, "", nowBlock);
+	return LValue(new llvm_value(ret));
 }
+
+LValue llcg_llvm::Return() {
+	Value* ret = ReturnInst::Create(context, nullptr, nowBlock);
+	return LValue(new llvm_value(ret));
+}
+
+LValue llcg_llvm::Return(LValue var) {
+	Value* v = *LLVALUE(var);
+	Value* ret = ReturnInst::Create(context, v, nowBlock);
+	return LValue(new llvm_value(ret));
+}
+
+
+
 
 LValue llcg_llvm::Int8() {
 	return LValue(new llvm_type(Type::getInt8Ty(context)));

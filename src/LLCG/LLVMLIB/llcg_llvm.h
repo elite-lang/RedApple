@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:37:15
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-24 21:24:15
+* @Last Modified time: 2015-11-25 09:46:48
 */
 
 
@@ -68,6 +68,8 @@ public:
 	virtual void   DoUntil(LValue statement, LValue pd);
 	virtual LValue New(LValue var_type, vector<LValue>& args);
 	virtual LValue NewArray(LValue var_type, vector<LValue>& wd);
+	virtual LValue Return();
+	virtual LValue Return(LValue var);
 
 	virtual LValue Int8();
 	virtual LValue Int16();
