@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-19 13:40:13
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 21:59:09
+* @Last Modified time: 2015-11-26 20:33:16
 */
 
 #include "TypeNode.h"
@@ -20,10 +20,6 @@ LValue TypeNode::typeGen(CodeGenContext* context) {
 		cerr << "找不到该类型的定义：";
 		cerr << str.c_str() << endl;
 		exit(1);
-	}
-	if (dimension > 0) {
-		// t = ArrayType::get(t, 0);
-		return t->getPointerTo();
 	}
 	return t;
 }
@@ -57,4 +53,7 @@ TypeNode::TypeNode(const char* name, bool is_const, bool is_source) {
 	this->name = name;
 	this->is_const = is_const;
 	this->is_source = is_source;
+	if (is_source) {
+		this->str.insert(str.begin(), '*');
+	}
 }

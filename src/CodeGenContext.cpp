@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 22:24:37
+* @Last Modified time: 2015-11-26 20:38:59
 */
 
 #include "CodeGenContext.h"
@@ -159,13 +159,19 @@ LValue CodeGenContext::FindSrcType(Node* node) {
 
 LValue CodeGenContext::FindType(string& name) {
 	string find_name = name; int d = 0;
+	bool is_source = false;
+	if (find_name[0] == '*') { 
+		is_source = true;
+		find_name.erase(find_name.begin());
+	}
+
 	while (find_name.back() == ']') {
 		find_name.pop_back();
 		find_name.pop_back();
 		++d;
 	}
 	LValue t = FindSrcType(find_name);
-	if (t->isStructType()) t = t->getPointerTo();
+	if (t->isStructType() && !is_source) t = t->getPointerTo();
 	if (d > 1) {
 		// t = ArrayType::get(t, 0);
 		t = t->getPointerTo();

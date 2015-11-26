@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-31 18:24:33
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 21:49:43
+* @Last Modified time: 2015-11-26 20:36:36
 */
 
 #include "StructModel.h"
@@ -47,7 +47,7 @@ void StructModel::genCode(CodeGenContext* context) {
 		LValue t = context->FindType(s);
 		type_vec.push_back(t);
 	}
-	struct_type = context->getLLCG()->Struct(struct_type, type_vec);
+	struct_type = context->getLLCG()->Struct(getStruct(context), type_vec);
 }
 
 cJSON* StructModel::genJson() {
