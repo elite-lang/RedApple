@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-24 08:43:52
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 16:42:09
+* @Last Modified time: 2015-11-25 22:38:53
 */
 
 
@@ -29,6 +29,7 @@ public:
 	operator llvm::Type* () const { return data; }
 	virtual bool isStructType();
 	virtual string getTypeName();
+	virtual LValue getPointerTo();
 private:
 	llvm::Type* data;
 };

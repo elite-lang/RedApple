@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-24 15:40:26
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 16:54:37
+* @Last Modified time: 2015-11-25 22:39:47
 */
 
 #include "llvm_type.h"
@@ -29,4 +29,9 @@ string llvm_type::getTypeName() {
 		return st->getName().str();		
 	}
 	return "";
+}
+
+LValue llvm_type::getPointerTo() {
+	Type* t = data->getPointerTo();
+	return LValue(new llvm_type(t));
 }

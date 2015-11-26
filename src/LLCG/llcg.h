@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 10:53:22
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 22:00:01
+* @Last Modified time: 2015-11-25 22:21:20
 */
 
 #ifndef LLCG_H
@@ -82,7 +82,7 @@ public:
 	virtual LValue CreateBasicBlock(LValue func) = 0;
 
 	virtual void MakeMetaList(vector<string>& list) = 0;
-	virtual void MakeMetaList(vector<string>& list, LValue fp) = 0;
+	virtual void MakeMetaList(string& name, vector<string>& list, LValue fp) = 0;
 
 	static llcg* CreateLLVM();
 

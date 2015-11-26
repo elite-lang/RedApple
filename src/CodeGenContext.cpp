@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 21:55:11
+* @Last Modified time: 2015-11-25 22:24:37
 */
 
 #include "CodeGenContext.h"
@@ -19,8 +19,8 @@ LValue CodeGenContext::MacroMake(Node* node) {
 
 	if (node->isIDNode()) {
 		shared_ptr<MacroModel> p = getUserMacro(node->getStr());
-		Node* user_macro_node = p->getData();
-		if (user_macro_node != NULL) {
+		if (p != NULL) {
+			Node* user_macro_node = p->getData();
 			MacroTranslate translater;
 			Node* replace = translater.Marco(user_macro_node, node->getNext());
 			replace->print(1);
@@ -91,18 +91,16 @@ LValue CodeGenContext::getFunction(std::string& name) {
 	if (fm != NULL) return fm->getFunction(this);
 	LValue defined_func = getLLCG()->getFunction(name);
 	if (defined_func != NULL) return defined_func;
-	cerr << "函数未定义：" << name << '\n';
+	cerr << "错误！函数未定义：" << name << endl;
 	return NULL;
 }
 
 shared_ptr<FunctionModel> CodeGenContext::getFunctionModel(string& name) {
 	id* i = FindST(name);
 	if (i == NULL) {
-		printf("错误: 符号 %s 未找到\n", name.c_str());
 		return NULL;
 	}
 	if (i->type != function_t) { 
-		printf("错误: 符号 %s 类型不是函数\n", name.c_str());
 		return NULL;
 	}
 	return dynamic_pointer_cast<FunctionModel>(i->data);

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 19:10:07
+* @Last Modified time: 2015-11-25 22:32:48
 */
 
 #include "CodeGenContext.h"
@@ -53,7 +53,10 @@ static LValue set_macro(CodeGenContext* context, Node* node) {
 	if (node->isTypeNode()) {
 		TypeNode* tn = (TypeNode*) node;
 		t = tn->typeGen(context);
-	} else printf("错误的节点类型\n");
+	} else {
+		printf("错误的节点类型\n");
+		exit(1);
+	}
 
 	// 参数二 变量名
 	Node* var_node = node->getNext();

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:37:15
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 21:48:37
+* @Last Modified time: 2015-11-25 22:20:50
 */
 
 
@@ -93,7 +93,7 @@ public:
 	virtual LValue CreateBasicBlock(LValue func);
 
 	virtual void MakeMetaList(vector<string>& list);
-	virtual void MakeMetaList(vector<string>& list, LValue fp);
+	virtual void MakeMetaList(string& name, vector<string>& list, LValue fp);
 
 protected:
 
@@ -106,7 +106,7 @@ protected:
 	Function* nowFunc;
 	BasicBlock* nowBlock;
 
-	void register_stdlib(const LibFunc*);
+	void register_stdlib(Module* M, const LibFunc*);
 	void register_metalib();
 	void verifyModuleAndWrite(llvm::Module* M, string& outfile_name);
 	Constant* geti8StrVal(Module& M, char const* str, Twine const& name);

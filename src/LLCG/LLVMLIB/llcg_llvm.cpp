@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:41:19
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 21:49:20
+* @Last Modified time: 2015-11-26 08:11:08
 */
 
 #include "llcg_llvm.h"
@@ -297,7 +297,11 @@ LValue llcg_llvm::Dot(LValue value, int num) {
 
 LValue llcg_llvm::Select(LValue value, vector<LValue>& args) {
 	Value* v = *LLVALUE(value);
-	Value* len_array = CastInst::CreatePointerCast(v, Type::getInt64PtrTy(context));
+	Value* len_array;
+	if (v->getType()->getPointerElementType()->isIntegerTy(64))
+		len_array = v;
+	else 
+		len_array = CastInst::CreatePointerCast(v, Type::getInt64PtrTy(context));
 	Value* index;
 	if (args.size() != 0) {
 		index = *LLVALUE(args[0]);
@@ -350,8 +354,8 @@ void llcg_llvm::For(LValue cond, LValue init, LValue pd, LValue work, LValue sta
 	Value* _statement = *LLVALUE(statement);
 	BasicBlock* init_block = dyn_cast<BasicBlock>(_init);
 	BasicBlock* end_block  = dyn_cast<BasicBlock>(_pd);
-	BasicBlock* work_block = dyn_cast<BasicBlock>(_work);
-	BasicBlock* do_block   = dyn_cast<BasicBlock>(_statement);
+	BasicBlock* do_block   = dyn_cast<BasicBlock>(_work);
+	BasicBlock* work_block = dyn_cast<BasicBlock>(_statement);
 	
 	BasicBlock* false_block = createBlock();
 	BranchInst* branch = BranchInst::Create(work_block, false_block, condition, end_block);
@@ -486,12 +490,12 @@ extern const LibFunc stdlibs[];
 
 void llcg_llvm::BeginModule(string& name) {
 	M = make_unique<Module>(name, context);
-	register_stdlib(stdlibs);
+	register_stdlib(M.get(), stdlibs);
 }
 
-void llcg_llvm::register_stdlib(const LibFunc* libs_func) {
-	while (libs_func != NULL) {
-		(*libs_func)(M.get());
+void llcg_llvm::register_stdlib(Module* M, const LibFunc* libs_func) {
+	while (*libs_func != NULL) {
+		(*libs_func)(M);
 		++libs_func;
 	}
 }
@@ -499,7 +503,7 @@ void llcg_llvm::register_stdlib(const LibFunc* libs_func) {
 extern const LibFunc metalibs[];
 
 void llcg_llvm::register_metalib() {
-	register_stdlib(metalibs);
+	register_stdlib(meta_M.get(), metalibs);
 }
 
 LValue llcg_llvm::GetNowBasicBlock() {
@@ -521,17 +525,17 @@ void llcg_llvm::VerifyAndWrite(string& outfile_name) {
 }
 
 void llcg_llvm::verifyModuleAndWrite(llvm::Module* M, string& outfile_name) {
+	   // 输出编译后的LLVM可读字节码
+    outs() << "LLVM module:\n\n" << *M;
+    outs() << "\n\n";
+    outs().flush();
+
     // 校验问题, 这个函数需要一个输出流来打印错误信息
     if (verifyModule(*M, &errs())) {
         errs() << "构建LLVM字节码出错!\n";
         exit(1);
     }
-
-    // 输出编译后的LLVM可读字节码
-    outs() << "LLVM module:\n\n" << *M;
-    outs() << "\n\n";
-    outs().flush();
-
+ 
     // 输出二进制BitCode到.bc文件
     std::error_code ErrInfo;
     raw_ostream *out = new raw_fd_ostream(outfile_name.c_str(), ErrInfo, sys::fs::F_None);
@@ -596,7 +600,7 @@ void llcg_llvm::MakeMetaList(vector<string>& list) {
 	CallInst::Create(FuncF, args_list, "", &bb);
 }
 
-void llcg_llvm::MakeMetaList(vector<string>& list, LValue fp) {
+void llcg_llvm::MakeMetaList(string& name, vector<string>& list, LValue fp) {
 	Module* M = meta_M.get();
 	Function* F = M->getFunction("elite_meta_init");
 	vector<Value*> args_list;
@@ -609,8 +613,8 @@ void llcg_llvm::MakeMetaList(vector<string>& list, LValue fp) {
 		// 	init_meta_list.push_back(MDString::get(M->getContext(), "NULL"));
 	}
 	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
-	Value* f = *LLVALUE(fp);
-	Function* nowFunc = dyn_cast<Function>(f);
+	Type* ft = *LLTYPE(fp);
+	Function* nowFunc = dyn_cast<Function>(M->getOrInsertFunction(name, (FunctionType*)ft));
 	Type* nowType = Type::getInt8PtrTy(M->getContext());
 	args_list.push_back(ConstantExpr::getBitCast(nowFunc, nowType));
 	BasicBlock& bb = F->getEntryBlock();

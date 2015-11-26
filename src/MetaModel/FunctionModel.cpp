@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-13 16:45:51
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 21:50:11
+* @Last Modified time: 2015-11-25 22:20:59
 */
 
 #include "FunctionModel.h"
@@ -67,7 +67,7 @@ void FunctionModel::genMetaCode(CodeGenContext* context) {
 		data.push_back(type_list[i]);
 		data.push_back(name_list[i]);
 	}
-	context->getLLCG()->MakeMetaList(data, func);
+	context->getLLCG()->MakeMetaList(name, data, func_type);
 }
 
 MetaType FunctionModel::getMetaType() {
