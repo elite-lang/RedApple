@@ -7,7 +7,7 @@
 #define maxpath 1000
 using namespace std;
 
-const char help_message[] = "welcome for using Red Apple compiler v0.1!\nusage: red [options] src-files\n";
+const char help_message[] = "welcome for using Red Apple compiler v0.6!\nusage: red [options] src-files\n";
 
 extern FILE* yyin;
 extern Node *programBlock;

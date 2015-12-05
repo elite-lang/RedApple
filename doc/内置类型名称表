@@ -1,0 +1,6 @@
+int 整形64位
+uint 无符号整形
+float 32位单精度浮点数
+double 64位双精度浮点数
+char 字符类型16位 unicode码
+byte 字节 8位
