@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 15:46:10
+* @Last Modified time: 2015-12-10 17:36:01
 */
 
 #ifndef NODE_H
@@ -27,6 +27,7 @@ public:
 
 	// 便捷的构造list的方法
 	static Node* make_list(int num, ...);
+	static Node* makeList(int num, Node* plist[]);
 	static Node* getList(Node* node);
 	
 	// 全局构造析构

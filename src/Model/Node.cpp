@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:40
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-19 19:43:22
+* @Last Modified time: 2015-12-10 18:19:23
 */
 
 #include "Node.h"
@@ -145,12 +145,27 @@ Node* Node::make_list(int num, ...) {
 	va_start( argp, num );    
     for (int i = 0; i < num; ++i) {    
         para = va_arg( argp, Node* );  
+        if (para == NULL) continue;
         if (!para->isSingle()) para = new Node(para);
         if ( ans == NULL )    
         	ans = para;
         else ans->addBrother(para);
     }    
     va_end( argp );
+    return ans;
+}
+
+Node* Node::makeList(int num, Node* plist[]) {
+	Node* para = NULL;  
+	Node* ans = NULL;  
+	for (int i = 0; i < num; ++i) {    
+        para = plist[i];
+        if (para == NULL) continue;
+        if (!para->isSingle()) para = new Node(para);
+        if ( ans == NULL )    
+        	ans = para;
+        else ans->addBrother(para);
+    }    
     return ans;
 }
 

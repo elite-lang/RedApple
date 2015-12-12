@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 22:32:48
+* @Last Modified time: 2015-12-10 19:41:58
 */
 
 #include "CodeGenContext.h"
@@ -277,7 +277,7 @@ static LValue new_macro(CodeGenContext* context, Node* node) {
 		return context->getLLCG()->NewArray(t, args);
 	}
 }
-
+/*
 extern Node* parseFile(const char* path);
 
 static LValue import_macro(CodeGenContext* context, Node* node) {
@@ -287,7 +287,7 @@ static LValue import_macro(CodeGenContext* context, Node* node) {
 	context->RecoverMacros();
 	return NULL;
 }
-
+*/
 extern const FuncReg macro_funcs[] = {
 	{"function", function_macro},
 	{"struct",   struct_macro},
@@ -301,6 +301,6 @@ extern const FuncReg macro_funcs[] = {
 	{"if",       if_macro},
 	{"return",   return_macro},
 	{"new",      new_macro},
-	{"import",   import_macro}, // 实验型导入功能,最后应从库中删除 
+	//{"import",   import_macro}, // 实验型导入功能,最后应从库中删除 
 	{NULL, NULL}
 };

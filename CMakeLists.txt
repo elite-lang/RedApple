@@ -41,11 +41,10 @@ file(GLOB_RECURSE source_files	${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
                                 ${CMAKE_CURRENT_SOURCE_DIR}/src/LLCG/*.cpp
                                 ${CMAKE_CURRENT_SOURCE_DIR}/src/LLCG/*/*.cpp
                                 ${CMAKE_CURRENT_SOURCE_DIR}/src/cJSON/*.c)
+list(REMOVE_ITEM  source_files  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 
 add_library(red STATIC ${source_files} ${BISON_MyParser_OUTPUTS} ${FLEX_MyScanner_OUTPUTS})
-add_executable(redapple ${source_files} 
-						${BISON_MyParser_OUTPUTS} 
-						${FLEX_MyScanner_OUTPUTS})
+add_executable(redapple ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 
 
 install(TARGETS redapple RUNTIME DESTINATION bin)
@@ -57,7 +56,7 @@ llvm_map_components_to_libnames(llvm_libs
 	mc mcjit bitwriter x86codegen target)
 
 # Link against LLVM libraries
-target_link_libraries(redapple ${llvm_libs})
+target_link_libraries(redapple red ${llvm_libs})
 
 
 add_subdirectory(runtime)
