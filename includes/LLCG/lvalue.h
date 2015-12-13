@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-11-23 10:54:27
 * @Last Modified by:   sxf
@@ -10,6 +10,8 @@
 #define LVALUE_H
 
 #include <memory>
+#include <string>
+
 using namespace std;
 
 class lvalue;
