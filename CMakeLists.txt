@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(RedApple)
 
+if(NOT BUILD_ALL)
+
 set(LLVM_TARGETS_TO_BUILD X86)
 set(LLVM_BUILD_RUNTIME OFF)
 set(LLVM_BUILD_TOOLS OFF)
@@ -19,7 +21,7 @@ SET (CMAKE_CXX_FLAGS_MINSIZEREL  "-Os -DNDEBUG")
 SET (CMAKE_CXX_FLAGS_RELEASE  "-O4 -DNDEBUG")
 SET (CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
 
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+SET (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
@@ -30,7 +32,14 @@ BISON_TARGET(MyParser ${CMAKE_CURRENT_SOURCE_DIR}/src/redapple_parser.y
 					  ${CMAKE_CURRENT_BINARY_DIR}/redapple_parser.cpp)
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
-include_directories(Debug Release build includes includes/Model src src/Utils src/MetaModel src/cJSON 
+include_directories(${BISON_MyParser_OUTPUT_HEADER})
+  
+endif()
+
+
+
+# 核心路径配置
+include_directories(includes includes/Model src src/Utils src/MetaModel src/cJSON 
     src/LLCG/ src/LLCG/LLVMLIB)
 
 file(GLOB_RECURSE source_files	${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
@@ -43,9 +52,24 @@ file(GLOB_RECURSE source_files	${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
                                 ${CMAKE_CURRENT_SOURCE_DIR}/src/cJSON/*.c)
 list(REMOVE_ITEM  source_files  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 
-add_library(red STATIC ${source_files} ${BISON_MyParser_OUTPUTS} ${FLEX_MyScanner_OUTPUTS})
-add_executable(redapple ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+if(USE_DYNAMIC)
+	add_library(red SHARED ${source_files}) # 使用动态库
+else()
+	add_library(red STATIC ${source_files}) # 使用静态库
+endif()
 
+add_subdirectory(runtime)
+
+
+
+
+
+
+
+
+if(NOT BUILD_ALL)
+  
+add_executable(redapple ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp ${BISON_MyParser_OUTPUTS} ${FLEX_MyScanner_OUTPUTS})
 
 install(TARGETS redapple RUNTIME DESTINATION bin)
 
@@ -58,30 +82,9 @@ llvm_map_components_to_libnames(llvm_libs
 # Link against LLVM libraries
 target_link_libraries(redapple red ${llvm_libs})
 
-
-add_subdirectory(runtime)
-
+endif()
 
 
 
-FIND_PACKAGE(Doxygen)  
-OPTION(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})  
-  
-IF(BUILD_DOCUMENTATION)  
-    IF(NOT DOXYGEN_FOUND)  
-        MESSAGE(FATAL_ERROR "Doxygen is needed to build the documentation.")  
-    ENDIF()  
-  
-    SET(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)  
-    SET(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)  
-  
-    CONFIGURE_FILE(${doxyfile_in} ${doxyfile} @ONLY)  
-  
-    ADD_CUSTOM_TARGET(doc  
-        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}  
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}  
-        COMMENT "Generating API documentation with Doxygen"  
-        VERBATIM)  
-  
-    INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)  
-ENDIF()  
+
+
