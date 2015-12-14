@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-13 17:08:01
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 15:31:21
+* @Last Modified time: 2015-12-14 17:17:14
 */
 
 
@@ -21,6 +21,9 @@ enum MetaType
 
 class CodeGenContext;
 
+/**
+ * @brief 元数据模型基类
+ */
 class MetaModel : public lvalue
 {
 public:

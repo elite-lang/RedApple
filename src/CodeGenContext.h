@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 18:35:04
+* @Last Modified time: 2015-12-14 17:14:11
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -24,7 +24,15 @@ using namespace std;
 
 class CodeGenContext;
 
+/**
+ * @brief 定义宏翻译函数指针
+ */
 typedef LValue (*CodeGenFunction)(CodeGenContext*, Node*);
+
+/**
+ * @brief 宏翻译函数注册结构体
+ * @details name 为宏名, func 为函数指针
+ */
 typedef struct _funcReg
 {
 	const char*     name;
@@ -32,6 +40,15 @@ typedef struct _funcReg
 } FuncReg;
 
 
+/**
+ * @brief 代码生成上下文, 是代码生成中的关键信息存储类
+ * @details 存储最关键的数据, 例如符号栈, LLVM生成器对象.
+ *          在宏翻译过程中, 该上下文指针将会传入翻译函数中.\n
+ *          该上下文在编译器中, 同一时刻应该仅存在一份, 
+ *          生存周期为一个包的编译开始到包内全部代码翻译完毕.\n
+ *          切换上下文时, 相当于清空符号栈, 释放资源, 重启LLVM后端
+ *          会导致之前分析的符号全部消失
+ */
 class CodeGenContext
 {
 public:

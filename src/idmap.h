@@ -7,11 +7,18 @@ using namespace std;
 
 #include "LLCG/lvalue.h"
 
+
+/**
+ * 符号表中符号的基本类型
+ */
 enum SymbolType
 {
 	var_t, type_t, struct_t, enum_t, delegate_t, function_t, macro_t
 };
 
+/**
+ * @brief 栈式符号表返回的临时对象, 用来打包类型信息和值等, 无需释放资源
+ */
 struct id {
     int        level;
     SymbolType type;

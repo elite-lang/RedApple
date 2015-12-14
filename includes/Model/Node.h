@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-22 19:21:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-14 16:33:57
+* @Last Modified time: 2015-12-14 17:03:53
 */
 
 #ifndef NODE_H
@@ -22,12 +22,14 @@ class CodeGenContext;
  * @brief List的基本组成元素，表示一个代码中的基本节点
  * @details 编译器后端代码生成时，会构建Node节点串连起来的语法树，结构为左孩子
  *          右兄弟的二叉树，这样即可表示代码的基本结构
- *          Node节点的类型一般有如下几种(char 暂未使用)：
- *          id 		- 标识符 	- 对应NodeType为：id_node_t
- *          int 	- 整型 		- 对应NodeType为：int_node_t
- *          float 	- 浮点型 	- 对应NodeType为：float_node_t
- *          string 	- 字符串 	- 对应NodeType为：string_node_t
- *          type 	- 类型 		- 对应NodeType为：type_node_t
+ *          
+ *          Node节点的类型一般有如下几种(char 暂未使用)： \n
+ *          id 		- 标识符 	- 对应NodeType为：id_node_t \n
+ *          int 	- 整型 		- 对应NodeType为：int_node_t \n
+ *          float 	- 浮点型 	- 对应NodeType为：float_node_t \n
+ *          string 	- 字符串 	- 对应NodeType为：string_node_t \n
+ *          type 	- 类型 		- 对应NodeType为：type_node_t \n
+ *          @see NodeType
  *          
  *          一般语法解析器在连接这款后端代码生成器时，只需要控制生成Node构造的语法树即可，
  *          语法树的形状符合RedApple中的定义，即可正确编译为后端代码。
@@ -58,9 +60,9 @@ public:
 	/**
 	 * @brief 判断当前节点是一个元素, 还是一个链表
 	 * @details 判断当前节点是一个元素, 还是一个链表, 主要用于getList方法和makeList方法
-	 *          由于构造语法树时,很多情况不知道要添加的是一个节点还是一个链表
-	 *          这个方法可以用来判断
-	 *          但一般情况, getList方法应该足够使用了
+	 *          由于构造语法树时,很多情况不知道要添加的是一个节点还是一个链表.
+	 *          这个方法可以用来判断.\n
+	 *          但一般情况, getList方法应该足够使用了.
 	 * @return 是单一元素返回true, 是链表返回false
 	 */
 	bool isSingle();
@@ -81,7 +83,8 @@ public:
 
 	/**
 	 * @brief 其他语言的接口, 用来方便地构造一个列表
-	 * @details 用来方便地构造一个列表, 功能和make_list一样
+	 * @details 用来方便地构造一个列表, 功能和 make_list 一样 
+	 *          @see make_list()
 	 * 
 	 * @param num 参数的个数
 	 * @param plist 一个指针数组

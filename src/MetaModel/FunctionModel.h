@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-13 12:07:03
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 15:31:41
+* @Last Modified time: 2015-12-14 17:16:42
 */
 
 
@@ -13,6 +13,9 @@
 #include <vector>
 #include <string>
 
+/**
+ * @brief 函数模型元类型
+ */
 class FunctionModel : public MetaModel
 {
 public:

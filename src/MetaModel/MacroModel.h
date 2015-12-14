@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-25 15:01:05
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 21:56:55
+* @Last Modified time: 2015-12-14 17:16:56
 */
 
 
@@ -12,6 +12,9 @@
 #include "Model/Node.h"
 #include "MetaModel.h"
 
+/**
+ * @brief 宏模型元类型
+ */
 class MacroModel : public MetaModel
 {
 public:
