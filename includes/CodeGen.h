@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-11 13:57:49
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-16 11:21:16
+* @Last Modified time: 2015-12-14 16:38:55
 */
 
 
@@ -11,6 +11,14 @@
 
 class Node;
 
+/**
+ * @brief 代码生成器的接口类
+ * @details 代码生成器的接口
+ *          使用RedApple后端代码生成器时,核心功能可以通过该接口调用
+ *          首先调用Init初始化该生成器, 之后对全部定义头文件进行Prescan
+ *          接着对每一个要编译的目标文件调用Make, 
+ *          最后调用MakeMeta
+ */
 class CodeGen
 {
 public:
