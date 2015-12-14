@@ -1,7 +1,7 @@
 
 #include "StringEscape.h"
-#include <malloc.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 char StringEscapeGetChar(const char*& p) {
 	++p; char c;
@@ -14,7 +14,7 @@ char StringEscapeGetChar(const char*& p) {
 		case 't': c = '\t'; break;
 		case 'v': c = '\v'; break;
 		case '0': c = '\0'; break;
-		default: c = *p; 
+		default: c = *p;
 	}
 	return c;
 }
@@ -25,7 +25,7 @@ char* CharEscape(const char* str) {
 	char* ans = ret;
 	for (const char* p = str; *p != 0; ++p, ++ans) {
 		if (*p != '\\')
-			*ans = *p; 
+			*ans = *p;
 		else
 			*ans = StringEscapeGetChar(p);
 	}

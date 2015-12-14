@@ -1,4 +1,5 @@
 #include <map>
+
 using namespace std;
 
 #ifndef IDMAP_H
@@ -30,7 +31,7 @@ public:
 
     /**
      * @brief 查找一个符号，若不存在返回空
-     * 
+     *
      * @param str 符号名
      * @return 返回对应的id结构体指针，未找到返回NULL
      */
@@ -43,7 +44,7 @@ public:
 
     /**
      * @brief 插入一个符号
-     * 
+     *
      * @param str 名字
      * @param level 当前层次
      * @param type 枚举类型

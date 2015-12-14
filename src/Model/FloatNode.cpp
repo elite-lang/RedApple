@@ -4,7 +4,7 @@
 
 
 #include "FloatNode.h"
-#include <stdio.h>
+#include <cstdlib>
 /**
  * FloatNode implementation
  */

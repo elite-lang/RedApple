@@ -33,13 +33,13 @@ BISON_TARGET(MyParser ${CMAKE_CURRENT_SOURCE_DIR}/src/redapple_parser.y
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
 include_directories(${BISON_MyParser_OUTPUT_HEADER})
-  
+
 endif()
 
 
 
 # 核心路径配置
-include_directories(includes includes/Model src src/Utils src/MetaModel src/cJSON 
+include_directories(includes includes/Model includes/LLCG src src/Utils src/MetaModel src/cJSON 
     src/LLCG/ src/LLCG/LLVMLIB)
 
 file(GLOB_RECURSE source_files	${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
@@ -68,23 +68,18 @@ add_subdirectory(runtime)
 
 
 if(NOT BUILD_ALL)
-  
+
 add_executable(redapple ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp ${BISON_MyParser_OUTPUTS} ${FLEX_MyScanner_OUTPUTS})
 
 install(TARGETS redapple RUNTIME DESTINATION bin)
 
 # Find the libraries that correspond to the LLVM components
 # that we wish to use
-llvm_map_components_to_libnames(llvm_libs 
-	support core irreader executionengine interpreter 
+llvm_map_components_to_libnames(llvm_libs
+	support core irreader executionengine interpreter
 	mc mcjit bitwriter x86codegen target)
 
 # Link against LLVM libraries
 target_link_libraries(redapple red ${llvm_libs})
 
 endif()
-
-
-
-
-
