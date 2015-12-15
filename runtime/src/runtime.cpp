@@ -2,14 +2,14 @@
 * @Author: sxf
 * @Date:   2015-11-15 10:19:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-22 14:40:24
+* @Last Modified time: 2015-12-15 09:05:50
 */
 
 #include <string>
 #include <map>
 #include <vector>
 #include <cstdio>
-#include <malloc.h>
+#include <cstdlib>
 #include <cstdarg>
 #include "dyncall.h"
 
