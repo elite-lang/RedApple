@@ -2,16 +2,20 @@
 * @Author: sxf
 * @Date:   2015-09-22 22:00:32
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-02 15:54:15
+* @Last Modified time: 2015-12-16 22:42:02
 */
 
 
 #include "StringNode.h"
 #include <stdio.h>
-
+#include "Utils/StringEscape.h"
 
 StringNode::StringNode(const char* _value){
-	this->value = _value;
+	string data = _value;
+	if (data[0] == '@')
+		this->value = StringEscape(data.substr(2, data.length()-3));
+	else
+		this->value = StringEscape(data.substr(1, data.length()-2));
 }
 
 StringNode::StringNode(char _value){

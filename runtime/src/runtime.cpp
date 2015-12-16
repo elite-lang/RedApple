@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-15 10:19:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-16 19:50:38
+* @Last Modified time: 2015-12-16 22:33:55
 */
 
 #include <string>
@@ -66,11 +66,12 @@ extern "C" {
 	    vector<string> type_list;
 	    vector<string> name_list;    
 	    string sret_type = list[0];
-	    const char **para = ++list;                     /* 存放取出的字符串参数 */  
+	    const char **para = list+1;                     /* 存放取出的字符串参数 */  
 	    while (*para != NULL) {
 	        ++argno;
 	        if (argno & 1) type_list.push_back(*para);
 	        else       name_list.push_back(*para);
+	        printf("%s ", *para);
 	        ++para;
 	    }    
 	    string sname = name;
@@ -90,6 +91,7 @@ extern "C" {
 		        ++argno;
 		        if (argno & 1) type_list.push_back(*para);
 		        else       name_list.push_back(*para);
+		        printf("%s ", *para);
 		        ++para;
 		    }    
 		    EliteMeta::RegStruct(meta_name, type_list, name_list);
@@ -99,6 +101,10 @@ extern "C" {
 	void* FunctionCall(const char* name, ...) {
 		string sname = name;
 		FunctionMeta* fm = EliteMeta::getFunction(sname);
+		if (fm == NULL) {
+			printf("运行时异常, 反射调用的函数未找到: %s\n", name);
+			return NULL;
+		}
 		va_list argp;                   /* 定义保存函数参数的结构 */    
 	    va_start( argp, name );
 	    

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:37:15
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 22:20:50
+* @Last Modified time: 2015-12-16 22:12:37
 */
 
 
@@ -109,7 +109,8 @@ protected:
 	void register_stdlib(Module* M, const LibFunc*);
 	void register_metalib();
 	void verifyModuleAndWrite(llvm::Module* M, string& outfile_name);
-	Constant* geti8StrVal(Module& M, char const* str, Twine const& name);
+	static Constant* geti8StrVal(Module& M, char const* str, Twine const& name);
+	static Constant* getPtrArray(Module& M, vector<Constant*>& args_list);
 	GetElementPtrInst* ptrMove(Value* v, int n);
 	BasicBlock* createBlock();
 	BasicBlock* createBlock(Function* f);

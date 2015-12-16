@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:41:19
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-16 19:41:42
+* @Last Modified time: 2015-12-16 22:20:56
 */
 
 #include "llcg_llvm.h"
@@ -472,6 +472,19 @@ Constant* llcg_llvm::geti8StrVal(Module& M, char const* str, Twine const& name) 
     return strVal;
 }
 
+Constant* llcg_llvm::getPtrArray(Module& M, vector<Constant*>& args_list) {
+    LLVMContext& ctx = M.getContext(); // 千万别用Global Context
+    ArrayType* arr_type = ArrayType::get(Type::getInt8PtrTy(M.getContext()), args_list.size());
+    Constant* strConstant = ConstantArray::get(arr_type, args_list);
+    GlobalVariable* GVStr =
+        new GlobalVariable(M, arr_type, true,
+                           GlobalValue::InternalLinkage, strConstant, "");
+    Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
+    Constant* indices[] = {zero, zero};
+    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
+	return strVal;
+}
+
 LValue llcg_llvm::ConstString(string& str) {
 	return LValue(new llvm_value(geti8StrVal(*M, str.c_str(), "")));
 }
@@ -597,8 +610,9 @@ void llcg_llvm::MakeMetaList(vector<string>& list) {
 	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
 	BasicBlock& bb = F->getEntryBlock();
 	Function* FuncF = M->getFunction("elite_meta_list");
-	Constant* list_vec = ConstantVector::get(args_list);
-	vector<Value*> args; args.push_back(list_vec);
+	Constant* list_vec = getPtrArray(*M, args_list);
+	vector<Value*> args; 
+	args.push_back(list_vec); 
 	CallInst::Create(FuncF, args, "", &bb);
 }
 
@@ -615,15 +629,15 @@ void llcg_llvm::MakeMetaList(string& name, vector<string>& list, LValue fp) {
 		// 	init_meta_list.push_back(MDString::get(M->getContext(), "NULL"));
 	}
 	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
-	Constant* list_vec = ConstantVector::get(args_list);
+	
+	Constant* list_vec = getPtrArray(*M, args_list);
 	vector<Value*> args; 
 	args.push_back(geti8StrVal(*M, name.c_str(), "")); // 第一个参数, 函数名
-
-	Type* nowType = Type::getInt8PtrTy(M->getContext());
-	args.push_back(ConstantExpr::getBitCast(list_vec, nowType)); // 第二个参数, 函数类型定义字符串列表
+	args.push_back(list_vec); // 第二个参数, 函数类型定义字符串列表
 	
 	Type* ft = *LLTYPE(fp);
 	Function* nowFunc = dyn_cast<Function>(M->getOrInsertFunction(name, (FunctionType*)ft));
+	Type* nowType = Type::getInt8PtrTy(M->getContext());
 	args.push_back(ConstantExpr::getBitCast(nowFunc, nowType));
 	BasicBlock& bb = F->getEntryBlock();
 	Function* FuncF = M->getFunction("elite_meta_function");

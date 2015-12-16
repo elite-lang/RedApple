@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-24 10:21:35
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-16 19:30:05
+* @Last Modified time: 2015-12-16 22:22:28
 */
 
 #include "llcg_llvm.h"
@@ -44,7 +44,7 @@ static void register_functioncall(llvm::Module *module) {
 static void register_elite_meta_function(Module *module) {
     std::vector<Type*> arg_types;
     arg_types.push_back(Type::getInt8PtrTy(module->getContext()));
-    arg_types.push_back(Type::getInt8PtrTy(module->getContext()));
+    arg_types.push_back(Type::getInt8PtrTy(module->getContext())->getPointerTo());
     arg_types.push_back(Type::getInt8PtrTy(module->getContext()));
 
     FunctionType* meta_type =
@@ -61,7 +61,7 @@ static void register_elite_meta_function(Module *module) {
 
 static void register_elite_meta_list(Module *module) {
     std::vector<Type*> arg_types;
-    arg_types.push_back(Type::getInt8PtrTy(module->getContext()));
+    arg_types.push_back(Type::getInt8PtrTy(module->getContext())->getPointerTo());
 
     FunctionType* meta_type =
         FunctionType::get(
