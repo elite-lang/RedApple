@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-15 10:19:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-15 09:05:50
+* @Last Modified time: 2015-12-16 19:50:38
 */
 
 #include <string>
@@ -60,46 +60,40 @@ private:
 
 // 核心反射接口
 extern "C" {
-	void elite_meta_function(const char* name, const char* ret_type, ...) {
+	void elite_meta_function(const char* name, const char** list, void* fptr) {
 		printf("RegFunction: %s\n", name);
-		va_list argp;                   /* 定义保存函数参数的结构 */    
 	    int argno = 0;                  /* 纪录参数个数 */    
-	    const char *para;                     /* 存放取出的字符串参数 */    
 	    vector<string> type_list;
 	    vector<string> name_list;    
-	    va_start( argp, ret_type );
-	    para = va_arg( argp, const char*);  
-	    while (para != NULL) {
+	    string sret_type = list[0];
+	    const char **para = ++list;                     /* 存放取出的字符串参数 */  
+	    while (*para != NULL) {
 	        ++argno;
-	        if (argno & 1) type_list.push_back(para);
-	        else       name_list.push_back(para);
-	        para = va_arg( argp, char *);  
+	        if (argno & 1) type_list.push_back(*para);
+	        else       name_list.push_back(*para);
+	        ++para;
 	    }    
-	    void* fptr = va_arg( argp, void*);  
 	    string sname = name;
-	    string sret_type = ret_type;
 	    EliteMeta::RegFunction(sname, sret_type, type_list, name_list, fptr);
-	    va_end( argp );                                   /* 将argp置为NULL */    
 	}
 
-	void elite_meta_struct(const char* name, ...) {
-		printf("RegStruct: %s\n", name);
-		va_list argp;                   /* 定义保存函数参数的结构 */    
-	    int argno = 0;                  /* 纪录参数个数 */    
-	    const char *para;                     /* 存放取出的字符串参数 */    
-	    vector<string> type_list;
-	    vector<string> name_list;    
-	    va_start( argp, name );
-	    para = va_arg( argp, const char*);  
-	    while (para != NULL) {
-	        ++argno;
-	        if (argno & 1) type_list.push_back(para);
-	        else       name_list.push_back(para);
-	        para = va_arg( argp, char *);  
-	    }    
-	    string sname = name;
-	    EliteMeta::RegStruct(sname, type_list, name_list);
-	    va_end( argp );                                   /* 将argp置为NULL */    
+	void elite_meta_list(const char** list) {
+		string meta_type = list[0];
+		if (meta_type == "struct") {
+			string meta_name = list[1];
+			printf("RegStruct: %s\n", meta_name.c_str());
+		    int argno = 0;                  /* 纪录参数个数 */    
+		    const char** para = list+2;        /* 存放取出的字符串参数 */    
+		    vector<string> type_list;
+		    vector<string> name_list;    
+		    while (*para != NULL) {
+		        ++argno;
+		        if (argno & 1) type_list.push_back(*para);
+		        else       name_list.push_back(*para);
+		        ++para;
+		    }    
+		    EliteMeta::RegStruct(meta_name, type_list, name_list);
+		}
 	}
 
 	void* FunctionCall(const char* name, ...) {

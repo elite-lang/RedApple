@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-13 16:45:51
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 22:20:59
+* @Last Modified time: 2015-12-16 19:52:20
 */
 
 #include "FunctionModel.h"
@@ -60,12 +60,10 @@ cJSON* FunctionModel::genJson() {
 
 void FunctionModel::genMetaCode(CodeGenContext* context) {
 	vector<string> data;
-	data.push_back("function");
-	data.push_back(name);
-	data.push_back(return_type);
+	data.push_back(return_type); // 参数表1, 返回类型
 	for (int i = 0; i < name_list.size(); ++i) {
-		data.push_back(type_list[i]);
-		data.push_back(name_list[i]);
+		data.push_back(type_list[i]); // 类型
+		data.push_back(name_list[i]); // 名称
 	}
 	context->getLLCG()->MakeMetaList(name, data, func_type);
 }

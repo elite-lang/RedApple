@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:41:19
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-26 08:11:08
+* @Last Modified time: 2015-12-16 19:41:42
 */
 
 #include "llcg_llvm.h"
@@ -590,20 +590,22 @@ BasicBlock* llcg_llvm::createBlock(Function* f) {
 void llcg_llvm::MakeMetaList(vector<string>& list) {
 	Module* M = meta_M.get();
 	Function* F = M->getFunction("elite_meta_init");
-	vector<Value*> args_list;
+	vector<Constant*> args_list;
 	for (int i = 0; i < list.size(); ++i) {
 		args_list.push_back(geti8StrVal(*M, list[i].c_str(), ""));
 	}
 	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
 	BasicBlock& bb = F->getEntryBlock();
 	Function* FuncF = M->getFunction("elite_meta_list");
-	CallInst::Create(FuncF, args_list, "", &bb);
+	Constant* list_vec = ConstantVector::get(args_list);
+	vector<Value*> args; args.push_back(list_vec);
+	CallInst::Create(FuncF, args, "", &bb);
 }
 
 void llcg_llvm::MakeMetaList(string& name, vector<string>& list, LValue fp) {
 	Module* M = meta_M.get();
 	Function* F = M->getFunction("elite_meta_init");
-	vector<Value*> args_list;
+	vector<Constant*> args_list;
 	for (int i = 0; i < list.size(); ++i) {
 		args_list.push_back(geti8StrVal(*M, list[i].c_str(), ""));
 		// Constant* c = init_list[i];
@@ -613,11 +615,17 @@ void llcg_llvm::MakeMetaList(string& name, vector<string>& list, LValue fp) {
 		// 	init_meta_list.push_back(MDString::get(M->getContext(), "NULL"));
 	}
 	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
+	Constant* list_vec = ConstantVector::get(args_list);
+	vector<Value*> args; 
+	args.push_back(geti8StrVal(*M, name.c_str(), "")); // 第一个参数, 函数名
+
+	Type* nowType = Type::getInt8PtrTy(M->getContext());
+	args.push_back(ConstantExpr::getBitCast(list_vec, nowType)); // 第二个参数, 函数类型定义字符串列表
+	
 	Type* ft = *LLTYPE(fp);
 	Function* nowFunc = dyn_cast<Function>(M->getOrInsertFunction(name, (FunctionType*)ft));
-	Type* nowType = Type::getInt8PtrTy(M->getContext());
-	args_list.push_back(ConstantExpr::getBitCast(nowFunc, nowType));
+	args.push_back(ConstantExpr::getBitCast(nowFunc, nowType));
 	BasicBlock& bb = F->getEntryBlock();
 	Function* FuncF = M->getFunction("elite_meta_function");
-	CallInst::Create(FuncF, args_list, "", &bb);
+	CallInst::Create(FuncF, args, "", &bb);
 }

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-24 10:21:35
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 21:41:38
+* @Last Modified time: 2015-12-16 19:30:05
 */
 
 #include "llcg_llvm.h"
@@ -45,10 +45,11 @@ static void register_elite_meta_function(Module *module) {
     std::vector<Type*> arg_types;
     arg_types.push_back(Type::getInt8PtrTy(module->getContext()));
     arg_types.push_back(Type::getInt8PtrTy(module->getContext()));
+    arg_types.push_back(Type::getInt8PtrTy(module->getContext()));
 
     FunctionType* meta_type =
         FunctionType::get(
-            Type::getVoidTy(module->getContext()), arg_types, true);
+            Type::getVoidTy(module->getContext()), arg_types, false);
 
     Function *func = Function::Create(
                 meta_type, Function::ExternalLinkage,
