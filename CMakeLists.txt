@@ -32,7 +32,7 @@ BISON_TARGET(MyParser ${CMAKE_CURRENT_SOURCE_DIR}/src/redapple_parser.y
 					  ${CMAKE_CURRENT_BINARY_DIR}/redapple_parser.cpp)
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
-include_directories(${BISON_MyParser_OUTPUT_HEADER})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 endif()
 

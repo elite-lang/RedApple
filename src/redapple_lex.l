@@ -5,15 +5,12 @@
 using namespace std;
 
 #include "redapple_parser.hpp"
-#include "StringEscape.h"
 
 #define SAVE_TOKEN     yylval.str = maketoken(yytext, yyleng)
-#define SAVE_STRING    yylval.str = makestring(yytext, yyleng, 2)
-#define SAVE_STRING_NC yylval.str = makestring(yytext, yyleng, 3)
+#define SAVE_STRING    yylval.str = maketoken(yytext, yyleng)
+#define SAVE_STRING_NC yylval.str = maketoken(yytext, yyleng)
 extern "C" int yywrap() { return 1; }
 char* maketoken(const char* data, int len);
-char* makestring(const char* data, int len, int s);
-
 %}
 
 %option yylineno
@@ -156,14 +153,4 @@ char* maketoken(const char* data, int len) {
     strncpy(str, data, len);
     str[len] = 0;
     return str;
-}
-
-char* makestring(const char* data, int len, int s) {
-    char* str = new char[len-s+1];
-    strncpy(str, data+s-1, len-s);
-    str[len-s] = 0;
-    if (s == 3) return str;
-    char* ans = CharEscape(str);
-    delete[] str;
-    return ans; 
 }
