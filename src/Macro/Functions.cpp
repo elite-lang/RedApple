@@ -106,7 +106,7 @@ static LValue call_macro(CodeGenContext* context, Node* node) {
 	// 参数一 函数名
 	LValue func = context->getFunction(node);
 	if (func == NULL) {
-		cerr << "找不到函数的定义：";
+		cerr << "找不到函数的定义: ";
 		cerr << node->getStr() << endl;
 		exit(1);
 	}

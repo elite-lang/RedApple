@@ -25,7 +25,7 @@ void MacroModel::genCode(CodeGenContext* context) {
 }
 
 cJSON* MacroModel::genJson() {
-
+	return NULL;
 }
 
 void MacroModel::genMetaCode(CodeGenContext* context) {

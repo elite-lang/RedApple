@@ -33,7 +33,14 @@ struct StructMeta {
 
 enum NormalType
 {
-	void_t, int_t, float_t, double_t, char_t, byte_t, ptr_t, unknown_t
+	void_normal_t, 
+	int_normal_t, 
+	float_normal_t, 
+	double_normal_t, 
+	char_normal_t, 
+	byte_normal_t, 
+	ptr_normal_t, 
+	unknown_normal_t
 };
 
 class EliteMeta {
@@ -116,12 +123,12 @@ extern "C" {
 		for (auto& s : fm->type_list) {
 			NormalType t = EliteMeta::getNormalType(s);
 			switch (t) {
-				case int_t:     dcArgInt(vm, va_arg(argp, int));  break;
-				case float_t :  dcArgFloat(vm, (float)va_arg(argp, double)); break; // 默认参数提升
-				case double_t : dcArgDouble(vm, va_arg(argp, double)); break;
-				case char_t :   dcArgShort(vm, (short)va_arg(argp, int)); break;
-				case byte_t :   dcArgChar(vm, (char)va_arg(argp, int)); break;
-				case ptr_t :    dcArgPointer(vm, va_arg(argp, void*)); break;
+				case int_normal_t:     dcArgInt(vm, va_arg(argp, int));  break;
+				case float_normal_t:  dcArgFloat(vm, (float)va_arg(argp, double)); break; // 默认参数提升
+				case double_normal_t: dcArgDouble(vm, va_arg(argp, double)); break;
+				case char_normal_t:   dcArgShort(vm, (short)va_arg(argp, int)); break;
+				case byte_normal_t:   dcArgChar(vm, (char)va_arg(argp, int)); break;
+				case ptr_normal_t:    dcArgPointer(vm, va_arg(argp, void*)); break;
 				default:
 					printf("函数类型异常: %s 类型不能作为参数\n", s.c_str());
 	    			va_end( argp );                                   /* 将argp置为NULL */    
@@ -133,13 +140,13 @@ extern "C" {
 		DCpointer fptr = (DCpointer)(fm->function_ptr);
 		NormalType t = EliteMeta::getNormalType(fm->ret_type);
 			switch (t) {
-				case void_t :  ans = NULL;   dcCallVoid(vm, fptr); break;
-				case int_t:    ans = (void*) dcCallInt(vm, fptr);  break;
-				// case float_t : ans = (void*) dcCallFloat(vm, fptr); break;
-				// case double_t :ans = (void*) dcCallDouble(vm, fptr); break;
-				case char_t :  ans = (void*) dcCallShort(vm, fptr); break;
-				case byte_t :  ans = (void*) dcCallChar(vm, fptr); break;
-				case ptr_t :   ans = (void*) dcCallPointer(vm, fptr); break;
+				case void_normal_t:  ans = NULL;   dcCallVoid(vm, fptr); break;
+				case int_normal_t:    ans = (void*)dcCallInt(vm, fptr);  break;
+				// case float_normal_t : ans = (void*) dcCallFloat(vm, fptr); break;
+				// case double_normal_t :ans = (void*) dcCallDouble(vm, fptr); break;
+				case char_normal_t:  ans = (void*)dcCallShort(vm, fptr); break;
+				case byte_normal_t:  ans = (void*)dcCallChar(vm, fptr); break;
+				case ptr_normal_t:   ans = (void*)dcCallPointer(vm, fptr); break;
 				default:
 					printf("函数类型异常: %s 类型不能作为返回类型\n", fm->ret_type.c_str());
 					return NULL;
@@ -218,12 +225,12 @@ EliteMeta& EliteMeta::getInstance() {
 
 
 NormalType EliteMeta::getNormalType(string& name) {
-	if (getStruct(name) != NULL) return ptr_t;
-	if (name == "void") return void_t;
-	if (name == "int") return int_t;
-	if (name == "float") return float_t;
-	if (name == "double") return double_t;
-	if (name == "char") return char_t;
-	if (name == "byte") return byte_t;
-	return unknown_t;
+	if (getStruct(name) != NULL) return ptr_normal_t;
+	if (name == "void") return void_normal_t;
+	if (name == "int") return int_normal_t;
+	if (name == "float") return float_normal_t;
+	if (name == "double") return double_normal_t;
+	if (name == "char") return char_normal_t;
+	if (name == "byte") return byte_normal_t;
+	return unknown_normal_t;
 }

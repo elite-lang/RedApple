@@ -51,7 +51,7 @@ void StructModel::genCode(CodeGenContext* context) {
 }
 
 cJSON* StructModel::genJson() {
-
+	return NULL;
 }
 
 void StructModel::genMetaCode(CodeGenContext* context) {

@@ -216,6 +216,6 @@ std::string Node::getTypeName() {
 }
 
 std::string& Node::getStr() {
-	std::cerr << "getStr() - 获取字符串错误, 该类型不正确：" << getTypeName() << std::endl;
+	std::cerr << "getStr() - 获取字符串错误, 该类型不正确: " << getTypeName() << std::endl;
 	exit(1);
 }

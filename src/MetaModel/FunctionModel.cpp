@@ -55,7 +55,7 @@ void FunctionModel::genCode(CodeGenContext* context) {
 }
 
 cJSON* FunctionModel::genJson() {
-
+	return NULL;
 }
 
 void FunctionModel::genMetaCode(CodeGenContext* context) {

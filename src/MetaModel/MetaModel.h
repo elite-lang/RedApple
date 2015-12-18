@@ -39,6 +39,25 @@ public:
 	static MetaModel* readJson(cJSON*);
 	static MetaModel* readMetaCode();
 
+	virtual bool isStructType() {
+		return false;
+	}
+
+	// 当前为值时，获取当前的类型
+	virtual LValue getType() {
+		return NULL;
+	}
+
+	// 当前为值或类型,都能获得对应的名称
+	virtual string getTypeName() {
+		return "";
+	}
+
+	// 当前为类型时, 返回一个新的指针类型
+	virtual LValue getPointerTo() {
+		return NULL;
+	}
+
 protected:
 	std::string name;
 };

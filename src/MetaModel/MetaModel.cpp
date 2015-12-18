@@ -17,10 +17,10 @@ MetaModel::~MetaModel() {
 }
 
 MetaModel* MetaModel::readJson(cJSON* J) {
-
+	return NULL;
 }
 
 MetaModel* MetaModel::readMetaCode() {
-
+	return NULL;
 }
 

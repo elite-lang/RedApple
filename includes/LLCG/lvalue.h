@@ -24,16 +24,16 @@ class lvalue
 {
 public:
 
-	virtual bool isStructType(){};
+	virtual bool isStructType() = 0;
 
 	// 当前为值时，获取当前的类型
-	virtual LValue getType(){};
+	virtual LValue getType() = 0;
 
 	// 当前为值或类型,都能获得对应的名称
-	virtual string getTypeName(){};
+	virtual string getTypeName() = 0;
 
 	// 当前为类型时, 返回一个新的指针类型
-	virtual LValue getPointerTo(){};
+	virtual LValue getPointerTo() = 0;
 };
 
 

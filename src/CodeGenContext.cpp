@@ -91,7 +91,7 @@ LValue CodeGenContext::getFunction(std::string& name) {
 	if (fm != NULL) return fm->getFunction(this);
 	LValue defined_func = getLLCG()->getFunction(name);
 	if (defined_func != NULL) return defined_func;
-	cerr << "错误！函数未定义：" << name << endl;
+	cerr << "函数未定义: " << name << endl;
 	return NULL;
 }
 
