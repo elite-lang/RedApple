@@ -11,7 +11,7 @@
 #include "llvm_type.h"
 
 llcg_llvm::llcg_llvm() {
-	meta_M = make_unique<Module>("", context);
+	meta_M = std::make_unique<Module>("", context);
 	register_metalib();
 }
 
@@ -20,7 +20,7 @@ llcg_llvm::~llcg_llvm() {
 }
 
 LValue llcg_llvm::FuncType(FunctionModel* fmodel) {
-
+	return nullptr;
 } // 返回FunctionType
 
 LValue llcg_llvm::FuncType(LValue ret_type, vector<LValue>& types, bool isNotSure) {
@@ -36,7 +36,7 @@ LValue llcg_llvm::FuncType(LValue ret_type, vector<LValue>& types, bool isNotSur
 }
 
 LValue llcg_llvm::GetOrInsertFunction(FunctionModel* fmodel) {
-
+	return nullptr;
 } // 返回Function
 
 LValue llcg_llvm::GetOrInsertFunction(string& name, LValue func_type) {
@@ -47,7 +47,7 @@ LValue llcg_llvm::GetOrInsertFunction(string& name, LValue func_type) {
 }
 
 LValue llcg_llvm::GetOrInsertFunction(string& name, LValue ret_type, vector<LValue>& types, bool isNotSure) {
-
+	return nullptr;
 }
 
 void   llcg_llvm::FunctionBodyBegin(LValue func, vector<string>& name_list) {
@@ -83,6 +83,7 @@ LValue llcg_llvm::Call(FunctionModel* fmodel, vector<LValue>& args) {
 
 	// CallInst *call = CallInst::Create(_func, fargs, "", nowBlock);
 	// return LValue(new llvm_value(call));
+	return nullptr;
 } // 返回CallInst
 
 LValue llcg_llvm::Call(LValue func, vector<LValue>& args) {
@@ -98,7 +99,7 @@ LValue llcg_llvm::Call(LValue func, vector<LValue>& args) {
 }
 
 LValue llcg_llvm::Struct(StructModel* smodel) {
-
+	return nullptr;
 } // 返回StructType
 
 LValue llcg_llvm::Struct(LValue _struct, vector<LValue>& types) {
@@ -188,7 +189,7 @@ saveWork:
 
 static Value* getCast(Value* v, Type* t, BasicBlock* bb) {
 	Instruction::CastOps cops = CastInst::getCastOpcode(v, true, t, true);
-	CastInst::Create(cops, v, t, "", bb);
+	return CastInst::Create(cops, v, t, "", bb);
 }
 
 static void normalize_type(Value*& v1, Value*& v2, BasicBlock* bb) {
@@ -290,8 +291,7 @@ LValue llcg_llvm::Dot(LValue value, int num) {
 	std::vector<Value*> indices;
 	indices.push_back(zero); 
 	indices.push_back(n);
-
-	GetElementPtrInst* ptr = GetElementPtrInst::Create(ans, indices, "", nowBlock);
+	GetElementPtrInst* ptr = GetElementPtrInst::CreateInBounds(ans, indices, "", nowBlock);
 	return LValue(new llvm_value(ptr));
 }
 
@@ -315,7 +315,7 @@ LValue llcg_llvm::Select(LValue value, vector<LValue>& args) {
 
 	std::vector<Value*> indices;
 	indices.push_back(index);
-	GetElementPtrInst* ptr = GetElementPtrInst::Create(v, indices, "", nowBlock);
+	GetElementPtrInst* ptr = GetElementPtrInst::CreateInBounds(v, indices, "", nowBlock);
 	return LValue(new llvm_value(ptr));
 }
 
@@ -323,7 +323,8 @@ GetElementPtrInst* llcg_llvm::ptrMove(Value* v, int n) {
 	std::vector<Value*> indices;
 	ConstantInt* num = ConstantInt::get(Type::getInt64Ty(context), n);
 	indices.push_back(num);
-	GetElementPtrInst* p1 = GetElementPtrInst::Create(v, indices, "", nowBlock);
+	GetElementPtrInst* p1 = GetElementPtrInst::CreateInBounds(v, indices, "", nowBlock);
+	return p1;
 }
 
 
@@ -468,7 +469,7 @@ Constant* llcg_llvm::geti8StrVal(Module& M, char const* str, Twine const& name) 
                            GlobalValue::InternalLinkage, strConstant, name);
     Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
     Constant* indices[] = {zero, zero};
-    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
+    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr->getType(), GVStr, indices, true);
     return strVal;
 }
 
@@ -481,7 +482,7 @@ Constant* llcg_llvm::getPtrArray(Module& M, vector<Constant*>& args_list) {
                            GlobalValue::InternalLinkage, strConstant, "");
     Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
     Constant* indices[] = {zero, zero};
-    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
+    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr->getType(), GVStr, indices, true);
 	return strVal;
 }
 
@@ -502,7 +503,7 @@ LValue llcg_llvm::ConstDouble(double num) {
 extern const LibFunc stdlibs[];
 
 void llcg_llvm::BeginModule(string& name) {
-	M = make_unique<Module>(name, context);
+	M = std::make_unique<Module>(name, context);
 	register_stdlib(M.get(), stdlibs);
 }
 
