@@ -36,6 +36,15 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 endif()
 
+if(MSVC)
+	#define llvm version
+	if (${LLVM_PACKAGE_VERSION} LESS 3.7.0)
+		set(CMAKE_CXX_FLAGS "/DLLVM_3_6")
+	else()
+		set(CMAKE_CXX_FLAGS "/DLLVM_3_7")
+	endif()
+endif()
+
 
 
 # 核心路径配置

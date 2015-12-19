@@ -11,7 +11,7 @@
 #include "llvm_type.h"
 
 llcg_llvm::llcg_llvm() {
-	meta_M = std::make_unique<Module>("", context);
+	meta_M = llvm::make_unique<Module>("", context);
 	register_metalib();
 }
 
@@ -469,7 +469,11 @@ Constant* llcg_llvm::geti8StrVal(Module& M, char const* str, Twine const& name) 
                            GlobalValue::InternalLinkage, strConstant, name);
     Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
     Constant* indices[] = {zero, zero};
-    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
+#if defined(LLVM_3_7)
+	Constant* strVal = ConstantExpr::getGetElementPtr(GVStr->getType(), GVStr, indices, true);
+#else
+	Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
+#endif
     return strVal;
 }
 
@@ -482,7 +486,11 @@ Constant* llcg_llvm::getPtrArray(Module& M, vector<Constant*>& args_list) {
                            GlobalValue::InternalLinkage, strConstant, "");
     Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
     Constant* indices[] = {zero, zero};
-    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
+#if defined(LLVM_3_7)
+	Constant* strVal = ConstantExpr::getGetElementPtr(GVStr->getType(), GVStr, indices, true);
+#else
+	Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
+#endif
 	return strVal;
 }
 
@@ -503,7 +511,7 @@ LValue llcg_llvm::ConstDouble(double num) {
 extern const LibFunc stdlibs[];
 
 void llcg_llvm::BeginModule(string& name) {
-	M = std::make_unique<Module>(name, context);
+	M = llvm::make_unique<Module>(name, context);
 	register_stdlib(M.get(), stdlibs);
 }
 
