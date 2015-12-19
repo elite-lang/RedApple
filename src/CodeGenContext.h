@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-14 17:14:11
+* @Last Modified time: 2015-12-19 12:50:18
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -21,23 +21,7 @@ using namespace std;
 #include "MetaModel/StructModel.h"
 #include "MetaModel/FunctionModel.h"
 #include "MetaModel/MacroModel.h"
-
-class CodeGenContext;
-
-/**
- * @brief 定义宏翻译函数指针
- */
-typedef LValue (*CodeGenFunction)(CodeGenContext*, Node*);
-
-/**
- * @brief 宏翻译函数注册结构体
- * @details name 为宏名, func 为函数指针
- */
-typedef struct _funcReg
-{
-	const char*     name;
-	CodeGenFunction func;
-} FuncReg;
+#include "CodeGenFunction.h"
 
 
 /**
@@ -100,7 +84,7 @@ public:
 	 * @param str 宏的名字
 	 * @return 如果有，则返回函数指针，否则返回NULL
 	 */
-	CodeGenFunction getMacro(string& str);
+	CodeGenFunction* getMacro(string& str);
 
 	// C++注册宏
 	// void AddMacros(const FuncReg* macro_funcs); // 为只添加不替换保留
@@ -172,12 +156,16 @@ public:
 	IDTable* st;
 
 	/**
-	 * @brief 获取低层次代码生成器，目前只有
+	 * @brief 获取低层次代码生成器，目前只有llvm
 	 * @return 生成器指针
 	 */
 	llcg* getLLCG() { return codeGenerator; }
 
+	CodeRunLua getCodeRunLua() { return luaRun_ptr; }
+	void getCodeRunLua(CodeRunLua ptr) { luaRun_ptr = ptr; }
+
 private:
+
 	llcg* codeGenerator;
 
 	/**
@@ -190,13 +178,13 @@ private:
 	 * @brief 宏定义表，用来查找是否有该宏定义的
 	 * @details 宏定义表，里面存放有对应名称的C语言宏处理函数
 	 */
-	map<string, CodeGenFunction> macro_map;
+	map<string, CodeGenFunction*> macro_map;
 
 	/**
 	 * @brief 这个栈是用来临时保存上面的查询表的
 	 * @details 某些情况，可能会对宏处理的函数进行临时的变更，就需要保存和恢复全部的状态，这个栈是用来记录宏表的
 	 */
-	stack<map<string, CodeGenFunction> > macro_save_stack;
+	stack<map<string, CodeGenFunction*> > macro_save_stack;
 
 	void setNormalType();
 
@@ -204,6 +192,8 @@ private:
 	 * 用来记录当前是读取还是存入状态
 	 */ 
 	bool _save;
+
+	CodeRunLua luaRun_ptr;
 };
 
 

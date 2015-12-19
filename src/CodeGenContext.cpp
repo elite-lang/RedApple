@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-26 20:38:59
+* @Last Modified time: 2015-12-19 12:55:59
 */
 
 #include "CodeGenContext.h"
@@ -28,9 +28,9 @@ LValue CodeGenContext::MacroMake(Node* node) {
 			Node::FreeAll(replace);
 			return ans;
 		}
-		CodeGenFunction func = getMacro(node->getStr());
+		CodeGenFunction* func = getMacro(node->getStr());
 		if (func != NULL) {
-			return func(this, node->getNext());
+			return func->call(this, node->getNext());
 		} 
 		return NULL;
 	} 
@@ -42,7 +42,7 @@ LValue CodeGenContext::MacroMake(Node* node) {
 	return ans;
 }
 
-CodeGenFunction CodeGenContext::getMacro(string& str) {
+CodeGenFunction* CodeGenContext::getMacro(string& str) {
 	auto func = macro_map.find(str);
 	if (func != macro_map.end()) return func->second;
 	else return NULL;
@@ -63,12 +63,14 @@ void CodeGenContext::ScanOther(Node* node) {
 
 void CodeGenContext::AddOrReplaceMacros(const FuncReg* macro_funcs) {
 	while (true) {
-		const char*     name = macro_funcs->name;
-		CodeGenFunction func = macro_funcs->func;
+		const char*      name = macro_funcs->name;
+		CodeGenCFunction func = macro_funcs->func;
 		if (name == NULL) return;
 		auto p = macro_map.find(name);
-		if (p != macro_map.end()) p->second = func;
-		else macro_map.insert(pair<string, CodeGenFunction>(name, func));
+		if (p != macro_map.end()) 
+			p->second = new CodeGenFunction(func);
+		else 
+			macro_map.insert(make_pair<string, CodeGenFunction*>(name, new CodeGenFunction(func)));
 		++macro_funcs;
 	}
 }
