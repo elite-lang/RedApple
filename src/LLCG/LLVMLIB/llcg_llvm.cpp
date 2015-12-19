@@ -469,7 +469,7 @@ Constant* llcg_llvm::geti8StrVal(Module& M, char const* str, Twine const& name) 
                            GlobalValue::InternalLinkage, strConstant, name);
     Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
     Constant* indices[] = {zero, zero};
-    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr->getType(), GVStr, indices, true);
+    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
     return strVal;
 }
 
@@ -482,7 +482,7 @@ Constant* llcg_llvm::getPtrArray(Module& M, vector<Constant*>& args_list) {
                            GlobalValue::InternalLinkage, strConstant, "");
     Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
     Constant* indices[] = {zero, zero};
-    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr->getType(), GVStr, indices, true);
+    Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
 	return strVal;
 }
 
