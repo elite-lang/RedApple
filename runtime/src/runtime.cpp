@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-15 10:19:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-16 22:33:55
+* @Last Modified time: 2015-12-20 22:50:41
 */
 
 #include <string>
@@ -68,7 +68,7 @@ private:
 // 核心反射接口
 extern "C" {
 	void elite_meta_function(const char* name, const char** list, void* fptr) {
-		printf("RegFunction: %s\n", name);
+		// printf("RegFunction: %s\n", name);
 	    int argno = 0;                  /* 纪录参数个数 */    
 	    vector<string> type_list;
 	    vector<string> name_list;    
@@ -78,7 +78,7 @@ extern "C" {
 	        ++argno;
 	        if (argno & 1) type_list.push_back(*para);
 	        else       name_list.push_back(*para);
-	        printf("%s ", *para);
+	        // printf("%s ", *para);
 	        ++para;
 	    }    
 	    string sname = name;
@@ -89,7 +89,7 @@ extern "C" {
 		string meta_type = list[0];
 		if (meta_type == "struct") {
 			string meta_name = list[1];
-			printf("RegStruct: %s\n", meta_name.c_str());
+			// printf("RegStruct: %s\n", meta_name.c_str());
 		    int argno = 0;                  /* 纪录参数个数 */    
 		    const char** para = list+2;        /* 存放取出的字符串参数 */    
 		    vector<string> type_list;
@@ -98,7 +98,7 @@ extern "C" {
 		        ++argno;
 		        if (argno & 1) type_list.push_back(*para);
 		        else       name_list.push_back(*para);
-		        printf("%s ", *para);
+		        // printf("%s ", *para);
 		        ++para;
 		    }    
 		    EliteMeta::RegStruct(meta_name, type_list, name_list);
