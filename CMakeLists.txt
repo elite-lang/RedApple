@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 project(RedApple)
 
 if(NOT BUILD_ALL)
-
+	
+SET (CMAKE_BUILD_TYPE Debug) # 默认构建Debug模式
 set(LLVM_TARGETS_TO_BUILD X86)
 set(LLVM_BUILD_RUNTIME OFF)
 set(LLVM_BUILD_TOOLS OFF)

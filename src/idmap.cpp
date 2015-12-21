@@ -12,7 +12,7 @@ IDMap::~IDMap()
     }
 }
 
-id* IDMap::find(string& str) const {
+id* IDMap::find(const string& str) const {
     auto p = ID_map.find(str);
     if (p != ID_map.end())
         return (*p).second;
@@ -23,7 +23,7 @@ map<string,id*>& IDMap::getAll() {
     return ID_map;
 }
 
-void IDMap::insert(string& str, int level, SymbolType type, LValue data) {
+void IDMap::insert(const string& str, int level, SymbolType type, LValue data) {
 	id* i = new id();
 	i->level = level;
 	i->type = type;

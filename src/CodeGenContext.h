@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-19 12:50:18
+* @Last Modified time: 2015-12-21 16:50:17
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -84,7 +84,7 @@ public:
 	 * @param str 宏的名字
 	 * @return 如果有，则返回函数指针，否则返回NULL
 	 */
-	CodeGenFunction* getMacro(string& str);
+	CodeGenFunction* getMacro(const string& str);
 
 	// C++注册宏
 	// void AddMacros(const FuncReg* macro_funcs); // 为只添加不替换保留
@@ -105,24 +105,24 @@ public:
 
 	// 获取当前模块中已注册的函数
 	LValue getFunction(Node* node);
-	LValue getFunction(std::string& name);
+	LValue getFunction(const std::string& name);
 
 	void nowFunction(LValue _nowFunc);
 
 	// 用户宏的查找与声明设置
-	shared_ptr<MacroModel> getUserMacro(std::string& name);
-	void  setUserMacro(std::string& name, Node* node);
+	shared_ptr<MacroModel> getUserMacro(const std::string& name);
+	void  setUserMacro(const std::string& name, Node* node);
 
-	shared_ptr<FunctionModel> getFunctionModel(std::string& name);
-	shared_ptr<StructModel> getStructModel(std::string& name);
+	shared_ptr<FunctionModel> getFunctionModel(const std::string& name);
+	shared_ptr<StructModel> getStructModel(const std::string& name);
 
 	void ScanOther(Node* node);
 
 	// 类型的定义和查找
 	void DefType(string name, LValue t);
-	LValue FindType(string& name);
+	LValue FindType(const string& name);
 	LValue FindType(Node*);
-	LValue FindSrcType(string& name);
+	LValue FindSrcType(const string& name);
 	LValue FindSrcType(Node*);
 	
 	/**
@@ -131,7 +131,7 @@ public:
 	 * @param name 变量名
 	 * @param addr 存储地址
 	 */
-	void DefVar(string& name, LValue addr);
+	void DefVar(const string& name, LValue addr);
 	
 	/**
 	 * @brief 在符号表中查找一个变量
@@ -139,7 +139,7 @@ public:
 	 * @param name 变量名
 	 * @return 变量的存储地址
 	 */
-	LValue FindVar(string& name);
+	LValue FindVar(const string& name);
 
 
 	void SaveMacros();
@@ -150,7 +150,7 @@ public:
 
 	id* FindST(Node* node) const;
 
-	id* FindST(string& str) const {
+	id* FindST(const string& str) const {
 		return st->find(str);
 	}
 	IDTable* st;

@@ -42,7 +42,7 @@ public:
      * @param str 符号名
      * @return 返回对应的id结构体指针，未找到返回NULL
      */
-    id* find(string& str) const;
+    id* find(const string& str) const;
 
     /**
      * @brief 返回当前表中全部元素
@@ -57,7 +57,7 @@ public:
      * @param type 枚举类型
      * @param data 数据指针
      */
-    void insert(string& str, int level, SymbolType type, LValue data);
+    void insert(const string& str, int level, SymbolType type, LValue data);
 private:
     map<string,id*> ID_map;
 };

@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:37:15
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-16 22:12:37
+* @Last Modified time: 2015-12-21 16:54:19
 */
 
 
@@ -40,26 +40,26 @@ public:
 	virtual LValue FuncType(FunctionModel* fmodel); // 返回FunctionType
 	virtual LValue FuncType(LValue ret_type, vector<LValue>& types, bool isNotSure = false);
 	virtual LValue GetOrInsertFunction(FunctionModel* fmodel); // 返回Function
-	virtual LValue GetOrInsertFunction(string& name, LValue func_type);
-	virtual LValue GetOrInsertFunction(string& name, LValue ret_type, vector<LValue>& types, bool isNotSure = false);
+	virtual LValue GetOrInsertFunction(const string& name, LValue func_type);
+	virtual LValue GetOrInsertFunction(const string& name, LValue ret_type, vector<LValue>& types, bool isNotSure = false);
 	virtual void   FunctionBodyBegin(LValue func, vector<string>& name_list); // 设置当前BasicBlock
 	virtual void   FunctionBodyEnd(); // 处理函数结束
-	virtual LValue getFunction(string& name); // 从当前模块中获取一个函数
+	virtual LValue getFunction(const string& name); // 从当前模块中获取一个函数
 	virtual LValue Call(FunctionModel* fmodel, vector<LValue>& args); // 返回CallInst
 	virtual LValue Call(LValue func, vector<LValue>& args);
 	virtual LValue Struct(StructModel* smodel); // 返回StructType
 	virtual LValue Struct(LValue _struct, vector<LValue>& types);
-	virtual LValue DeclareStruct(string& name);
-	virtual LValue DefVar(LValue var_type, string& name); // 返回分配的地址
-	virtual LValue DefVar(LValue var_type, string& name, LValue init);
-	virtual LValue DefGlobalVar(LValue var_type, string& name);
-	virtual LValue DefGlobalVar(LValue var_type, string& name, LValue init);
+	virtual LValue DeclareStruct(const string& name);
+	virtual LValue DefVar(LValue var_type, const string& name); // 返回分配的地址
+	virtual LValue DefVar(LValue var_type, const string& name, LValue init);
+	virtual LValue DefGlobalVar(LValue var_type, const string& name);
+	virtual LValue DefGlobalVar(LValue var_type, const string& name, LValue init);
 	virtual LValue Load(LValue var_addr);
 	virtual LValue Store(LValue var_addr, LValue value);
-	virtual LValue Opt1(string& opt, LValue value);
-	virtual LValue Opt2(string& opt, LValue value1, LValue value2);
-	virtual LValue Cmp(string& opt, LValue value1, LValue value2);
-	virtual LValue Assignment(string& opt, LValue value1, LValue value2);
+	virtual LValue Opt1(const string& opt, LValue value);
+	virtual LValue Opt2(const string& opt, LValue value1, LValue value2);
+	virtual LValue Cmp(const string& opt, LValue value1, LValue value2);
+	virtual LValue Assignment(const string& opt, LValue value1, LValue value2);
 	virtual LValue Dot(LValue value, int num);
 	virtual LValue Select(LValue value, vector<LValue>& args);
 	virtual void   If(LValue cond, LValue father, LValue true_block, LValue false_block, bool isElseWork);
@@ -80,20 +80,20 @@ public:
 	virtual LValue Double();
 	virtual LValue Void();
 
-	virtual LValue ConstString(string& str);
+	virtual LValue ConstString(const string& str);
 	virtual LValue ConstInt(int num);
 	virtual LValue ConstDouble(double num);
 
-	virtual void   BeginModule(string& name);
-	virtual void   VerifyAndWrite(string& outfile_name);
-	virtual void   MakeMetaModule(string& outfile_name, string& module_name);
+	virtual void   BeginModule(const string& name);
+	virtual void   VerifyAndWrite(const string& outfile_name);
+	virtual void   MakeMetaModule(const string& outfile_name, const string& module_name);
 
 	virtual LValue GetNowBasicBlock();
 	virtual LValue CreateBasicBlock();
 	virtual LValue CreateBasicBlock(LValue func);
 
 	virtual void MakeMetaList(vector<string>& list);
-	virtual void MakeMetaList(string& name, vector<string>& list, LValue fp);
+	virtual void MakeMetaList(const string& name, vector<string>& list, LValue fp);
 
 protected:
 
@@ -108,7 +108,7 @@ protected:
 
 	void register_stdlib(Module* M, const LibFunc*);
 	void register_metalib();
-	void verifyModuleAndWrite(llvm::Module* M, string& outfile_name);
+	void verifyModuleAndWrite(llvm::Module* M, const string& outfile_name);
 	static Constant* geti8StrVal(Module& M, char const* str, Twine const& name);
 	static Constant* getPtrArray(Module& M, vector<Constant*>& args_list);
 	GetElementPtrInst* ptrMove(Value* v, int n);

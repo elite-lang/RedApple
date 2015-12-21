@@ -5,7 +5,7 @@ IDTable::IDTable()
     ID_stack.push_back(IDMap());
 }
 
-id* IDTable::find(string& idname) const {
+id* IDTable::find(const string& idname) const {
     for (auto p = ID_stack.rbegin(); p != ID_stack.rend(); ++p) {
         const IDMap& imap = *p;
         id* pid = imap.find(idname);
@@ -18,7 +18,7 @@ map<string,id*>& IDTable::getAll(int level) {
     return ID_stack[level].getAll();
 }
 
-void IDTable::insert(string& str,SymbolType type, LValue data) {
+void IDTable::insert(const string& str,SymbolType type, LValue data) {
     IDMap& imap = ID_stack.back();
     imap.insert(str,getLevel(), type, data);
 }

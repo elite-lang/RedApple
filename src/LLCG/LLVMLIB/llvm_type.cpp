@@ -2,12 +2,12 @@
 * @Author: sxf
 * @Date:   2015-11-24 15:40:26
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 22:39:47
+* @Last Modified time: 2015-12-21 17:08:13
 */
 
 #include "llvm_type.h"
 #include "llvm/IR/DerivedTypes.h"
-
+#include "llvm/Support/raw_ostream.h"
 using namespace llvm;
 
 llvm_type::llvm_type(llvm::Type* v) {

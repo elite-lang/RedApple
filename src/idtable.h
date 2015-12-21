@@ -21,7 +21,7 @@ public:
      * @param str 要查找的符号名
      * @return 若找到，返回id结构体的指针，无需释放内存。未找到返回NULL
      */
-    id* find(string& str) const;
+    id* find(const string& str) const;
 
     /**
      * @brief 返回一层的全部元素
@@ -38,7 +38,7 @@ public:
      * @param type 类型的枚举
      * @param data 数据指针
      */
-    void insert(string& str,SymbolType type, LValue data);
+    void insert(const string& str,SymbolType type, LValue data);
 
     /**
      * @brief 压栈，一般在进入新的符号区域，例如函数体中

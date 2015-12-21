@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-25 15:01:05
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-14 17:16:56
+* @Last Modified time: 2015-12-21 16:52:50
 */
 
 
@@ -18,7 +18,7 @@
 class MacroModel : public MetaModel
 {
 public:
-	MacroModel(std::string& name, Node* node);
+	MacroModel(const std::string& name, Node* node);
 	~MacroModel();
 		
 	virtual void insertToST(CodeGenContext* context);

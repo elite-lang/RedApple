@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:41:19
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-16 22:20:56
+* @Last Modified time: 2015-12-21 17:08:37
 */
 
 #include "llcg_llvm.h"
@@ -39,14 +39,14 @@ LValue llcg_llvm::GetOrInsertFunction(FunctionModel* fmodel) {
 	return nullptr;
 } // 返回Function
 
-LValue llcg_llvm::GetOrInsertFunction(string& name, LValue func_type) {
+LValue llcg_llvm::GetOrInsertFunction(const string& name, LValue func_type) {
 	LLVMType _func_type = LLTYPE(func_type);
 	Type* t = *_func_type;
 	Constant* f = M->getOrInsertFunction(name, (FunctionType*)t);
 	return LValue(new llvm_value(f));
 }
 
-LValue llcg_llvm::GetOrInsertFunction(string& name, LValue ret_type, vector<LValue>& types, bool isNotSure) {
+LValue llcg_llvm::GetOrInsertFunction(const string& name, LValue ret_type, vector<LValue>& types, bool isNotSure) {
 	return nullptr;
 }
 
@@ -68,7 +68,7 @@ void   llcg_llvm::FunctionBodyEnd() {
 		ReturnInst::Create(context, nowBlock);
 } // 处理函数结束
 
-LValue llcg_llvm::getFunction(string& name) {
+LValue llcg_llvm::getFunction(const string& name) {
 	Function* f = M->getFunction(name);
 	return LValue(new llvm_value(f));
 }
@@ -114,19 +114,19 @@ LValue llcg_llvm::Struct(LValue _struct, vector<LValue>& types) {
 	return LValue(new llvm_type(st));
 }
 
-LValue llcg_llvm::DeclareStruct(string& name) {
+LValue llcg_llvm::DeclareStruct(const string& name) {
 	StructType* st = StructType::create(context, name);
 	return LValue(new llvm_type(st));
 }
 
 
-LValue llcg_llvm::DefVar(LValue var_type, string& name) {
+LValue llcg_llvm::DefVar(LValue var_type, const string& name) {
 	Type* t = *LLTYPE(var_type);
 	AllocaInst *alloc = new AllocaInst(t, name, nowBlock);
 	return LValue(new llvm_value(alloc));
 }
 
-LValue llcg_llvm::DefVar(LValue var_type, string& name, LValue init) {
+LValue llcg_llvm::DefVar(LValue var_type, const string& name, LValue init) {
 	Type* t = *LLTYPE(var_type);
 	Value* v = *LLVALUE(init);
 	AllocaInst *alloc = new AllocaInst(t, name, nowBlock);
@@ -134,14 +134,14 @@ LValue llcg_llvm::DefVar(LValue var_type, string& name, LValue init) {
 	return LValue(new llvm_value(alloc));
 }
 
-LValue llcg_llvm::DefGlobalVar(LValue var_type, string& name) {
+LValue llcg_llvm::DefGlobalVar(LValue var_type, const string& name) {
 	Type* t = *LLTYPE(var_type);
 	Value* v = new GlobalVariable(*M, t, false, GlobalValue::LinkageTypes::ExternalLinkage, NULL, name);
 	return LValue(new llvm_value(v));
 
 }
 
-LValue llcg_llvm::DefGlobalVar(LValue var_type, string& name, LValue init) {
+LValue llcg_llvm::DefGlobalVar(LValue var_type, const string& name, LValue init) {
 	Type* t = *LLTYPE(var_type);
 	Value* v = *LLVALUE(init);
 	Value* g = new GlobalVariable(*M, t, false, GlobalValue::LinkageTypes::ExternalLinkage, 
@@ -162,7 +162,7 @@ LValue llcg_llvm::Store(LValue var_addr, LValue value) {
 	return value;
 }
 
-LValue llcg_llvm::Opt1(string& opt, LValue value) {
+LValue llcg_llvm::Opt1(const string& opt, LValue value) {
 	Value* ans = *LLVALUE(value);
 
 	AtomicRMWInst::BinOp bop; 
@@ -208,7 +208,7 @@ static void normalize_type(Value*& v1, Value*& v2, BasicBlock* bb) {
 }
 
 
-LValue llcg_llvm::Opt2(string& opt, LValue value1, LValue value2) {
+LValue llcg_llvm::Opt2(const string& opt, LValue value1, LValue value2) {
 	Value* ans1 = *LLVALUE(value1);
 	Value* ans2 = *LLVALUE(value2);
 	Type* t1 = ans1->getType();
@@ -237,7 +237,7 @@ binOper:
 	return LValue(new llvm_value(ret));
 }
 
-LValue llcg_llvm::Cmp(string& opt, LValue value1, LValue value2) {
+LValue llcg_llvm::Cmp(const string& opt, LValue value1, LValue value2) {
 	Value* ans1 = *LLVALUE(value1);
 	Value* ans2 = *LLVALUE(value2);
 	Type* t1 = ans1->getType();
@@ -265,7 +265,7 @@ cmpOper:
 	return LValue(new llvm_value(ret));
 }
 
-LValue llcg_llvm::Assignment(string& opt, LValue value1, LValue value2) {
+LValue llcg_llvm::Assignment(const string& opt, LValue value1, LValue value2) {
 	Value* ans1 = *LLVALUE(value1);
 	Value* ans2 = *LLVALUE(value2);
 	if (opt == "=") {
@@ -298,6 +298,8 @@ LValue llcg_llvm::Dot(LValue value, int num) {
 LValue llcg_llvm::Select(LValue value, vector<LValue>& args) {
 	Value* v = *LLVALUE(value);
 	Value* len_array;
+	errs() << "type:" << *(v->getType());
+	if (!(v->getType()->isPointerTy())) return nullptr;
 	if (v->getType()->getPointerElementType()->isIntegerTy(64))
 		len_array = v;
 	else 
@@ -494,7 +496,7 @@ Constant* llcg_llvm::getPtrArray(Module& M, vector<Constant*>& args_list) {
 	return strVal;
 }
 
-LValue llcg_llvm::ConstString(string& str) {
+LValue llcg_llvm::ConstString(const string& str) {
 	return LValue(new llvm_value(geti8StrVal(*M, str.c_str(), "")));
 }
 
@@ -510,7 +512,7 @@ LValue llcg_llvm::ConstDouble(double num) {
 
 extern const LibFunc stdlibs[];
 
-void llcg_llvm::BeginModule(string& name) {
+void llcg_llvm::BeginModule(const string& name) {
 	M = llvm::make_unique<Module>(name, context);
 	register_stdlib(M.get(), stdlibs);
 }
@@ -542,11 +544,11 @@ LValue llcg_llvm::CreateBasicBlock(LValue func) {
 	return LValue(new llvm_value(createBlock(f)));
 }
 
-void llcg_llvm::VerifyAndWrite(string& outfile_name) {
+void llcg_llvm::VerifyAndWrite(const string& outfile_name) {
 	verifyModuleAndWrite(M.get(), outfile_name);
 }
 
-void llcg_llvm::verifyModuleAndWrite(llvm::Module* M, string& outfile_name) {
+void llcg_llvm::verifyModuleAndWrite(llvm::Module* M, const string& outfile_name) {
 	   // 输出编译后的LLVM可读字节码
     outs() << "LLVM module:\n\n" << *M;
     outs() << "\n\n";
@@ -565,7 +567,7 @@ void llcg_llvm::verifyModuleAndWrite(llvm::Module* M, string& outfile_name) {
     out->flush(); delete out;
 }
 
-void llcg_llvm::MakeMetaModule(string& outfile_name, string& module_name) {
+void llcg_llvm::MakeMetaModule(const string& outfile_name, const string& module_name) {
 	Module* M = meta_M.get();
     M->setModuleIdentifier(module_name);
 
@@ -625,7 +627,7 @@ void llcg_llvm::MakeMetaList(vector<string>& list) {
 	CallInst::Create(FuncF, args, "", &bb);
 }
 
-void llcg_llvm::MakeMetaList(string& name, vector<string>& list, LValue fp) {
+void llcg_llvm::MakeMetaList(const string& name, vector<string>& list, LValue fp) {
 	Module* M = meta_M.get();
 	Function* F = M->getFunction("elite_meta_init");
 	vector<Constant*> args_list;

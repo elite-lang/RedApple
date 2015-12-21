@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-19 12:55:59
+* @Last Modified time: 2015-12-21 17:07:53
 */
 
 #include "CodeGenContext.h"
@@ -42,7 +42,7 @@ LValue CodeGenContext::MacroMake(Node* node) {
 	return ans;
 }
 
-CodeGenFunction* CodeGenContext::getMacro(string& str) {
+CodeGenFunction* CodeGenContext::getMacro(const string& str) {
 	auto func = macro_map.find(str);
 	if (func != macro_map.end()) return func->second;
 	else return NULL;
@@ -88,7 +88,7 @@ LValue CodeGenContext::getFunction(Node* node) {
 	return getFunction(node->getStr());
 }
 
-LValue CodeGenContext::getFunction(std::string& name) {
+LValue CodeGenContext::getFunction(const std::string& name) {
 	shared_ptr<FunctionModel> fm = getFunctionModel(name);
 	if (fm != NULL) return fm->getFunction(this);
 	LValue defined_func = getLLCG()->getFunction(name);
@@ -97,7 +97,7 @@ LValue CodeGenContext::getFunction(std::string& name) {
 	return NULL;
 }
 
-shared_ptr<FunctionModel> CodeGenContext::getFunctionModel(string& name) {
+shared_ptr<FunctionModel> CodeGenContext::getFunctionModel(const string& name) {
 	id* i = FindST(name);
 	if (i == NULL) {
 		return NULL;
@@ -108,19 +108,19 @@ shared_ptr<FunctionModel> CodeGenContext::getFunctionModel(string& name) {
 	return dynamic_pointer_cast<FunctionModel>(i->data);
 }
 
-shared_ptr<MacroModel> CodeGenContext::getUserMacro(std::string& name) {
+shared_ptr<MacroModel> CodeGenContext::getUserMacro(const std::string& name) {
 	id* i = FindST(name);
 	if (i == NULL) return NULL;
 	if (i->type != macro_t) return NULL;
 	return dynamic_pointer_cast<MacroModel>(i->data);
 }
 
-void  CodeGenContext::setUserMacro(std::string& name, Node* node) {
+void  CodeGenContext::setUserMacro(const std::string& name, Node* node) {
 	LValue p(new MacroModel(name, node));
 	st->insert(name, macro_t, p);
 }
 
-shared_ptr<StructModel> CodeGenContext::getStructModel(string& name) {
+shared_ptr<StructModel> CodeGenContext::getStructModel(const string& name) {
 	id* i = FindST(name);
 	if (i == NULL) {
 		printf("错误: 符号 %s 未找到\n", name.c_str());
@@ -138,7 +138,7 @@ void CodeGenContext::DefType(string name, LValue t) {
 	st->insert(name, type_t, t);
 }
 
-LValue CodeGenContext::FindSrcType(string& name) {
+LValue CodeGenContext::FindSrcType(const string& name) {
 	id* i = st->find(name);
 	LValue ret_type;
 	if (i != NULL && i->type == type_t) {
@@ -159,7 +159,7 @@ LValue CodeGenContext::FindSrcType(Node* node) {
 	return FindSrcType(node->getStr());
 }
 
-LValue CodeGenContext::FindType(string& name) {
+LValue CodeGenContext::FindType(const string& name) {
 	string find_name = name; int d = 0;
 	bool is_source = false;
 	if (find_name[0] == '*') { 
@@ -173,9 +173,9 @@ LValue CodeGenContext::FindType(string& name) {
 		++d;
 	}
 	LValue t = FindSrcType(find_name);
-	if (t->isStructType() && !is_source) t = t->getPointerTo();
-	if (d > 1) {
-		// t = ArrayType::get(t, 0);
+	if (t->isStructType() && !is_source) 
+		t = t->getPointerTo();
+	if (d >= 1) { // - -! 这么白痴的错误居然瞪了两个小时没发现
 		t = t->getPointerTo();
 	}
 	return t;
@@ -185,11 +185,11 @@ LValue CodeGenContext::FindType(Node* node) {
 	return FindType(node->getStr());
 }
 
-void CodeGenContext::DefVar(string& name, LValue addr) {
+void CodeGenContext::DefVar(const string& name, LValue addr) {
 	st->insert(name, var_t, addr);
 }
 
-LValue CodeGenContext::FindVar(string& name) {
+LValue CodeGenContext::FindVar(const string& name) {
 	id* i = st->find(name);
 	if (i != NULL && i->type == var_t) {
 		return i->data;
