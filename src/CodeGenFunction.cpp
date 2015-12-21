@@ -30,11 +30,13 @@ const CodeGenFunction& CodeGenFunction::operator= (const CodeGenFunction& obj) {
 const CodeGenFunction& CodeGenFunction::operator= (CodeGenCFunction _cfunc) {
 	isCFunction = true;
 	func.cfunc = _cfunc;
+	return *this;
 }
 
 const CodeGenFunction& CodeGenFunction::operator= (int _lua_code) {
 	isCFunction = false;
 	func.lua_code = _lua_code;
+	return *this;
 }
 
 
