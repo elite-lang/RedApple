@@ -2,14 +2,15 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:37:15
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-21 16:54:19
+* @Last Modified time: 2015-12-24 19:21:16
 */
 
 
 #ifndef LLCG_LLVM_H
 #define LLCG_LLVM_H
 
-#include "llcg.h"
+#include "LLCG/llcg.h"
+#include "LLCG/llcg_l.h"
 
 #include "llvm/IR/Verifier.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
@@ -31,7 +32,7 @@ using namespace llvm;
 
 typedef void (*LibFunc)(Module*);
 
-class llcg_llvm : public llcg
+class llcg_llvm : public llcg, public llcg_l
 {
 public:
 	llcg_llvm();
@@ -94,6 +95,68 @@ public:
 
 	virtual void MakeMetaList(vector<string>& list);
 	virtual void MakeMetaList(const string& name, vector<string>& list, LValue fp);
+
+
+	/* 下面是llcg_l的继承 */
+
+	virtual lvalue* l_FuncType(FunctionModel* fmodel); // 返回FunctionType
+	virtual lvalue* l_FuncType(lvalue* ret_type, vector<lvalue*>& types, bool isNotSure = false);
+	virtual lvalue* l_GetOrInsertFunction(FunctionModel* fmodel); // 返回Function
+	virtual lvalue* l_GetOrInsertFunction(const string& name, lvalue* func_type);
+	virtual lvalue* l_GetOrInsertFunction(const string& name, lvalue* ret_type, vector<lvalue*>& types, bool isNotSure = false);
+	virtual void   l_FunctionBodyBegin(lvalue* func, vector<string>& name_list); // 设置当前BasicBlock
+	virtual void   l_FunctionBodyEnd(); // 处理函数结束
+	virtual lvalue* l_getFunction(const string& name); // 从当前模块中获取一个函数
+	virtual lvalue* l_Call(FunctionModel* fmodel, vector<lvalue*>& args); // 返回CallInst
+	virtual lvalue* l_Call(lvalue* func, vector<lvalue*>& args);
+	virtual lvalue* l_Struct(StructModel* smodel); // 返回StructType
+	virtual lvalue* l_Struct(lvalue* _struct, vector<lvalue*>& types);
+	virtual lvalue* l_DeclareStruct(const string& name);
+	virtual lvalue* l_DefVar(lvalue* var_type, const string& name); // 返回分配的地址
+	virtual lvalue* l_DefVar(lvalue* var_type, const string& name, lvalue* init);
+	virtual lvalue* l_DefGlobalVar(lvalue* var_type, const string& name);
+	virtual lvalue* l_DefGlobalVar(lvalue* var_type, const string& name, lvalue* init);	
+	virtual lvalue* l_Load(lvalue* var_addr);
+	virtual lvalue* l_Store(lvalue* var_addr, lvalue* value);
+	virtual lvalue* l_Opt1(const string& opt, lvalue* value);
+	virtual lvalue* l_Opt2(const string& opt, lvalue* value1, lvalue* value2);
+	virtual lvalue* l_Cmp(const string& opt, lvalue* value1, lvalue* value2);
+	virtual lvalue* l_Assignment(const string& opt, lvalue* value1, lvalue* value2);
+	virtual lvalue* l_Dot(lvalue* value, int num);
+	virtual lvalue* l_Select(lvalue* value, vector<lvalue*>& args);
+	virtual void   l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* false_block, bool isElseWork);	
+	virtual void   l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement);
+	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement);
+	virtual void   l_DoWhile(lvalue* statement, lvalue* pd);
+	virtual void   l_DoUntil(lvalue* statement, lvalue* pd);
+	virtual lvalue* l_New(lvalue* var_type, vector<lvalue*>& args);
+	virtual lvalue* l_NewArray(lvalue* var_type, vector<lvalue*>& wd);
+	virtual lvalue* l_Return();
+	virtual lvalue* l_Return(lvalue* var);
+
+	virtual lvalue* l_Int8();
+	virtual lvalue* l_Int16();
+	virtual lvalue* l_Int32();
+	virtual lvalue* l_Int64();
+	virtual lvalue* l_Float();
+	virtual lvalue* l_Double();
+	virtual lvalue* l_Void();
+
+	virtual lvalue* l_ConstString(const string& str);
+	virtual lvalue* l_ConstInt(int num);
+	virtual lvalue* l_ConstDouble(double num);
+
+	virtual void   l_BeginModule(const string& name);
+	virtual void   l_VerifyAndWrite(const string& outfile_name);
+	virtual void   l_MakeMetaModule(const string& outfile_name, const string& module_name);
+
+	virtual lvalue* l_GetNowBasicBlock();
+	virtual lvalue* l_CreateBasicBlock();
+	virtual lvalue* l_CreateBasicBlock(lvalue* func);
+
+	virtual void   l_MakeMetaList(vector<string>& list);
+	virtual void   l_MakeMetaList(const string& name, vector<string>& list, lvalue* fp);
+
 
 protected:
 

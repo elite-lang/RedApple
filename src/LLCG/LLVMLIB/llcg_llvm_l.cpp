@@ -1,8 +1,8 @@
 /* 
 * @Author: sxf
-* @Date:   2015-11-23 21:41:19
+* @Date:   2015-12-24 17:54:40
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-24 18:31:45
+* @Last Modified time: 2015-12-24 19:21:43
 */
 
 #include "llcg_llvm.h"
@@ -10,48 +10,39 @@
 #include "llvm_value.h"
 #include "llvm_type.h"
 
-llcg_llvm::llcg_llvm() {
-	meta_M = llvm::make_unique<Module>("", context);
-	register_metalib();
-}
-
-llcg_llvm::~llcg_llvm() {
-	llvm_shutdown();
-}
-
-LValue llcg_llvm::FuncType(FunctionModel* fmodel) {
+lvalue* llcg_llvm::l_FuncType(FunctionModel* fmodel) {
 	return nullptr;
 } // 返回FunctionType
 
-LValue llcg_llvm::FuncType(LValue ret_type, vector<LValue>& types, bool isNotSure) {
-	LLVMType ret = LLTYPE(ret_type);
+lvalue* llcg_llvm::l_FuncType(lvalue* ret_type, vector<lvalue*>& types, bool isNotSure) {
+	llvm_type* ret = dynamic_cast<llvm_type*>(ret_type);
 	vector<Type*> arg_types;
 	for (auto p : types) {
-		LLVMType t = LLTYPE(p);
+		llvm_type* t = dynamic_cast<llvm_type*>(p);
 		arg_types.push_back(*t);
 	}
 	FunctionType* func_type = FunctionType::get(*ret, arg_types, 
 		/*vararg*/isNotSure);
-	return LValue(new llvm_type(func_type));
+	return new llvm_type(func_type);
 }
 
-LValue llcg_llvm::GetOrInsertFunction(FunctionModel* fmodel) {
+lvalue* llcg_llvm::l_GetOrInsertFunction(FunctionModel* fmodel) {
 	return nullptr;
 } // 返回Function
 
-LValue llcg_llvm::GetOrInsertFunction(const string& name, LValue func_type) {
-	LLVMType _func_type = LLTYPE(func_type);
+lvalue* llcg_llvm::l_GetOrInsertFunction(const string& name, lvalue* func_type) {
+	llvm_type* _func_type = dynamic_cast<llvm_type*>(func_type);
 	Type* t = *_func_type;
 	Constant* f = M->getOrInsertFunction(name, (FunctionType*)t);
-	return LValue(new llvm_value(f));
+	return new llvm_value(f);
 }
 
-LValue llcg_llvm::GetOrInsertFunction(const string& name, LValue ret_type, vector<LValue>& types, bool isNotSure) {
+lvalue* llcg_llvm::l_GetOrInsertFunction(const string& name, lvalue* ret_type, vector<lvalue*>& types, bool isNotSure) {
 	return nullptr;
 }
 
-void   llcg_llvm::FunctionBodyBegin(LValue func, vector<string>& name_list) {
-	Value* _func = *LLVALUE(func);
+void   llcg_llvm::l_FunctionBodyBegin(lvalue* func, vector<string>& name_list) {
+	Value* _func = *dynamic_cast<llvm_value*>(func);
 	Function* F = dyn_cast<Function>(_func);
 	int i = 0;
 	for (auto arg = F->arg_begin(); i != name_list.size(); ++arg, ++i) {
@@ -63,112 +54,102 @@ void   llcg_llvm::FunctionBodyBegin(LValue func, vector<string>& name_list) {
 	}
 } // 设置当前BasicBlock
 
-void   llcg_llvm::FunctionBodyEnd() {
+void   llcg_llvm::l_FunctionBodyEnd() {
 	if (nowBlock->getTerminator() == NULL)
 		ReturnInst::Create(context, nowBlock);
 } // 处理函数结束
 
-LValue llcg_llvm::getFunction(const string& name) {
+lvalue* llcg_llvm::l_getFunction(const string& name) {
 	Function* f = M->getFunction(name);
-	return LValue(new llvm_value(f));
-}
+	return new llvm_value(f);
+} // 从当前模块中获取一个函数
 
-LValue llcg_llvm::Call(FunctionModel* fmodel, vector<LValue>& args) {
-	// LLVMValue _func = LLVALUE(fmodel->getFunction());
-	vector<Value*> fargs;
-	for (auto p : args) {
-		LLVMValue t = LLVALUE(p);
-		fargs.push_back(*t);
-	}
-
-	// CallInst *call = CallInst::Create(_func, fargs, "", nowBlock);
-	// return LValue(new llvm_value(call));
+lvalue* llcg_llvm::l_Call(FunctionModel* fmodel, vector<lvalue*>& args) {
 	return nullptr;
 } // 返回CallInst
 
-LValue llcg_llvm::Call(LValue func, vector<LValue>& args) {
-	LLVMValue _func = LLVALUE(func);
+lvalue* llcg_llvm::l_Call(lvalue* func, vector<lvalue*>& args) {
+	llvm_value* _func = dynamic_cast<llvm_value*>(func);
 	vector<Value*> fargs;
 	for (auto p : args) {
-		LLVMValue t = LLVALUE(p);
+		llvm_value* t = dynamic_cast<llvm_value*>(p);
 		fargs.push_back(*t);
 	}
 
 	CallInst *call = CallInst::Create(*_func, fargs, "", nowBlock);
-	return LValue(new llvm_value(call));
+	return new llvm_value(call);
 }
 
-LValue llcg_llvm::Struct(StructModel* smodel) {
+lvalue* llcg_llvm::l_Struct(StructModel* smodel) {
 	return nullptr;
 } // 返回StructType
 
-LValue llcg_llvm::Struct(LValue _struct, vector<LValue>& types) {
+lvalue* llcg_llvm::l_Struct(lvalue* _struct, vector<lvalue*>& types) {
 	std::vector<Type*> type_vec;
 	for (auto p : types) {
-		Type* t = *LLTYPE(p);
+		Type* t = *dynamic_cast<llvm_type*>(p);
 		type_vec.push_back(t);
 	}
-	Type* struct_type = *LLTYPE(_struct);
+	Type* struct_type = *dynamic_cast<llvm_type*>(_struct);
 	StructType* st = dyn_cast<StructType>(struct_type);
 	st->setBody(type_vec);
-	return LValue(new llvm_type(st));
+	return new llvm_type(st);
 }
 
-LValue llcg_llvm::DeclareStruct(const string& name) {
+lvalue* llcg_llvm::l_DeclareStruct(const string& name) {
 	StructType* st = StructType::create(context, name);
-	return LValue(new llvm_type(st));
+	return new llvm_type(st);
 }
 
-
-LValue llcg_llvm::DefVar(LValue var_type, const string& name) {
-	Type* t = *LLTYPE(var_type);
+lvalue* llcg_llvm::l_DefVar(lvalue* var_type, const string& name) {
+	Type* t = *dynamic_cast<llvm_type*>(var_type);
 	AllocaInst *alloc = new AllocaInst(t, name, nowBlock);
-	return LValue(new llvm_value(alloc));
-}
+	return new llvm_value(alloc);
+} // 返回分配的地址
 
-LValue llcg_llvm::DefVar(LValue var_type, const string& name, LValue init) {
-	Type* t = *LLTYPE(var_type);
-	Value* v = *LLVALUE(init);
+lvalue* llcg_llvm::l_DefVar(lvalue* var_type, const string& name, lvalue* init) {
+	Type* t = *dynamic_cast<llvm_type*>(var_type);
+	Value* v = *dynamic_cast<llvm_value*>(init);
 	AllocaInst *alloc = new AllocaInst(t, name, nowBlock);
 	new StoreInst(v, alloc, false, nowBlock);
-	return LValue(new llvm_value(alloc));
+	return new llvm_value(alloc);
 }
 
-LValue llcg_llvm::DefGlobalVar(LValue var_type, const string& name) {
-	Type* t = *LLTYPE(var_type);
+lvalue* llcg_llvm::l_DefGlobalVar(lvalue* var_type, const string& name) {
+	Type* t = *dynamic_cast<llvm_type*>(var_type);
 	Value* v = new GlobalVariable(*M, t, false, GlobalValue::LinkageTypes::ExternalLinkage, NULL, name);
-	return LValue(new llvm_value(v));
+	return new llvm_value(v);
 }
 
-LValue llcg_llvm::DefGlobalVar(LValue var_type, const string& name, LValue init) {
-	Type* t = *LLTYPE(var_type);
-	Value* v = *LLVALUE(init);
+lvalue* llcg_llvm::l_DefGlobalVar(lvalue* var_type, const string& name, lvalue* init) {
+	Type* t = *dynamic_cast<llvm_type*>(var_type);
+	Value* v = *dynamic_cast<llvm_value*>(init);
 	Value* g = new GlobalVariable(*M, t, false, GlobalValue::LinkageTypes::ExternalLinkage, 
 									dyn_cast<Constant>(v), name);
-	return LValue(new llvm_value(g));
-}
+	return new llvm_value(g);
+}	
 
-LValue llcg_llvm::Load(LValue var_addr) {
-	Value* ptr = *LLVALUE(var_addr);
+lvalue* llcg_llvm::l_Load(lvalue* var_addr) {
+	Value* ptr = *dynamic_cast<llvm_value*>(var_addr);
 	Value* v = new LoadInst(ptr, "", false, nowBlock);		
-	return LValue(new llvm_value(v));
+	return new llvm_value(v);
 }
 
-LValue llcg_llvm::Store(LValue var_addr, LValue value) {
-	Value* addr = *LLVALUE(var_addr);
-	Value* v = *LLVALUE(value);
+lvalue* llcg_llvm::l_Store(lvalue* var_addr, lvalue* value) {
+	Value* addr = *dynamic_cast<llvm_value*>(var_addr);
+	Value* v = *dynamic_cast<llvm_value*>(value);
 	new StoreInst(v, addr, false, nowBlock);
 	return value;
 }
 
-LValue llcg_llvm::Opt1(const string& opt, LValue value) {
-	Value* ans = *LLVALUE(value);
+lvalue* llcg_llvm::l_Opt1(const string& opt, lvalue* value) {
+	Value* ans = *dynamic_cast<llvm_value*>(value);
 
 	AtomicRMWInst::BinOp bop; 
 	Value* one = ConstantInt::get(Type::getInt64Ty(context), 1); 
 	Value* ret;
 	if (opt == "~") { ret = BinaryOperator::CreateNot(ans, "", nowBlock); 
-						return LValue(new llvm_value(ret));  }
+						return new llvm_value(ret);  }
 	if (opt == "++") { bop = AtomicRMWInst::BinOp::Add;  goto selfWork; }
 	if (opt == "--") { bop = AtomicRMWInst::BinOp::Sub;  goto selfWork; }
 	if (opt == "b++") { bop = AtomicRMWInst::BinOp::Add; goto saveWork; }
@@ -178,13 +159,14 @@ selfWork:
 	new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent, 
 		SynchronizationScope::CrossThread, nowBlock);
 	ret = new LoadInst(ans, "", false, nowBlock);	
-	return LValue(new llvm_value(ret));
+	return new llvm_value(ret);
 
 saveWork:
 	ret = new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent, 
 		SynchronizationScope::CrossThread, nowBlock);
-	return LValue(new llvm_value(ret));
+	return new llvm_value(ret);
 }
+
 
 static Value* getCast(Value* v, Type* t, BasicBlock* bb) {
 	Instruction::CastOps cops = CastInst::getCastOpcode(v, true, t, true);
@@ -207,9 +189,9 @@ static void normalize_type(Value*& v1, Value*& v2, BasicBlock* bb) {
 }
 
 
-LValue llcg_llvm::Opt2(const string& opt, LValue value1, LValue value2) {
-	Value* ans1 = *LLVALUE(value1);
-	Value* ans2 = *LLVALUE(value2);
+lvalue* llcg_llvm::l_Opt2(const string& opt, lvalue* value1, lvalue* value2) {
+	Value* ans1 = *dynamic_cast<llvm_value*>(value1);
+	Value* ans2 = *dynamic_cast<llvm_value*>(value2);
 	Type* t1 = ans1->getType();
 	Type* t2 = ans2->getType();
 	Instruction::BinaryOps instr;
@@ -233,12 +215,12 @@ LValue llcg_llvm::Opt2(const string& opt, LValue value1, LValue value2) {
 
 binOper:
 	Value* ret = BinaryOperator::Create(instr, ans1, ans2, "", nowBlock);
-	return LValue(new llvm_value(ret));
+	return new llvm_value(ret);
 }
 
-LValue llcg_llvm::Cmp(const string& opt, LValue value1, LValue value2) {
-	Value* ans1 = *LLVALUE(value1);
-	Value* ans2 = *LLVALUE(value2);
+lvalue* llcg_llvm::l_Cmp(const string& opt, lvalue* value1, lvalue* value2) {
+	Value* ans1 = *dynamic_cast<llvm_value*>(value1);
+	Value* ans2 = *dynamic_cast<llvm_value*>(value2);
 	Type* t1 = ans1->getType();
 	Type* t2 = ans2->getType();
 	CmpInst::Predicate instp;
@@ -261,15 +243,15 @@ LValue llcg_llvm::Cmp(const string& opt, LValue value1, LValue value2) {
 
 cmpOper:
 	Value* ret = CmpInst::Create(Instruction::ICmp, instp, ans1, ans2, "", nowBlock);
-	return LValue(new llvm_value(ret));
+	return new llvm_value(ret);
 }
 
-LValue llcg_llvm::Assignment(const string& opt, LValue value1, LValue value2) {
-	Value* ans1 = *LLVALUE(value1);
-	Value* ans2 = *LLVALUE(value2);
+lvalue* llcg_llvm::l_Assignment(const string& opt, lvalue* value1, lvalue* value2) {
+	Value* ans1 = *dynamic_cast<llvm_value*>(value1);
+	Value* ans2 = *dynamic_cast<llvm_value*>(value2);
 	if (opt == "=") {
 		Value* ret = new StoreInst(ans2, ans1, false, nowBlock);
-		return LValue(new llvm_value(ret));
+		return new llvm_value(ret);
 	}
 	AtomicRMWInst::BinOp bop; 
 	if (opt == "+=") { bop = AtomicRMWInst::BinOp::Add; goto rmwOper; }
@@ -280,22 +262,22 @@ LValue llcg_llvm::Assignment(const string& opt, LValue value1, LValue value2) {
 rmwOper:
 	Value* ret = new AtomicRMWInst(bop, ans1, ans2, AtomicOrdering::SequentiallyConsistent, 
 		SynchronizationScope::CrossThread, nowBlock);
-	return LValue(new llvm_value(ret));
+	return new llvm_value(ret);
 }
 
-LValue llcg_llvm::Dot(LValue value, int num) {
-	Value* ans = *LLVALUE(value);
+lvalue* llcg_llvm::l_Dot(lvalue* value, int num) {
+	Value* ans = *dynamic_cast<llvm_value*>(value);
 	ConstantInt* zero = ConstantInt::get(Type::getInt32Ty(context), 0);
 	ConstantInt* n    = ConstantInt::get(Type::getInt32Ty(context), num);
 	std::vector<Value*> indices;
 	indices.push_back(zero); 
 	indices.push_back(n);
 	GetElementPtrInst* ptr = GetElementPtrInst::CreateInBounds(ans, indices, "", nowBlock);
-	return LValue(new llvm_value(ptr));
+	return new llvm_value(ptr);
 }
 
-LValue llcg_llvm::Select(LValue value, vector<LValue>& args) {
-	Value* v = *LLVALUE(value);
+lvalue* llcg_llvm::l_Select(lvalue* value, vector<lvalue*>& args) {
+	Value* v = *dynamic_cast<llvm_value*>(value);
 	Value* len_array;
 	errs() << "type:" << *(v->getType());
 	if (!(v->getType()->isPointerTy())) return nullptr;
@@ -305,11 +287,11 @@ LValue llcg_llvm::Select(LValue value, vector<LValue>& args) {
 		len_array = CastInst::CreatePointerCast(v, Type::getInt64PtrTy(context));
 	Value* index;
 	if (args.size() != 0) {
-		index = *LLVALUE(args[0]);
+		index = *dynamic_cast<llvm_value*>(args[0]);
 		for (int i = -2, j = 0; j < args.size()-1; --i, ++j) {
 			Value* len = new LoadInst(ptrMove(len_array, i), "", false, nowBlock);
 			index = BinaryOperator::Create(Instruction::Mul, index, len, "", nowBlock);
-			Value* other = *LLVALUE(args[j+1]);	
+			Value* other = *dynamic_cast<llvm_value*>(args[j+1]);	
 			index = BinaryOperator::Create(Instruction::Add, index, other, "", nowBlock);
 		}
 	} else { errs() << "error index\n"; }
@@ -317,23 +299,14 @@ LValue llcg_llvm::Select(LValue value, vector<LValue>& args) {
 	std::vector<Value*> indices;
 	indices.push_back(index);
 	GetElementPtrInst* ptr = GetElementPtrInst::CreateInBounds(v, indices, "", nowBlock);
-	return LValue(new llvm_value(ptr));
+	return new llvm_value(ptr);
 }
 
-GetElementPtrInst* llcg_llvm::ptrMove(Value* v, int n) {
-	std::vector<Value*> indices;
-	ConstantInt* num = ConstantInt::get(Type::getInt64Ty(context), n);
-	indices.push_back(num);
-	GetElementPtrInst* p1 = GetElementPtrInst::CreateInBounds(v, indices, "", nowBlock);
-	return p1;
-}
-
-
-void llcg_llvm::If(LValue cond, LValue father, LValue true_block, LValue false_block, bool isElseWork) {
-	Value* condition    = *LLVALUE(cond);
-	Value* _father      = *LLVALUE(father);
-	Value* _true_block  = *LLVALUE(true_block);
-	Value* _false_block = *LLVALUE(false_block);
+void   llcg_llvm::l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* false_block, bool isElseWork) {
+	Value* condition    = *dynamic_cast<llvm_value*>(cond);
+	Value* _father      = *dynamic_cast<llvm_value*>(father);
+	Value* _true_block  = *dynamic_cast<llvm_value*>(true_block);
+	Value* _false_block = *dynamic_cast<llvm_value*>(false_block);
 	BasicBlock* father_block  = dyn_cast<BasicBlock>(_father);
 	BasicBlock* _true_block_  = dyn_cast<BasicBlock>(_true_block);
 	BasicBlock* _false_block_ = dyn_cast<BasicBlock>(_false_block);
@@ -346,14 +319,14 @@ void llcg_llvm::If(LValue cond, LValue father, LValue true_block, LValue false_b
 		BranchInst::Create(_false_block_, _true_block_);
 	}
 	BranchInst* branch = BranchInst::Create(_true_block_, _false_block_, condition, father_block);
-}
+}	
 
-void llcg_llvm::For(LValue cond, LValue init, LValue pd, LValue work, LValue statement) {
-	Value* condition  = *LLVALUE(cond);
-	Value* _init      = *LLVALUE(init);
-	Value* _pd        = *LLVALUE(pd);
-	Value* _work      = *LLVALUE(work);
-	Value* _statement = *LLVALUE(statement);
+void   llcg_llvm::l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement) {
+	Value* condition  = *dynamic_cast<llvm_value*>(cond);
+	Value* _init      = *dynamic_cast<llvm_value*>(init);
+	Value* _pd        = *dynamic_cast<llvm_value*>(pd);
+	Value* _work      = *dynamic_cast<llvm_value*>(work);
+	Value* _statement = *dynamic_cast<llvm_value*>(statement);
 	BasicBlock* init_block = dyn_cast<BasicBlock>(_init);
 	BasicBlock* end_block  = dyn_cast<BasicBlock>(_pd);
 	BasicBlock* do_block   = dyn_cast<BasicBlock>(_work);
@@ -366,11 +339,11 @@ void llcg_llvm::For(LValue cond, LValue init, LValue pd, LValue work, LValue sta
 	BranchInst::Create(end_block, do_block);
 }
 
-void llcg_llvm::While(LValue cond, LValue father, LValue pd, LValue statement) {
-	Value* condition  = *LLVALUE(cond);
-	Value* _father    = *LLVALUE(father);
-	Value* _pd        = *LLVALUE(pd);
-	Value* _statement = *LLVALUE(statement);
+void   llcg_llvm::l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement) {
+	Value* condition  = *dynamic_cast<llvm_value*>(cond);
+	Value* _father    = *dynamic_cast<llvm_value*>(father);
+	Value* _pd        = *dynamic_cast<llvm_value*>(pd);
+	Value* _statement = *dynamic_cast<llvm_value*>(statement);
 
 	BasicBlock* father_block = dyn_cast<BasicBlock>(_father);
 	BasicBlock* pd_block     = dyn_cast<BasicBlock>(_pd);
@@ -383,30 +356,30 @@ void llcg_llvm::While(LValue cond, LValue father, LValue pd, LValue statement) {
 	BranchInst::Create(pd_block, true_block);
 }
 
-void llcg_llvm::DoWhile(LValue statement, LValue pd) {
+void   llcg_llvm::l_DoWhile(lvalue* statement, lvalue* pd) {
 
 }
 
-void llcg_llvm::DoUntil(LValue statement, LValue pd) {
+void   llcg_llvm::l_DoUntil(lvalue* statement, lvalue* pd) {
 
 }
 
-LValue llcg_llvm::New(LValue var_type, vector<LValue>& args) {
-	Type* t = *LLTYPE(var_type);
+lvalue* llcg_llvm::l_New(lvalue* var_type, vector<lvalue*>& args) {
+	Type* t = *dynamic_cast<llvm_type*>(var_type);
 	Type* ITy = Type::getInt64Ty(context);
 	Constant* AllocSize = ConstantExpr::getSizeOf(t);
 	Instruction* Malloc = CallInst::CreateMalloc(nowBlock, ITy, t, AllocSize);
 	Malloc->insertAfter(&(nowBlock->back()));
-	return LValue(new llvm_value(Malloc));
+	return new llvm_value(Malloc);
 }
 
-LValue llcg_llvm::NewArray(LValue var_type, vector<LValue>& wd) {
+lvalue* llcg_llvm::l_NewArray(lvalue* var_type, vector<lvalue*>& wd) {
 	// 这里实现自定义的数组malloc函数
-	Type* t = *LLTYPE(var_type);
+	Type* t = *dynamic_cast<llvm_type*>(var_type);
 	ConstantInt* zero = ConstantInt::get(Type::getInt64Ty(context), 0);
 	vector<Value*> args;
 	for (auto p : wd) {
-		Value* v = *LLVALUE(p);
+		Value* v = *dynamic_cast<llvm_value*>(p);
 		args.push_back(v);
 	}
 	args.push_back(zero);
@@ -416,157 +389,83 @@ LValue llcg_llvm::NewArray(LValue var_type, vector<LValue>& wd) {
 	// t = ArrayType::get(t, 0);
 	t = t->getPointerTo();
 	Value* ret = CastInst::CreatePointerCast(call, t, "", nowBlock);
-	return LValue(new llvm_value(ret));
+	return new llvm_value(ret);
 }
 
-LValue llcg_llvm::Return() {
+lvalue* llcg_llvm::l_Return() {
 	Value* ret = ReturnInst::Create(context, nullptr, nowBlock);
-	return LValue(new llvm_value(ret));
+	return new llvm_value(ret);
 }
 
-LValue llcg_llvm::Return(LValue var) {
-	Value* v = *LLVALUE(var);
+lvalue* llcg_llvm::l_Return(lvalue* var) {
+	Value* v = *dynamic_cast<llvm_value*>(var);
 	Value* ret = ReturnInst::Create(context, v, nowBlock);
-	return LValue(new llvm_value(ret));
+	return new llvm_value(ret);
 }
 
 
-
-
-LValue llcg_llvm::Int8() {
-	return LValue(new llvm_type(Type::getInt8Ty(context)));
+lvalue* llcg_llvm::l_Int8() {
+	return new llvm_type(Type::getInt8Ty(context));
 }
 
-LValue llcg_llvm::Int16() {
-	return LValue(new llvm_type(Type::getInt16Ty(context)));
+lvalue* llcg_llvm::l_Int16() {
+	return new llvm_type(Type::getInt16Ty(context));
+
 }
 
-LValue llcg_llvm::Int32() {
-	return LValue(new llvm_type(Type::getInt32Ty(context)));
+lvalue* llcg_llvm::l_Int32() {
+	return new llvm_type(Type::getInt32Ty(context));
+
 }
 
-LValue llcg_llvm::Int64() {
-	return LValue(new llvm_type(Type::getInt64Ty(context)));
+lvalue* llcg_llvm::l_Int64() {
+	return new llvm_type(Type::getInt64Ty(context));
+
 }
 
-LValue llcg_llvm::Float() {
-	return LValue(new llvm_type(Type::getFloatTy(context)));
+lvalue* llcg_llvm::l_Float() {
+	return new llvm_type(Type::getFloatTy(context));
+
 }
 
-LValue llcg_llvm::Double() {
-	return LValue(new llvm_type(Type::getDoubleTy(context)));
+lvalue* llcg_llvm::l_Double() {
+	return new llvm_type(Type::getDoubleTy(context));
+
 }
 
-LValue llcg_llvm::Void() {
-	return LValue(new llvm_type(Type::getVoidTy(context)));
+lvalue* llcg_llvm::l_Void() {
+	return new llvm_type(Type::getVoidTy(context));
+
 }
 
+lvalue* llcg_llvm::l_ConstString(const string& str) {
+	return new llvm_value(geti8StrVal(*M, str.c_str(), ""));
 
-Constant* llcg_llvm::geti8StrVal(Module& M, char const* str, Twine const& name) {
-    LLVMContext& ctx = M.getContext(); // 千万别用Global Context
-    Constant* strConstant = ConstantDataArray::getString(ctx, str);
-    GlobalVariable* GVStr =
-        new GlobalVariable(M, strConstant->getType(), true,
-                           GlobalValue::InternalLinkage, strConstant, name);
-    Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
-    Constant* indices[] = {zero, zero};
-#if defined(LLVM_3_7)
-	Constant* strVal = ConstantExpr::getGetElementPtr(GVStr->getType(), GVStr, indices, true);
-#else
-	Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
-#endif
-    return strVal;
 }
 
-Constant* llcg_llvm::getPtrArray(Module& M, vector<Constant*>& args_list) {
-    LLVMContext& ctx = M.getContext(); // 千万别用Global Context
-    ArrayType* arr_type = ArrayType::get(Type::getInt8PtrTy(M.getContext()), args_list.size());
-    Constant* strConstant = ConstantArray::get(arr_type, args_list);
-    GlobalVariable* GVStr =
-        new GlobalVariable(M, arr_type, true,
-                           GlobalValue::InternalLinkage, strConstant, "");
-    Constant* zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
-    Constant* indices[] = {zero, zero};
-#if defined(LLVM_3_7)
-	Constant* strVal = ConstantExpr::getGetElementPtr(GVStr->getType(), GVStr, indices, true);
-#else
-	Constant* strVal = ConstantExpr::getGetElementPtr(GVStr, indices, true);
-#endif
-	return strVal;
-}
-
-LValue llcg_llvm::ConstString(const string& str) {
-	return LValue(new llvm_value(geti8StrVal(*M, str.c_str(), "")));
-}
-
-LValue llcg_llvm::ConstInt(int num) {
+lvalue* llcg_llvm::l_ConstInt(int num) {
 	Type* t = Type::getInt64Ty(context);
-	return LValue(new llvm_value(ConstantInt::get(t, num)));
+	return new llvm_value(ConstantInt::get(t, num));
 }
 
-LValue llcg_llvm::ConstDouble(double num) {
+lvalue* llcg_llvm::l_ConstDouble(double num) {
 	Type* t = Type::getDoubleTy(context);
-	return LValue(new llvm_value(ConstantFP::get(t, num)));
+	return new llvm_value(ConstantFP::get(t, num));
 }
 
 extern const LibFunc stdlibs[];
 
-void llcg_llvm::BeginModule(const string& name) {
+void   llcg_llvm::l_BeginModule(const string& name) {
 	M = llvm::make_unique<Module>(name, context);
 	register_stdlib(M.get(), stdlibs);
 }
 
-void llcg_llvm::register_stdlib(Module* M, const LibFunc* libs_func) {
-	while (*libs_func != NULL) {
-		(*libs_func)(M);
-		++libs_func;
-	}
-}
-
-extern const LibFunc metalibs[];
-
-void llcg_llvm::register_metalib() {
-	register_stdlib(meta_M.get(), metalibs);
-}
-
-LValue llcg_llvm::GetNowBasicBlock() {
-	return LValue(new llvm_value(nowBlock));
-}
-
-LValue llcg_llvm::CreateBasicBlock() {
-	return LValue(new llvm_value(createBlock()));
-}
-
-LValue llcg_llvm::CreateBasicBlock(LValue func) {
-	Value* v = *LLVALUE(func);
-	Function* f = dyn_cast<Function>(v);
-	return LValue(new llvm_value(createBlock(f)));
-}
-
-void llcg_llvm::VerifyAndWrite(const string& outfile_name) {
+void   llcg_llvm::l_VerifyAndWrite(const string& outfile_name) {
 	verifyModuleAndWrite(M.get(), outfile_name);
+
 }
 
-void llcg_llvm::verifyModuleAndWrite(llvm::Module* M, const string& outfile_name) {
-	   // 输出编译后的LLVM可读字节码
-    outs() << "LLVM module:\n\n" << *M;
-    outs() << "\n\n";
-    outs().flush();
-
-    // 校验问题, 这个函数需要一个输出流来打印错误信息
-    if (verifyModule(*M, &errs())) {
-        errs() << "构建LLVM字节码出错!\n";
-        exit(1);
-    }
- 
-    // 输出二进制BitCode到.bc文件
-    std::error_code ErrInfo;
-    raw_ostream *out = new raw_fd_ostream(outfile_name.c_str(), ErrInfo, sys::fs::F_None);
-    WriteBitcodeToFile(M, *out);
-    out->flush(); delete out;
-}
-
-void llcg_llvm::MakeMetaModule(const string& outfile_name, const string& module_name) {
+void   llcg_llvm::l_MakeMetaModule(const string& outfile_name, const string& module_name) {
 	Module* M = meta_M.get();
     M->setModuleIdentifier(module_name);
 
@@ -593,24 +492,31 @@ void llcg_llvm::MakeMetaModule(const string& outfile_name, const string& module_
     Constant* init_var = ConstantArray::get(at, array_init_list);
 
     GlobalVariable* gv = new GlobalVariable(
-        *M, at, false, GlobalValue::AppendingLinkage, init_var, "llvm.global_ctors"
+        *M, at, false, GlobalValue::AppendingLinkage, init_var, "llvm.globallcg_llvm::l_ctors"
     );
 
     verifyModuleAndWrite(M, outfile_name);
 }
 
 
+lvalue* llcg_llvm::l_GetNowBasicBlock() {
+	return new llvm_value(nowBlock);
 
-BasicBlock* llcg_llvm::createBlock() {
-	return nowBlock = BasicBlock::Create(context, "", nowFunc);
 }
 
-BasicBlock* llcg_llvm::createBlock(Function* f) {
-	nowFunc = f;
-	return nowBlock = BasicBlock::Create(context, "entry", f);
+lvalue* llcg_llvm::l_CreateBasicBlock() {
+	return new llvm_value(createBlock());
+
 }
 
-void llcg_llvm::MakeMetaList(vector<string>& list) {
+lvalue* llcg_llvm::l_CreateBasicBlock(lvalue* func) {
+	Value* v = *dynamic_cast<llvm_value*>(func);
+	Function* f = dyn_cast<Function>(v);
+	return new llvm_value(createBlock(f));
+}
+
+
+void   llcg_llvm::l_MakeMetaList(vector<string>& list) {
 	Module* M = meta_M.get();
 	Function* F = M->getFunction("elite_meta_init");
 	vector<Constant*> args_list;
@@ -626,17 +532,12 @@ void llcg_llvm::MakeMetaList(vector<string>& list) {
 	CallInst::Create(FuncF, args, "", &bb);
 }
 
-void llcg_llvm::MakeMetaList(const string& name, vector<string>& list, LValue fp) {
+void   llcg_llvm::l_MakeMetaList(const string& name, vector<string>& list, lvalue* fp) {
 	Module* M = meta_M.get();
 	Function* F = M->getFunction("elite_meta_init");
 	vector<Constant*> args_list;
 	for (int i = 0; i < list.size(); ++i) {
 		args_list.push_back(geti8StrVal(*M, list[i].c_str(), ""));
-		// Constant* c = init_list[i];
-		// if (c != NULL)
-		// 	init_meta_list.push_back(ConstantAsMetadata::get(c));
-		// else
-		// 	init_meta_list.push_back(MDString::get(M->getContext(), "NULL"));
 	}
 	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
 	
@@ -645,7 +546,7 @@ void llcg_llvm::MakeMetaList(const string& name, vector<string>& list, LValue fp
 	args.push_back(geti8StrVal(*M, name.c_str(), "")); // 第一个参数, 函数名
 	args.push_back(list_vec); // 第二个参数, 函数类型定义字符串列表
 	
-	Type* ft = *LLTYPE(fp);
+	Type* ft = *dynamic_cast<llvm_type*>(fp);
 	Function* nowFunc = dyn_cast<Function>(M->getOrInsertFunction(name, (FunctionType*)ft));
 	Type* nowType = Type::getInt8PtrTy(M->getContext());
 	args.push_back(ConstantExpr::getBitCast(nowFunc, nowType));
@@ -653,5 +554,3 @@ void llcg_llvm::MakeMetaList(const string& name, vector<string>& list, LValue fp
 	Function* FuncF = M->getFunction("elite_meta_function");
 	CallInst::Create(FuncF, args, "", &bb);
 }
-
-
