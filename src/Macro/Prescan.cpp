@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-29 11:05:42
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 17:16:03
+* @Last Modified time: 2015-12-24 09:41:18
 */
 
 #include "CodeGenContext.h"
@@ -10,6 +10,7 @@
 #include "MetaModel/StructModel.h"
 #include "MetaModel/FunctionModel.h"
 #include "IDNode.h"
+#include "idtable.h"
 #include <stdio.h>
 
 static LValue function_macro(CodeGenContext* context, Node* node) {

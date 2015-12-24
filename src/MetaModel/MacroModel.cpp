@@ -2,10 +2,10 @@
 * @Author: sxf
 * @Date:   2015-11-25 15:02:32
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-21 16:52:54
+* @Last Modified time: 2015-12-24 09:46:30
 */
 
-#include "MacroModel.h"
+#include "MetaModel/MacroModel.h"
 
 MacroModel::MacroModel(const std::string& name, Node* node) : MetaModel(name) {
 	this->node = node;

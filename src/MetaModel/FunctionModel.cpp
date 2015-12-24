@@ -2,11 +2,12 @@
 * @Author: sxf
 * @Date:   2015-11-13 16:45:51
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-16 19:52:20
+* @Last Modified time: 2015-12-24 09:46:12
 */
 
-#include "FunctionModel.h"
+#include "MetaModel/FunctionModel.h"
 #include "CodeGenContext.h"
+#include "idtable.h"
 
 FunctionModel::FunctionModel(
 	std::string& 			  name,

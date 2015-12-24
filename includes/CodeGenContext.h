@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-24 09:07:14
+* @Last Modified time: 2015-12-24 09:40:48
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -17,12 +17,13 @@
 using namespace std;
 
 #include "LLCG/llcg.h"
-#include "idtable.h"
 #include "MetaModel/StructModel.h"
 #include "MetaModel/FunctionModel.h"
 #include "MetaModel/MacroModel.h"
 #include "CodeGenFunction.h"
 
+class IDTable;
+struct id;
 
 /**
  * @brief 代码生成上下文, 是代码生成中的关键信息存储类
@@ -97,6 +98,9 @@ public:
 	 */
 	void AddOrReplaceMacros(const FuncReg* macro_funcs);
 
+	void AddOrReplaceMacros(const string& name, ICodeGenFunction* func);
+
+
 	/**
 	 * @brief 移除全部宏指令
 	 * @details 移除全部宏指令
@@ -149,10 +153,7 @@ public:
 	void setIsSave(bool save) { _save = save; }
 
 	id* FindST(Node* node) const;
-
-	id* FindST(const string& str) const {
-		return st->find(str);
-	}
+	id* FindST(const string& str) const;
 	IDTable* st;
 
 	/**

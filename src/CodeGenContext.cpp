@@ -2,14 +2,14 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-24 09:08:40
+* @Last Modified time: 2015-12-24 09:37:24
 */
 
 #include "CodeGenContext.h"
 #include "StringNode.h"
 #include "IDNode.h"
 #include <iostream>
-
+#include "idtable.h"
 #include "MacroTranslate.h"
 
 using namespace std;
@@ -82,6 +82,10 @@ void CodeGenContext::RemoveAllMacros() {
 
 id* CodeGenContext::FindST(Node* node) const{ 
 	return FindST(node->getStr());
+}
+
+id* CodeGenContext::FindST(const string& str) const {
+	return st->find(str);
 }
 
 LValue CodeGenContext::getFunction(Node* node) {
