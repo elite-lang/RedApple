@@ -2,48 +2,34 @@
 * @Author: sxf
 * @Date:   2015-12-19 10:43:27
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-19 12:59:24
+* @Last Modified time: 2015-12-24 09:10:10
 */
 
 
 #ifndef CODE_GEN_FUNCTION_H
 #define CODE_GEN_FUNCTION_H
 
-#include "Node.h"
-#include "LLCG/llcg.h"
-class CodeGenContext;
+
+#include "ICodeGenFunction.h"
 
 /**
  * @brief 定义宏翻译函数指针
  */
 typedef LValue (*CodeGenCFunction)(CodeGenContext*, Node*);
 
-/**
- * @brief 定义Lua宏翻译函数指针
- */
-typedef LValue (*CodeRunLua)(int, CodeGenContext*, Node*);
-
-
-class CodeGenFunction
+class CodeGenFunction : public ICodeGenFunction
 {
 public:
 	CodeGenFunction();
 	CodeGenFunction(CodeGenCFunction _cfunc);
-	CodeGenFunction(int _lua_code);
 	const CodeGenFunction& operator=(const CodeGenFunction& obj);
 	const CodeGenFunction& operator=(CodeGenCFunction _cfunc);
-	const CodeGenFunction& operator=(int _lua_code);
 
-	LValue call(CodeGenContext*, Node*);
-	bool isCFunc();
+	virtual LValue call(CodeGenContext*, Node*);
 	CodeGenCFunction getCFunc();
-	int getLuaCode();
+	
 private:
-	bool isCFunction;
-	union {
-		CodeGenCFunction cfunc;
-		int lua_code;
-	} func;
+	CodeGenCFunction cfunc;
 };
 
 /**
@@ -55,7 +41,6 @@ typedef struct _funcReg
 	const char*      name;
 	CodeGenCFunction func;
 } FuncReg;
-
 
 
 

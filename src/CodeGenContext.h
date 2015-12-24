@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-21 16:50:17
+* @Last Modified time: 2015-12-24 09:07:14
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -84,7 +84,7 @@ public:
 	 * @param str 宏的名字
 	 * @return 如果有，则返回函数指针，否则返回NULL
 	 */
-	CodeGenFunction* getMacro(const string& str);
+	ICodeGenFunction* getMacro(const string& str);
 
 	// C++注册宏
 	// void AddMacros(const FuncReg* macro_funcs); // 为只添加不替换保留
@@ -161,9 +161,6 @@ public:
 	 */
 	llcg* getLLCG() { return codeGenerator; }
 
-	CodeRunLua getCodeRunLua() { return luaRun_ptr; }
-	void getCodeRunLua(CodeRunLua ptr) { luaRun_ptr = ptr; }
-
 private:
 
 	llcg* codeGenerator;
@@ -178,13 +175,13 @@ private:
 	 * @brief 宏定义表，用来查找是否有该宏定义的
 	 * @details 宏定义表，里面存放有对应名称的C语言宏处理函数
 	 */
-	map<string, CodeGenFunction*> macro_map;
+	map<string, ICodeGenFunction*> macro_map;
 
 	/**
 	 * @brief 这个栈是用来临时保存上面的查询表的
 	 * @details 某些情况，可能会对宏处理的函数进行临时的变更，就需要保存和恢复全部的状态，这个栈是用来记录宏表的
 	 */
-	stack<map<string, CodeGenFunction*> > macro_save_stack;
+	stack<map<string, ICodeGenFunction*> > macro_save_stack;
 
 	void setNormalType();
 
@@ -192,8 +189,6 @@ private:
 	 * 用来记录当前是读取还是存入状态
 	 */ 
 	bool _save;
-
-	CodeRunLua luaRun_ptr;
 };
 
 

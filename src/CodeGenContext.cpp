@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-21 17:07:53
+* @Last Modified time: 2015-12-24 09:08:40
 */
 
 #include "CodeGenContext.h"
@@ -28,7 +28,7 @@ LValue CodeGenContext::MacroMake(Node* node) {
 			Node::FreeAll(replace);
 			return ans;
 		}
-		CodeGenFunction* func = getMacro(node->getStr());
+		ICodeGenFunction* func = getMacro(node->getStr());
 		if (func != NULL) {
 			return func->call(this, node->getNext());
 		} 
@@ -42,7 +42,7 @@ LValue CodeGenContext::MacroMake(Node* node) {
 	return ans;
 }
 
-CodeGenFunction* CodeGenContext::getMacro(const string& str) {
+ICodeGenFunction* CodeGenContext::getMacro(const string& str) {
 	auto func = macro_map.find(str);
 	if (func != macro_map.end()) return func->second;
 	else return NULL;
@@ -70,7 +70,7 @@ void CodeGenContext::AddOrReplaceMacros(const FuncReg* macro_funcs) {
 		if (p != macro_map.end()) 
 			p->second = new CodeGenFunction(func);
 		else 
-			macro_map.insert(make_pair<string, CodeGenFunction*>(name, new CodeGenFunction(func)));
+			macro_map.insert(make_pair<string, ICodeGenFunction*>(name, new CodeGenFunction(func)));
 		++macro_funcs;
 	}
 }
