@@ -43,7 +43,7 @@ void yyerror(const char *s);
 %token <str> STRING CHAR
 %token <token> IF ELSE WHILE DO UNTIL GOTO FOR FOREACH 
 %token <token> DELEGATE DEF DEFINE IMPORT USING NAMESPACE DEFMACRO CONST PACKED VOLATILE WOVEN
-%token <token> RETURN NEW THIS 
+%token <token> RETURN NEW THIS DELETE
 %token <str> KWS_EXIT KWS_ERROR KWS_TSZ KWS_STRUCT KWS_FWKZ KWS_FUNC_XS KWS_TYPE
 
 /* 
@@ -79,7 +79,7 @@ void yyerror(const char *s);
 %type <nodes> call_arg 
 %type <nodes> call_args 
 %type <nodes> return_state
-%type <nodes> new_expr
+%type <nodes> new_expr delete_expr
 %type <nodes> var_exp
 %type <nodes> macro_call_args
 %type <nodes> list full_list woven_state
@@ -148,6 +148,7 @@ statement : def_statement
           | dountil_state
           | for_state
           | return_state
+          | delete_expr ';' { $$ = $1; }
           ;
 
 if_state : IF '(' expr ')' statement { $$ = Node::make_list(3, IDNode::Create("if"), $3, $5); }
@@ -217,6 +218,10 @@ new_expr : NEW types { $$ = Node::make_list(3, IDNode::Create("new"), $2, Node::
          | NEW types '(' call_args ')'  { $$ = Node::make_list(3, IDNode::Create("new"), $2, Node::Create($4)); }
          | new_expr '[' call_args ']' { $$ = $1; $1->addBrother(Node::Create($3)); }
          ;
+
+delete_expr : DELETE expr { $$ = Node::make_list(2, IDNode::Create("delete"), $2); }
+            | DELETE '[' ']' expr { $$ = Node::make_list(2, IDNode::Create("delete[]"), $4); }
+            ;
 
 numeric : INTEGER { $$ = IntNode::Create($1); }
         | DOUBLE { $$ = FloatNode::Create($1); }

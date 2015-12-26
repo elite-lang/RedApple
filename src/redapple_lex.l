@@ -106,6 +106,7 @@ char* maketoken(const char* data, int len);
 
     /* 特殊运算符 */
 "new"                   return NEW;
+"delete"                return DELETE;
 "this"                  return THIS;
     
     /* 特殊定义 */
