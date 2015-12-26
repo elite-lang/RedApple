@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-09-23 22:55:30
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-11-25 12:26:13
+* @Last Modified time: 2015-12-26 14:28:25
 * 
 * 代码生成部分的引导类
 */
@@ -25,6 +25,8 @@ public:
 
 	static RedCodeGen* Create();
 	static RedCodeGen* Create(Node* node);
+
+	CodeGenContext* getContext() { return context; }
 private:
 	RedCodeGen();
 	RedCodeGen(Node* node);

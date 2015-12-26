@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-10-10 18:44:44
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-24 09:40:48
+* @Last Modified time: 2015-12-26 15:10:36
 * 
 * 代码生成的上下文类, 是C实现宏的最核心功能类
 */
@@ -10,7 +10,7 @@
 #ifndef CODE_GEN_CONTENT_H
 #define CODE_GEN_CONTENT_H
 
-#include "Node.h"
+#include "Model/Node.h"
 #include <map>
 #include <stack>
 #include <string>
