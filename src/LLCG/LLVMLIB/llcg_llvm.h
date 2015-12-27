@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:37:15
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-24 19:21:16
+* @Last Modified time: 2015-12-27 16:39:21
 */
 
 
@@ -70,6 +70,8 @@ public:
 	virtual void   DoUntil(LValue statement, LValue pd);
 	virtual LValue New(LValue var_type, vector<LValue>& args);
 	virtual LValue NewArray(LValue var_type, vector<LValue>& wd);
+	virtual LValue Delete(LValue pointer);
+	virtual LValue DeleteArray(LValue pointer);
 	virtual LValue Return();
 	virtual LValue Return(LValue var);
 
@@ -131,6 +133,8 @@ public:
 	virtual void   l_DoUntil(lvalue* statement, lvalue* pd);
 	virtual lvalue* l_New(lvalue* var_type, vector<lvalue*>& args);
 	virtual lvalue* l_NewArray(lvalue* var_type, vector<lvalue*>& wd);
+	virtual lvalue* l_Delete(lvalue* pointer);
+	virtual lvalue* l_DeleteArray(lvalue* pointer);
 	virtual lvalue* l_Return();
 	virtual lvalue* l_Return(lvalue* var);
 

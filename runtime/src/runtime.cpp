@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-15 10:19:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-20 22:50:41
+* @Last Modified time: 2015-12-27 16:20:41
 */
 
 #include <string>
@@ -175,6 +175,12 @@ extern "C" {
 			*i = *p;
 		}
 		return (void*) i;
+	}
+
+	void free_array(void* ptr, int v) {
+		if (ptr == NULL) return;
+		void* real_ptr = ptr - v*sizeof(int);
+		free(ptr);
 	}
 
 }

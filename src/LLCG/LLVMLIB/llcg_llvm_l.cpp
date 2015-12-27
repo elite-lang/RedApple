@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-12-24 17:54:40
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-24 19:21:43
+* @Last Modified time: 2015-12-27 16:42:16
 */
 
 #include "llcg_llvm.h"
@@ -391,6 +391,18 @@ lvalue* llcg_llvm::l_NewArray(lvalue* var_type, vector<lvalue*>& wd) {
 	Value* ret = CastInst::CreatePointerCast(call, t, "", nowBlock);
 	return new llvm_value(ret);
 }
+
+lvalue* llcg_llvm::l_Delete(lvalue* pointer) {
+	Value* ptr  = *dynamic_cast<llvm_value*>(pointer);
+	Instruction* Free = CallInst::CreateFree(ptr, nowBlock);
+	return new llvm_value(Free);
+}
+
+lvalue* llcg_llvm::l_DeleteArray(lvalue* pointer) {
+	return NULL;
+}
+
+
 
 lvalue* llcg_llvm::l_Return() {
 	Value* ret = ReturnInst::Create(context, nullptr, nowBlock);

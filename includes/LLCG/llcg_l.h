@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-12-19 10:15:48
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-24 19:11:56
+* @Last Modified time: 2015-12-27 16:39:13
 */
 #ifndef LLVG_L_H
 #define LLVG_L_H
@@ -58,6 +58,8 @@ public:
 	virtual void   l_DoUntil(lvalue* statement, lvalue* pd) = 0;
 	virtual lvalue* l_New(lvalue* var_type, vector<lvalue*>& args) = 0;
 	virtual lvalue* l_NewArray(lvalue* var_type, vector<lvalue*>& wd) = 0;
+	virtual lvalue* l_Delete(lvalue* pointer) = 0;
+	virtual lvalue* l_DeleteArray(lvalue* pointer) = 0;
 	virtual lvalue* l_Return() = 0;
 	virtual lvalue* l_Return(lvalue* var) = 0;
 
