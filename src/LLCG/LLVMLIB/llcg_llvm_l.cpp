@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-12-24 17:54:40
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-27 16:42:16
+* @Last Modified time: 2015-12-30 16:42:26
 */
 
 #include "llcg_llvm.h"
@@ -148,6 +148,8 @@ lvalue* llcg_llvm::l_Opt1(const string& opt, lvalue* value) {
 	AtomicRMWInst::BinOp bop; 
 	Value* one = ConstantInt::get(Type::getInt64Ty(context), 1); 
 	Value* ret;
+	if (opt == "-") { ret = BinaryOperator::CreateNeg(ans, "", nowBlock); 
+						return new llvm_value(ret);  }
 	if (opt == "~") { ret = BinaryOperator::CreateNot(ans, "", nowBlock); 
 						return new llvm_value(ret);  }
 	if (opt == "++") { bop = AtomicRMWInst::BinOp::Add;  goto selfWork; }
@@ -313,10 +315,13 @@ void   llcg_llvm::l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue*
 
 	if (isElseWork) {
 		BasicBlock* end_block = createBlock();
-		BranchInst::Create(end_block, _true_block_);
-		BranchInst::Create(end_block, _false_block_);
+		if (_true_block_->getTerminator() == NULL)
+			BranchInst::Create(end_block, _true_block_);
+		if (_false_block_->getTerminator() == NULL)
+			BranchInst::Create(end_block, _false_block_);
 	} else {
-		BranchInst::Create(_false_block_, _true_block_);
+		if (_true_block_->getTerminator() == NULL)
+			BranchInst::Create(_false_block_, _true_block_);
 	}
 	BranchInst* branch = BranchInst::Create(_true_block_, _false_block_, condition, father_block);
 }	
@@ -334,9 +339,12 @@ void   llcg_llvm::l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lv
 	
 	BasicBlock* false_block = createBlock();
 	BranchInst* branch = BranchInst::Create(work_block, false_block, condition, end_block);
-	BranchInst::Create(end_block, init_block);
-	BranchInst::Create(do_block,  work_block);
-	BranchInst::Create(end_block, do_block);
+	if (init_block->getTerminator() == NULL)
+		BranchInst::Create(end_block, init_block);
+	if (work_block->getTerminator() == NULL)
+		BranchInst::Create(do_block,  work_block);
+	if (do_block->getTerminator() == NULL)
+		BranchInst::Create(end_block, do_block);
 }
 
 void   llcg_llvm::l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement) {
@@ -352,8 +360,10 @@ void   llcg_llvm::l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* stat
 	// 生成while循环
 	BasicBlock* false_block = createBlock();
 	BranchInst* branch = BranchInst::Create(true_block, false_block, condition, pd_block);
-	BranchInst::Create(pd_block, father_block);
-	BranchInst::Create(pd_block, true_block);
+	if (father_block->getTerminator() == NULL)
+		BranchInst::Create(pd_block, father_block);
+	if (true_block->getTerminator() == NULL)
+		BranchInst::Create(pd_block, true_block);
 }
 
 void   llcg_llvm::l_DoWhile(lvalue* statement, lvalue* pd) {
