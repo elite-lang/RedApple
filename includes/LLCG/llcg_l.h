@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-12-19 10:15:48
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-27 16:39:13
+* @Last Modified time: 2016-01-01 17:16:05
 */
 #ifndef LLVG_L_H
 #define LLVG_L_H
@@ -56,10 +56,10 @@ public:
 	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement) = 0;
 	virtual void   l_DoWhile(lvalue* statement, lvalue* pd) = 0;
 	virtual void   l_DoUntil(lvalue* statement, lvalue* pd) = 0;
-	virtual lvalue* l_New(lvalue* var_type, vector<lvalue*>& args) = 0;
-	virtual lvalue* l_NewArray(lvalue* var_type, vector<lvalue*>& wd) = 0;
-	virtual lvalue* l_Delete(lvalue* pointer) = 0;
-	virtual lvalue* l_DeleteArray(lvalue* pointer) = 0;
+	virtual lvalue* l_New(lvalue* var_type, vector<lvalue*>& args, const string& funcname = "") = 0;
+	virtual lvalue* l_NewArray(lvalue* var_type, vector<lvalue*>& wd, const string& funcname = "") = 0;
+	virtual lvalue* l_Delete(lvalue* pointer, const string& funcname = "") = 0;
+	virtual lvalue* l_DeleteArray(lvalue* pointer, const string& funcname = "") = 0;
 	virtual lvalue* l_Return() = 0;
 	virtual lvalue* l_Return(lvalue* var) = 0;
 

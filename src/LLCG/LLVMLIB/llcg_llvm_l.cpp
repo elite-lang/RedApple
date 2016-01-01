@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-12-24 17:54:40
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-30 16:42:26
+* @Last Modified time: 2016-01-01 17:17:52
 */
 
 #include "llcg_llvm.h"
@@ -374,7 +374,7 @@ void   llcg_llvm::l_DoUntil(lvalue* statement, lvalue* pd) {
 
 }
 
-lvalue* llcg_llvm::l_New(lvalue* var_type, vector<lvalue*>& args) {
+lvalue* llcg_llvm::l_New(lvalue* var_type, vector<lvalue*>& args, const string& funcname) {
 	Type* t = *dynamic_cast<llvm_type*>(var_type);
 	Type* ITy = Type::getInt64Ty(context);
 	Constant* AllocSize = ConstantExpr::getSizeOf(t);
@@ -383,7 +383,7 @@ lvalue* llcg_llvm::l_New(lvalue* var_type, vector<lvalue*>& args) {
 	return new llvm_value(Malloc);
 }
 
-lvalue* llcg_llvm::l_NewArray(lvalue* var_type, vector<lvalue*>& wd) {
+lvalue* llcg_llvm::l_NewArray(lvalue* var_type, vector<lvalue*>& wd, const string& funcname) {
 	// 这里实现自定义的数组malloc函数
 	Type* t = *dynamic_cast<llvm_type*>(var_type);
 	ConstantInt* zero = ConstantInt::get(Type::getInt64Ty(context), 0);
@@ -402,13 +402,13 @@ lvalue* llcg_llvm::l_NewArray(lvalue* var_type, vector<lvalue*>& wd) {
 	return new llvm_value(ret);
 }
 
-lvalue* llcg_llvm::l_Delete(lvalue* pointer) {
+lvalue* llcg_llvm::l_Delete(lvalue* pointer, const string& funcname) {
 	Value* ptr  = *dynamic_cast<llvm_value*>(pointer);
 	Instruction* Free = CallInst::CreateFree(ptr, nowBlock);
 	return new llvm_value(Free);
 }
 
-lvalue* llcg_llvm::l_DeleteArray(lvalue* pointer) {
+lvalue* llcg_llvm::l_DeleteArray(lvalue* pointer, const string& funcname) {
 	return NULL;
 }
 

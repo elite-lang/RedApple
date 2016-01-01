@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 21:37:15
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-27 16:39:21
+* @Last Modified time: 2016-01-01 17:16:39
 */
 
 
@@ -68,10 +68,10 @@ public:
 	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement);
 	virtual void   DoWhile(LValue statement, LValue pd);
 	virtual void   DoUntil(LValue statement, LValue pd);
-	virtual LValue New(LValue var_type, vector<LValue>& args);
-	virtual LValue NewArray(LValue var_type, vector<LValue>& wd);
-	virtual LValue Delete(LValue pointer);
-	virtual LValue DeleteArray(LValue pointer);
+	virtual LValue New(LValue var_type, vector<LValue>& args, const string& funcname = "");
+	virtual LValue NewArray(LValue var_type, vector<LValue>& wd, const string& funcname = "");
+	virtual LValue Delete(LValue pointer, const string& funcname = "");
+	virtual LValue DeleteArray(LValue pointer, const string& funcname = "");
 	virtual LValue Return();
 	virtual LValue Return(LValue var);
 
@@ -131,10 +131,10 @@ public:
 	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement);
 	virtual void   l_DoWhile(lvalue* statement, lvalue* pd);
 	virtual void   l_DoUntil(lvalue* statement, lvalue* pd);
-	virtual lvalue* l_New(lvalue* var_type, vector<lvalue*>& args);
-	virtual lvalue* l_NewArray(lvalue* var_type, vector<lvalue*>& wd);
-	virtual lvalue* l_Delete(lvalue* pointer);
-	virtual lvalue* l_DeleteArray(lvalue* pointer);
+	virtual lvalue* l_New(lvalue* var_type, vector<lvalue*>& args, const string& funcname = "");
+	virtual lvalue* l_NewArray(lvalue* var_type, vector<lvalue*>& wd, const string& funcname = "");
+	virtual lvalue* l_Delete(lvalue* pointer, const string& funcname = "");
+	virtual lvalue* l_DeleteArray(lvalue* pointer, const string& funcname = "");
 	virtual lvalue* l_Return();
 	virtual lvalue* l_Return(lvalue* var);
 

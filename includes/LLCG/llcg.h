@@ -2,7 +2,7 @@
 * @Author: sxf
 * @Date:   2015-11-23 10:53:22
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-27 16:34:51
+* @Last Modified time: 2016-01-01 17:15:54
 */
 
 #ifndef LLCG_H
@@ -56,10 +56,10 @@ public:
 	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement) = 0;
 	virtual void   DoWhile(LValue statement, LValue pd) = 0;
 	virtual void   DoUntil(LValue statement, LValue pd) = 0;
-	virtual LValue New(LValue var_type, vector<LValue>& args) = 0;
-	virtual LValue NewArray(LValue var_type, vector<LValue>& wd) = 0;
-	virtual LValue Delete(LValue pointer) = 0;
-	virtual LValue DeleteArray(LValue pointer) = 0;
+	virtual LValue New(LValue var_type, vector<LValue>& args, const string& funcname = "") = 0;
+	virtual LValue NewArray(LValue var_type, vector<LValue>& wd, const string& funcname = "") = 0;
+	virtual LValue Delete(LValue pointer, const string& funcname = "") = 0;
+	virtual LValue DeleteArray(LValue pointer, const string& funcname = "") = 0;
 	virtual LValue Return() = 0;
 	virtual LValue Return(LValue var) = 0;
 
