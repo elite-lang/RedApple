@@ -1,8 +1,8 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-11-15 10:19:10
 * @Last Modified by:   sxf
-* @Last Modified time: 2015-12-27 16:20:41
+* @Last Modified time: 2016-01-01 18:55:41
 */
 
 #include <string>
@@ -21,31 +21,31 @@ struct FunctionMeta {
 	string name;
 	string ret_type;
 	vector<string> type_list;
-	vector<string> name_list; 
+	vector<string> name_list;
 	void* function_ptr;
 };
 
 struct StructMeta {
 	string name;
 	vector<string> type_list;
-	vector<string> name_list; 
+	vector<string> name_list;
 };
 
 enum NormalType
 {
-	void_normal_t, 
-	int_normal_t, 
-	float_normal_t, 
-	double_normal_t, 
-	char_normal_t, 
-	byte_normal_t, 
-	ptr_normal_t, 
+	void_normal_t,
+	int_normal_t,
+	float_normal_t,
+	double_normal_t,
+	char_normal_t,
+	byte_normal_t,
+	ptr_normal_t,
 	unknown_normal_t
 };
 
 class EliteMeta {
 public:
-	static void RegFunction(string& name, string& ret_type, 
+	static void RegFunction(string& name, string& ret_type,
 		vector<string>& type_list, vector<string>& name_list, void* fptr);
 	static void RegStruct(string& name,
 		vector<string>& type_list, vector<string>& name_list);
@@ -69,18 +69,18 @@ private:
 extern "C" {
 	void elite_meta_function(const char* name, const char** list, void* fptr) {
 		// printf("RegFunction: %s\n", name);
-	    int argno = 0;                  /* 纪录参数个数 */    
+	    int argno = 0;                  /* 纪录参数个数 */
 	    vector<string> type_list;
-	    vector<string> name_list;    
+	    vector<string> name_list;
 	    string sret_type = list[0];
-	    const char **para = list+1;                     /* 存放取出的字符串参数 */  
+	    const char **para = list+1;                     /* 存放取出的字符串参数 */
 	    while (*para != NULL) {
 	        ++argno;
 	        if (argno & 1) type_list.push_back(*para);
 	        else       name_list.push_back(*para);
 	        // printf("%s ", *para);
 	        ++para;
-	    }    
+	    }
 	    string sname = name;
 	    EliteMeta::RegFunction(sname, sret_type, type_list, name_list, fptr);
 	}
@@ -90,17 +90,17 @@ extern "C" {
 		if (meta_type == "struct") {
 			string meta_name = list[1];
 			// printf("RegStruct: %s\n", meta_name.c_str());
-		    int argno = 0;                  /* 纪录参数个数 */    
-		    const char** para = list+2;        /* 存放取出的字符串参数 */    
+		    int argno = 0;                  /* 纪录参数个数 */
+		    const char** para = list+2;        /* 存放取出的字符串参数 */
 		    vector<string> type_list;
-		    vector<string> name_list;    
+		    vector<string> name_list;
 		    while (*para != NULL) {
 		        ++argno;
 		        if (argno & 1) type_list.push_back(*para);
 		        else       name_list.push_back(*para);
 		        // printf("%s ", *para);
 		        ++para;
-		    }    
+		    }
 		    EliteMeta::RegStruct(meta_name, type_list, name_list);
 		}
 	}
@@ -112,18 +112,18 @@ extern "C" {
 			printf("运行时异常, 反射调用的函数未找到: %s\n", name);
 			return NULL;
 		}
-		va_list argp;                   /* 定义保存函数参数的结构 */    
+		va_list argp;                   /* 定义保存函数参数的结构 */
 	    va_start( argp, name );
-	    
+
 	    // 设定调用栈
 	    DCCallVM* vm = EliteMeta::getInstance().vm;
 	    dcMode(vm, DC_CALL_C_DEFAULT);
 		dcReset(vm);
-		
+
 		for (auto& s : fm->type_list) {
 			NormalType t = EliteMeta::getNormalType(s);
 			switch (t) {
-				case int_normal_t:     dcArgInt(vm, va_arg(argp, int));  break;
+				case int_normal_t:    dcArgInt(vm, va_arg(argp, int));  break;
 				case float_normal_t:  dcArgFloat(vm, (float)va_arg(argp, double)); break; // 默认参数提升
 				case double_normal_t: dcArgDouble(vm, va_arg(argp, double)); break;
 				case char_normal_t:   dcArgShort(vm, (short)va_arg(argp, int)); break;
@@ -131,11 +131,11 @@ extern "C" {
 				case ptr_normal_t:    dcArgPointer(vm, va_arg(argp, void*)); break;
 				default:
 					printf("函数类型异常: %s 类型不能作为参数\n", s.c_str());
-	    			va_end( argp );                                   /* 将argp置为NULL */    
+	    			va_end( argp );                                   /* 将argp置为NULL */
 					return NULL;
 			}
 		}
-	    va_end( argp );                                   /* 将argp置为NULL */    
+	    va_end( argp );                                   /* 将argp置为NULL */
 		void* ans;
 		DCpointer fptr = (DCpointer)(fm->function_ptr);
 		NormalType t = EliteMeta::getNormalType(fm->ret_type);
@@ -155,7 +155,7 @@ extern "C" {
 	}
 
 	void* malloc_array(int size, ...) {
-		va_list argp;                   /* 定义保存函数参数的结构 */    
+		va_list argp;                   /* 定义保存函数参数的结构 */
 	    va_start( argp, size );
 	    std::vector<int> wd;
 	    int v; int num = 1;
@@ -166,7 +166,7 @@ extern "C" {
 				num *= v;
 			}
 		} while (v != 0);
-	    va_end( argp );                                   /* 将argp置为NULL */    
+	    va_end( argp );                                   /* 将argp置为NULL */
 
 		int full_size = wd.size()*sizeof(int) + size* num;
 		int* ans = (int*) malloc(full_size);
@@ -189,7 +189,7 @@ extern "C" {
 
 
 
-void EliteMeta::RegFunction(string& name, string& ret_type, 
+void EliteMeta::RegFunction(string& name, string& ret_type,
 	vector<string>& type_list, vector<string>& name_list, void* fptr) {
 	FunctionMeta* fm = new FunctionMeta();
 	fm->name = name;
