@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-11-23 21:37:15
 * @Last Modified by:   sxf
@@ -13,8 +13,6 @@
 #include "LLCG/llcg_l.h"
 
 #include "llvm/IR/Verifier.h"
-#include "llvm/ExecutionEngine/GenericValue.h"
-#include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Instructions.h"
@@ -117,7 +115,7 @@ public:
 	virtual lvalue* l_DefVar(lvalue* var_type, const string& name); // 返回分配的地址
 	virtual lvalue* l_DefVar(lvalue* var_type, const string& name, lvalue* init);
 	virtual lvalue* l_DefGlobalVar(lvalue* var_type, const string& name);
-	virtual lvalue* l_DefGlobalVar(lvalue* var_type, const string& name, lvalue* init);	
+	virtual lvalue* l_DefGlobalVar(lvalue* var_type, const string& name, lvalue* init);
 	virtual lvalue* l_Load(lvalue* var_addr);
 	virtual lvalue* l_Store(lvalue* var_addr, lvalue* value);
 	virtual lvalue* l_Opt1(const string& opt, lvalue* value);
@@ -126,7 +124,7 @@ public:
 	virtual lvalue* l_Assignment(const string& opt, lvalue* value1, lvalue* value2);
 	virtual lvalue* l_Dot(lvalue* value, int num);
 	virtual lvalue* l_Select(lvalue* value, vector<lvalue*>& args);
-	virtual void   l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* false_block, bool isElseWork);	
+	virtual void   l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* false_block, bool isElseWork);
 	virtual void   l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement);
 	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement);
 	virtual void   l_DoWhile(lvalue* statement, lvalue* pd);
@@ -181,6 +179,12 @@ protected:
 	GetElementPtrInst* ptrMove(Value* v, int n);
 	BasicBlock* createBlock();
 	BasicBlock* createBlock(Function* f);
+
+	FunctionType* getMallocType();
+	FunctionType* getMallocArrayType();
+	static FunctionType* malloc_type;
+	static FunctionType* malloc_array_type;
+
 };
 
 

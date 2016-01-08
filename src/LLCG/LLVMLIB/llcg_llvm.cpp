@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-11-23 21:41:19
 * @Last Modified by:   sxf
@@ -25,12 +25,12 @@ LValue llcg_llvm::FuncType(FunctionModel* fmodel) {
 
 LValue llcg_llvm::FuncType(LValue ret_type, vector<LValue>& types, bool isNotSure) {
 	LLVMType ret = LLTYPE(ret_type);
-	vector<Type*> arg_types;
+	vector<Type*> malloc_type;
 	for (auto p : types) {
 		LLVMType t = LLTYPE(p);
-		arg_types.push_back(*t);
+		malloc_type.push_back(*t);
 	}
-	FunctionType* func_type = FunctionType::get(*ret, arg_types, 
+	FunctionType* func_type = FunctionType::get(*ret, malloc_type,
 		/*vararg*/isNotSure);
 	return LValue(new llvm_type(func_type));
 }
@@ -143,14 +143,14 @@ LValue llcg_llvm::DefGlobalVar(LValue var_type, const string& name) {
 LValue llcg_llvm::DefGlobalVar(LValue var_type, const string& name, LValue init) {
 	Type* t = *LLTYPE(var_type);
 	Value* v = *LLVALUE(init);
-	Value* g = new GlobalVariable(*M, t, false, GlobalValue::LinkageTypes::ExternalLinkage, 
+	Value* g = new GlobalVariable(*M, t, false, GlobalValue::LinkageTypes::ExternalLinkage,
 									dyn_cast<Constant>(v), name);
 	return LValue(new llvm_value(g));
 }
 
 LValue llcg_llvm::Load(LValue var_addr) {
 	Value* ptr = *LLVALUE(var_addr);
-	Value* v = new LoadInst(ptr, "", false, nowBlock);		
+	Value* v = new LoadInst(ptr, "", false, nowBlock);
 	return LValue(new llvm_value(v));
 }
 
@@ -164,12 +164,12 @@ LValue llcg_llvm::Store(LValue var_addr, LValue value) {
 LValue llcg_llvm::Opt1(const string& opt, LValue value) {
 	Value* ans = *LLVALUE(value);
 
-	AtomicRMWInst::BinOp bop; 
-	Value* one = ConstantInt::get(Type::getInt64Ty(context), 1); 
+	AtomicRMWInst::BinOp bop;
+	Value* one = ConstantInt::get(Type::getInt64Ty(context), 1);
 	Value* ret;
-	if (opt == "-") { ret = BinaryOperator::CreateNeg(ans, "", nowBlock); 
+	if (opt == "-") { ret = BinaryOperator::CreateNeg(ans, "", nowBlock);
 						return LValue(new llvm_value(ret));  }
-	if (opt == "~") { ret = BinaryOperator::CreateNot(ans, "", nowBlock); 
+	if (opt == "~") { ret = BinaryOperator::CreateNot(ans, "", nowBlock);
 						return LValue(new llvm_value(ret));  }
 	if (opt == "++") { bop = AtomicRMWInst::BinOp::Add;  goto selfWork; }
 	if (opt == "--") { bop = AtomicRMWInst::BinOp::Sub;  goto selfWork; }
@@ -177,13 +177,13 @@ LValue llcg_llvm::Opt1(const string& opt, LValue value) {
 	if (opt == "b--") { bop = AtomicRMWInst::BinOp::Sub; goto saveWork; }
 
 selfWork:
-	new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent, 
+	new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent,
 		SynchronizationScope::CrossThread, nowBlock);
-	ret = new LoadInst(ans, "", false, nowBlock);	
+	ret = new LoadInst(ans, "", false, nowBlock);
 	return LValue(new llvm_value(ret));
 
 saveWork:
-	ret = new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent, 
+	ret = new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent,
 		SynchronizationScope::CrossThread, nowBlock);
 	return LValue(new llvm_value(ret));
 }
@@ -245,19 +245,19 @@ LValue llcg_llvm::Cmp(const string& opt, LValue value1, LValue value2) {
 	Type* t2 = ans2->getType();
 	CmpInst::Predicate instp;
 	if (t1->isIntegerTy() && t2->isIntegerTy() && t1->getIntegerBitWidth()==t2->getIntegerBitWidth() ) {
-		if (opt == "==") { instp = CmpInst::Predicate::ICMP_EQ;  goto cmpOper; } 
-		if (opt == "!=") { instp = CmpInst::Predicate::ICMP_NE;  goto cmpOper; } 
-		if (opt == "<=") { instp = CmpInst::Predicate::ICMP_SLE; goto cmpOper; } 
-		if (opt == ">=") { instp = CmpInst::Predicate::ICMP_SGE; goto cmpOper; } 
-		if (opt == "<")  { instp = CmpInst::Predicate::ICMP_SLT; goto cmpOper; } 
-		if (opt == ">")  { instp = CmpInst::Predicate::ICMP_SGT; goto cmpOper; } 
+		if (opt == "==") { instp = CmpInst::Predicate::ICMP_EQ;  goto cmpOper; }
+		if (opt == "!=") { instp = CmpInst::Predicate::ICMP_NE;  goto cmpOper; }
+		if (opt == "<=") { instp = CmpInst::Predicate::ICMP_SLE; goto cmpOper; }
+		if (opt == ">=") { instp = CmpInst::Predicate::ICMP_SGE; goto cmpOper; }
+		if (opt == "<")  { instp = CmpInst::Predicate::ICMP_SLT; goto cmpOper; }
+		if (opt == ">")  { instp = CmpInst::Predicate::ICMP_SGT; goto cmpOper; }
 	} else {
 		normalize_type(ans1, ans2, nowBlock);
-		if (opt == "==") { instp = CmpInst::Predicate::FCMP_OEQ;  goto cmpOper; } 
-		if (opt == "!=") { instp = CmpInst::Predicate::FCMP_ONE;  goto cmpOper; } 
-		if (opt == "<=") { instp = CmpInst::Predicate::FCMP_OLE; goto cmpOper; } 
-		if (opt == ">=") { instp = CmpInst::Predicate::FCMP_OGE; goto cmpOper; } 
-		if (opt == "<")  { instp = CmpInst::Predicate::FCMP_OLT; goto cmpOper; } 
+		if (opt == "==") { instp = CmpInst::Predicate::FCMP_OEQ;  goto cmpOper; }
+		if (opt == "!=") { instp = CmpInst::Predicate::FCMP_ONE;  goto cmpOper; }
+		if (opt == "<=") { instp = CmpInst::Predicate::FCMP_OLE; goto cmpOper; }
+		if (opt == ">=") { instp = CmpInst::Predicate::FCMP_OGE; goto cmpOper; }
+		if (opt == "<")  { instp = CmpInst::Predicate::FCMP_OLT; goto cmpOper; }
 		if (opt == ">")  { instp = CmpInst::Predicate::FCMP_OGT; goto cmpOper; }
 	}
 
@@ -273,14 +273,14 @@ LValue llcg_llvm::Assignment(const string& opt, LValue value1, LValue value2) {
 		Value* ret = new StoreInst(ans2, ans1, false, nowBlock);
 		return LValue(new llvm_value(ret));
 	}
-	AtomicRMWInst::BinOp bop; 
+	AtomicRMWInst::BinOp bop;
 	if (opt == "+=") { bop = AtomicRMWInst::BinOp::Add; goto rmwOper; }
 	if (opt == "-=") { bop = AtomicRMWInst::BinOp::Sub; goto rmwOper; }
 	if (opt == "&=") { bop = AtomicRMWInst::BinOp::And; goto rmwOper; }
 	if (opt == "|=") { bop = AtomicRMWInst::BinOp::Or;  goto rmwOper; }
 	if (opt == "^=") { bop = AtomicRMWInst::BinOp::Xor; goto rmwOper; }
 rmwOper:
-	Value* ret = new AtomicRMWInst(bop, ans1, ans2, AtomicOrdering::SequentiallyConsistent, 
+	Value* ret = new AtomicRMWInst(bop, ans1, ans2, AtomicOrdering::SequentiallyConsistent,
 		SynchronizationScope::CrossThread, nowBlock);
 	return LValue(new llvm_value(ret));
 }
@@ -290,7 +290,7 @@ LValue llcg_llvm::Dot(LValue value, int num) {
 	ConstantInt* zero = ConstantInt::get(Type::getInt32Ty(context), 0);
 	ConstantInt* n    = ConstantInt::get(Type::getInt32Ty(context), num);
 	std::vector<Value*> indices;
-	indices.push_back(zero); 
+	indices.push_back(zero);
 	indices.push_back(n);
 	GetElementPtrInst* ptr = GetElementPtrInst::CreateInBounds(ans, indices, "", nowBlock);
 	return LValue(new llvm_value(ptr));
@@ -303,7 +303,7 @@ LValue llcg_llvm::Select(LValue value, vector<LValue>& args) {
 	if (!(v->getType()->isPointerTy())) return nullptr;
 	if (v->getType()->getPointerElementType()->isIntegerTy(64))
 		len_array = v;
-	else 
+	else
 		len_array = CastInst::CreatePointerCast(v, Type::getInt64PtrTy(context));
 	Value* index;
 	if (args.size() != 0) {
@@ -311,7 +311,7 @@ LValue llcg_llvm::Select(LValue value, vector<LValue>& args) {
 		for (int i = -2, j = 0; j < args.size()-1; --i, ++j) {
 			Value* len = new LoadInst(ptrMove(len_array, i), "", false, nowBlock);
 			index = BinaryOperator::Create(Instruction::Mul, index, len, "", nowBlock);
-			Value* other = *LLVALUE(args[j+1]);	
+			Value* other = *LLVALUE(args[j+1]);
 			index = BinaryOperator::Create(Instruction::Add, index, other, "", nowBlock);
 		}
 	} else { errs() << "error index\n"; }
@@ -363,7 +363,7 @@ void llcg_llvm::For(LValue cond, LValue init, LValue pd, LValue work, LValue sta
 	BasicBlock* end_block  = dyn_cast<BasicBlock>(_pd);
 	BasicBlock* do_block   = dyn_cast<BasicBlock>(_work);
 	BasicBlock* work_block = dyn_cast<BasicBlock>(_statement);
-	
+
 	BasicBlock* false_block = createBlock();
 	BranchInst* branch = BranchInst::Create(work_block, false_block, condition, end_block);
 	if (init_block->getTerminator() == NULL)
@@ -405,8 +405,18 @@ LValue llcg_llvm::New(LValue var_type, vector<LValue>& args, const string& funcn
 	Type* t = *LLTYPE(var_type);
 	Type* ITy = Type::getInt64Ty(context);
 	Constant* AllocSize = ConstantExpr::getSizeOf(t);
-	Instruction* Malloc = CallInst::CreateMalloc(nowBlock, ITy, t, AllocSize);
-	Malloc->insertAfter(&(nowBlock->back()));
+	Instruction* Malloc;
+	if (funcname == "") {
+		Malloc = CallInst::CreateMalloc(nowBlock, ITy, t, AllocSize);
+		Malloc->insertAfter(&(nowBlock->back()));
+	} else {
+		Function* f = (Function*)(M->getOrInsertFunction(funcname, getMallocType()));
+		f->setCallingConv(CallingConv::C);
+		vector<Value*> fargs;
+		fargs.push_back(AllocSize);
+		CallInst* call = CallInst::Create(f, fargs, "", nowBlock);
+		Malloc = CastInst::CreatePointerCast(call, t, "", nowBlock);
+	}
 	return LValue(new llvm_value(Malloc));
 }
 
@@ -415,18 +425,28 @@ LValue llcg_llvm::NewArray(LValue var_type, vector<LValue>& wd, const string& fu
 	Type* t = *LLTYPE(var_type);
 	ConstantInt* zero = ConstantInt::get(Type::getInt64Ty(context), 0);
 	vector<Value*> args;
+	Constant* AllocSize = ConstantExpr::getSizeOf(t); // 获取当前类型的大小
+	t = t->getPointerTo(); // 将t转换为指针类型
+	Value* Malloc; CallInst *call;
+
+	args.push_back(AllocSize);
 	for (auto p : wd) {
 		Value* v = *LLVALUE(p);
 		args.push_back(v);
 	}
 	args.push_back(zero);
-	string func_name = "malloc_array";
-	CallInst *call = CallInst::Create(M->getFunction(func_name), 
-		args, "", nowBlock);
-	// t = ArrayType::get(t, 0);
-	t = t->getPointerTo();
-	Value* ret = CastInst::CreatePointerCast(call, t, "", nowBlock);
-	return LValue(new llvm_value(ret));
+	if (funcname == "") {
+		string func_name = "malloc_array";
+		call = CallInst::Create(M->getFunction(func_name),
+			args, "", nowBlock);
+	} else {
+		Function* f = (Function*)(M->getOrInsertFunction(funcname, getMallocType()));
+		f->setCallingConv(CallingConv::C);
+		call = CallInst::Create(f, args, "", nowBlock);
+	}
+
+	Malloc = CastInst::CreatePointerCast(call, t, "", nowBlock);
+	return LValue(new llvm_value(Malloc));
 }
 
 LValue   llcg_llvm::Delete(LValue pointer, const string& funcname) {
@@ -580,7 +600,7 @@ void llcg_llvm::verifyModuleAndWrite(llvm::Module* M, const string& outfile_name
         errs() << "构建LLVM字节码出错!\n";
         exit(1);
     }
- 
+
     // 输出二进制BitCode到.bc文件
     std::error_code ErrInfo;
     raw_ostream *out = new raw_fd_ostream(outfile_name.c_str(), ErrInfo, sys::fs::F_None);
@@ -643,8 +663,8 @@ void llcg_llvm::MakeMetaList(vector<string>& list) {
 	BasicBlock& bb = F->getEntryBlock();
 	Function* FuncF = M->getFunction("elite_meta_list");
 	Constant* list_vec = getPtrArray(*M, args_list);
-	vector<Value*> args; 
-	args.push_back(list_vec); 
+	vector<Value*> args;
+	args.push_back(list_vec);
 	CallInst::Create(FuncF, args, "", &bb);
 }
 
@@ -661,12 +681,12 @@ void llcg_llvm::MakeMetaList(const string& name, vector<string>& list, LValue fp
 		// 	init_meta_list.push_back(MDString::get(M->getContext(), "NULL"));
 	}
 	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
-	
+
 	Constant* list_vec = getPtrArray(*M, args_list);
-	vector<Value*> args; 
+	vector<Value*> args;
 	args.push_back(geti8StrVal(*M, name.c_str(), "")); // 第一个参数, 函数名
 	args.push_back(list_vec); // 第二个参数, 函数类型定义字符串列表
-	
+
 	Type* ft = *LLTYPE(fp);
 	Function* nowFunc = dyn_cast<Function>(M->getOrInsertFunction(name, (FunctionType*)ft));
 	Type* nowType = Type::getInt8PtrTy(M->getContext());
@@ -677,3 +697,25 @@ void llcg_llvm::MakeMetaList(const string& name, vector<string>& list, LValue fp
 }
 
 
+FunctionType* llcg_llvm::getMallocType() {
+	if (malloc_type != NULL) return malloc_type;
+
+	Type* ret = Type::getVoidTy(context)->getPointerTo();
+	vector<Type*> types;
+	types.push_back(Type::getInt64Ty(context));
+	malloc_type = FunctionType::get(ret, types, /*vararg*/false);
+	return malloc_type;
+}
+
+FunctionType* llcg_llvm::getMallocArrayType() {
+	if (malloc_array_type != NULL) return malloc_array_type;
+
+	Type* ret = Type::getVoidTy(context)->getPointerTo();
+	vector<Type*> types;
+	types.push_back(Type::getInt64Ty(context));
+	malloc_array_type = FunctionType::get(ret, types, /*vararg*/true);
+	return malloc_array_type;
+}
+
+FunctionType* llcg_llvm::malloc_type = NULL;
+FunctionType* llcg_llvm::malloc_array_type = NULL;

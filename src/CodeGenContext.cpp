@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-10-10 18:45:20
 * @Last Modified by:   sxf
@@ -31,13 +31,13 @@ LValue CodeGenContext::MacroMake(Node* node) {
 		ICodeGenFunction* func = getMacro(node->getStr());
 		if (func != NULL) {
 			return func->call(this, node->getNext());
-		} 
+		}
 		return NULL;
-	} 
+	}
 	if (node->getChild() != NULL && node->getChild()->isIDNode())
 		return MacroMake(node->getChild());
 	LValue ans;
-	for (Node* p = node->getChild(); p != NULL; p = p->getNext()) 
+	for (Node* p = node->getChild(); p != NULL; p = p->getNext())
 		ans = MacroMake(p);
 	return ans;
 }
@@ -65,14 +65,20 @@ void CodeGenContext::AddOrReplaceMacros(const FuncReg* macro_funcs) {
 	while (true) {
 		const char*      name = macro_funcs->name;
 		CodeGenCFunction func = macro_funcs->func;
-		if (name == NULL) return;
-		auto p = macro_map.find(name);
-		if (p != macro_map.end()) 
+		if (name == 0) return;
+		string fname = name;
+		cout << fname << endl;
+		auto p = macro_map.find(fname);
+		if (p != macro_map.end())
 			p->second = new CodeGenFunction(func);
-		else 
-			macro_map.insert(make_pair<string, ICodeGenFunction*>(name, new CodeGenFunction(func)));
+		else
+			macro_map[fname] = new CodeGenFunction(func);
 		++macro_funcs;
 	}
+}
+
+void CodeGenContext::AddOrReplaceMacros(const string& name, ICodeGenFunction* func) {
+	macro_map[name] = func;
 }
 
 void CodeGenContext::RemoveAllMacros() {
@@ -80,7 +86,7 @@ void CodeGenContext::RemoveAllMacros() {
 }
 
 
-id* CodeGenContext::FindST(Node* node) const{ 
+id* CodeGenContext::FindST(Node* node) const{
 	return FindST(node->getStr());
 }
 
@@ -106,7 +112,7 @@ shared_ptr<FunctionModel> CodeGenContext::getFunctionModel(const string& name) {
 	if (i == NULL) {
 		return NULL;
 	}
-	if (i->type != function_t) { 
+	if (i->type != function_t) {
 		return NULL;
 	}
 	return dynamic_pointer_cast<FunctionModel>(i->data);
@@ -130,7 +136,7 @@ shared_ptr<StructModel> CodeGenContext::getStructModel(const string& name) {
 		printf("错误: 符号 %s 未找到\n", name.c_str());
 		return NULL;
 	}
-	if (i->type != struct_t) { 
+	if (i->type != struct_t) {
 		printf("错误: 符号 %s 类型不是结构体\n", name.c_str());
 		return NULL;
 	}
@@ -166,7 +172,7 @@ LValue CodeGenContext::FindSrcType(Node* node) {
 LValue CodeGenContext::FindType(const string& name) {
 	string find_name = name; int d = 0;
 	bool is_source = false;
-	if (find_name[0] == '*') { 
+	if (find_name[0] == '*') {
 		is_source = true;
 		find_name.erase(find_name.begin());
 	}
@@ -177,7 +183,7 @@ LValue CodeGenContext::FindType(const string& name) {
 		++d;
 	}
 	LValue t = FindSrcType(find_name);
-	if (t->isStructType() && !is_source) 
+	if (t->isStructType() && !is_source)
 		t = t->getPointerTo();
 	if (d >= 1) { // - -! 这么白痴的错误居然瞪了两个小时没发现
 		t = t->getPointerTo();
@@ -272,5 +278,5 @@ CodeGenContext::CodeGenContext(Node* node) {
 }
 
 CodeGenContext::~CodeGenContext() {
-	delete st;	
+	delete st;
 }
