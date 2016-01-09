@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-10-26 14:00:25
 * @Last Modified by:   sxf
@@ -10,6 +10,7 @@
 #include "MetaModel/StructModel.h"
 #include "MetaModel/FunctionModel.h"
 #include "nodes.h"
+#include "idtable.h"
 #include <iostream>
 
 using namespace std;
@@ -30,6 +31,7 @@ static LValue function_macro(CodeGenContext* context, Node* node) {
 	if (node->getChild() == NULL) {
 		return F; // 仅仅是函数声明
 	}
+	context->st->push();
 	context->getLLCG()->CreateBasicBlock(F); // 创建新的Block
 
 	// 特殊处理参数表, 这个地方特别坑，你必须给每个函数的参数
@@ -43,6 +45,7 @@ static LValue function_macro(CodeGenContext* context, Node* node) {
 
 	// 处理块结尾
 	context->getLLCG()->FunctionBodyEnd();
+	context->st->pop();
 	return F;
 }
 
@@ -74,7 +77,11 @@ static LValue set_macro(CodeGenContext* context, Node* node) {
 		cerr << "变量的初始化无效: " << var_name << endl;
 		exit(1);
 	}
-	LValue addr = context->getLLCG()->DefVar(t, var_name, init_expr);
+	LValue addr;
+	if (context->st->getLevel() != 0)
+		addr = context->getLLCG()->DefVar(t, var_name, init_expr);
+	else
+		addr = context->getLLCG()->DefGlobalVar(t, var_name, init_expr);
 	context->DefVar(var_name, addr);
 	return addr;
 }
@@ -88,7 +95,7 @@ static LValue select_macro(CodeGenContext* context, Node* node) {
 
 	LValue value = node->codeGen(context);
 
-	std::vector<LValue> args; 
+	std::vector<LValue> args;
 	for (Node* p = node->getNext(); p != NULL; p = p->getNext()) {
 		LValue v = p->codeGen(context);
 		if (v != NULL) {
@@ -122,6 +129,7 @@ static LValue call_macro(CodeGenContext* context, Node* node) {
 }
 
 static LValue for_macro(CodeGenContext* context, Node* node) {
+	context->st->push();
 	// 参数一 初始化
 	LValue init_block = context->getLLCG()->GetNowBasicBlock();
 	context->MacroMake(node);
@@ -143,10 +151,12 @@ static LValue for_macro(CodeGenContext* context, Node* node) {
 
 	// 生成for循环
 	context->getLLCG()->For(condition, init_block, end_block, do_block, work_block);
+	context->st->pop();
 	return NULL;
 }
 
 static LValue while_macro(CodeGenContext* context, Node* node) {
+
 	// 参数一 条件
 	LValue father_block = context->getLLCG()->GetNowBasicBlock();
 	LValue pd_block     = context->getLLCG()->CreateBasicBlock();
@@ -155,7 +165,9 @@ static LValue while_macro(CodeGenContext* context, Node* node) {
 	// 参数二 循环体
 	node = node->getNext();
 	LValue true_block = context->getLLCG()->CreateBasicBlock();
+	context->st->push();
 	context->MacroMake(node);
+	context->st->pop();
 
 	// 生成while循环
 	context->getLLCG()->While(condition, father_block, pd_block, true_block);
@@ -163,6 +175,7 @@ static LValue while_macro(CodeGenContext* context, Node* node) {
 }
 
 static LValue if_macro(CodeGenContext* context, Node* node) {
+
 	// 参数一 条件
 	LValue condition = context->MacroMake(node);
 	LValue father_block = context->getLLCG()->GetNowBasicBlock();
@@ -171,13 +184,18 @@ static LValue if_macro(CodeGenContext* context, Node* node) {
 	node = node->getNext();
 
 	LValue true_block = context->getLLCG()->CreateBasicBlock();
+	context->st->push();
 	context->MacroMake(node);
+	context->st->pop();
 
 	// 参数三 为假时, 跳转到的Label
 	node = node->getNext();
 	LValue false_block = context->getLLCG()->CreateBasicBlock();
-	if (node != NULL)
+	if (node != NULL) {
+		context->st->push();
 		context->MacroMake(node);
+		context->st->pop();
+	}
 
 	context->getLLCG()->If(condition, father_block, true_block, false_block, node != NULL);
 	return NULL;
@@ -312,6 +330,6 @@ extern const FuncReg macro_funcs[] = {
 	{"new",      new_macro},
 	{"delete",   delete_macro},
 	{"delete[]", delete_array_macro},
-	//{"import",   import_macro}, // 实验型导入功能,最后应从库中删除 
+	//{"import",   import_macro}, // 实验型导入功能,最后应从库中删除
 	{NULL, NULL}
 };

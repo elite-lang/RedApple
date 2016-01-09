@@ -590,16 +590,16 @@ void llcg_llvm::VerifyAndWrite(const string& outfile_name) {
 }
 
 void llcg_llvm::verifyModuleAndWrite(llvm::Module* M, const string& outfile_name) {
-	   // 输出编译后的LLVM可读字节码
-    outs() << "LLVM module:\n\n" << *M;
-    outs() << "\n\n";
-    outs().flush();
-
     // 校验问题, 这个函数需要一个输出流来打印错误信息
-    if (verifyModule(*M, &errs())) {
-        errs() << "构建LLVM字节码出错!\n";
+	outs() << "\n";
+    if (verifyModule(*M, &outs())) {
+        outs() << "构建LLVM字节码出错!\n";
         exit(1);
     }
+	// 输出编译后的LLVM可读字节码
+	outs() << "LLVM module:\n\n" << *M;
+	outs() << "\n\n";
+	outs().flush();
 
     // 输出二进制BitCode到.bc文件
     std::error_code ErrInfo;

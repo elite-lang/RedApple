@@ -67,7 +67,6 @@ void CodeGenContext::AddOrReplaceMacros(const FuncReg* macro_funcs) {
 		CodeGenCFunction func = macro_funcs->func;
 		if (name == 0) return;
 		string fname = name;
-		cout << fname << endl;
 		auto p = macro_map.find(fname);
 		if (p != macro_map.end())
 			p->second = new CodeGenFunction(func);
