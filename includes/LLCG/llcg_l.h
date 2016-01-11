@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-12-19 10:15:48
 * @Last Modified by:   sxf
@@ -42,7 +42,7 @@ public:
 	virtual lvalue* l_DefVar(lvalue* var_type, const string& name) = 0; // 返回分配的地址
 	virtual lvalue* l_DefVar(lvalue* var_type, const string& name, lvalue* init) = 0;
 	virtual lvalue* l_DefGlobalVar(lvalue* var_type, const string& name) = 0;
-	virtual lvalue* l_DefGlobalVar(lvalue* var_type, const string& name, lvalue* init) = 0;	
+	virtual lvalue* l_DefGlobalVar(lvalue* var_type, const string& name, lvalue* init) = 0;
 	virtual lvalue* l_Load(lvalue* var_addr) = 0;
 	virtual lvalue* l_Store(lvalue* var_addr, lvalue* value) = 0;
 	virtual lvalue* l_Opt1(const string& opt, lvalue* value) = 0;
@@ -51,9 +51,10 @@ public:
 	virtual lvalue* l_Assignment(const string& opt, lvalue* value1, lvalue* value2) = 0;
 	virtual lvalue* l_Dot(lvalue* value, int num) = 0;
 	virtual lvalue* l_Select(lvalue* value, vector<lvalue*>& args) = 0;
-	virtual void   l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* false_block, bool isElseWork) = 0;	
-	virtual void   l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement) = 0;
-	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement) = 0;
+	virtual void   l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* true_block_end,
+					   lvalue* false_block, lvalue* false_block_end, bool isElseWork) = 0;
+	virtual void   l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement, lvalue* statement_end) = 0;
+	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement, lvalue* statement_end) = 0;
 	virtual void   l_DoWhile(lvalue* statement, lvalue* pd) = 0;
 	virtual void   l_DoUntil(lvalue* statement, lvalue* pd) = 0;
 	virtual lvalue* l_New(lvalue* var_type, vector<lvalue*>& args, const string& funcname = "") = 0;

@@ -42,10 +42,9 @@ static LValue function_macro(CodeGenContext* context, Node* node) {
 		context->getLLCG()->FunctionBodyBegin(F, fm->name_list);
 	}
 	context->MacroMake(node);
-
+	context->st->pop();
 	// 处理块结尾
 	context->getLLCG()->FunctionBodyEnd();
-	context->st->pop();
 	return F;
 }
 
@@ -148,9 +147,9 @@ static LValue for_macro(CodeGenContext* context, Node* node) {
 	node = node->getNext();
 	LValue work_block = context->getLLCG()->CreateBasicBlock();
 	context->MacroMake(node);
-
+	LValue work_end_block = context->getLLCG()->GetNowBasicBlock();
 	// 生成for循环
-	context->getLLCG()->For(condition, init_block, end_block, do_block, work_block);
+	context->getLLCG()->For(condition, init_block, end_block, do_block, work_block, work_end_block);
 	context->st->pop();
 	return NULL;
 }
@@ -168,9 +167,10 @@ static LValue while_macro(CodeGenContext* context, Node* node) {
 	context->st->push();
 	context->MacroMake(node);
 	context->st->pop();
+	LValue work_end_block = context->getLLCG()->GetNowBasicBlock();
 
 	// 生成while循环
-	context->getLLCG()->While(condition, father_block, pd_block, true_block);
+	context->getLLCG()->While(condition, father_block, pd_block, true_block, work_end_block);
 	return NULL;
 }
 
@@ -187,6 +187,7 @@ static LValue if_macro(CodeGenContext* context, Node* node) {
 	context->st->push();
 	context->MacroMake(node);
 	context->st->pop();
+	LValue true_end_block = context->getLLCG()->GetNowBasicBlock();
 
 	// 参数三 为假时, 跳转到的Label
 	node = node->getNext();
@@ -196,8 +197,11 @@ static LValue if_macro(CodeGenContext* context, Node* node) {
 		context->MacroMake(node);
 		context->st->pop();
 	}
+	LValue false_end_block = context->getLLCG()->GetNowBasicBlock();
 
-	context->getLLCG()->If(condition, father_block, true_block, false_block, node != NULL);
+
+	context->getLLCG()->If(condition, father_block, true_block,
+		true_end_block, false_block, false_end_block, node != NULL);
 	return NULL;
 }
 

@@ -331,66 +331,77 @@ GetElementPtrInst* llcg_llvm::ptrMove(Value* v, int n) {
 }
 
 
-void llcg_llvm::If(LValue cond, LValue father, LValue true_block, LValue false_block, bool isElseWork) {
-	Value* condition    = *LLVALUE(cond);
-	Value* _father      = *LLVALUE(father);
-	Value* _true_block  = *LLVALUE(true_block);
-	Value* _false_block = *LLVALUE(false_block);
-	BasicBlock* father_block  = dyn_cast<BasicBlock>(_father);
-	BasicBlock* _true_block_  = dyn_cast<BasicBlock>(_true_block);
-	BasicBlock* _false_block_ = dyn_cast<BasicBlock>(_false_block);
+void llcg_llvm::If(LValue cond, LValue father, LValue true_block, LValue true_block_end,
+				   LValue false_block, LValue false_block_end, bool isElseWork) {
+
+	// 由于动态转换模板的特殊性,需要先转换成Value*类型
+	Value* condition              = *LLVALUE(cond);
+ 	Value* _father                = *LLVALUE(father);
+ 	Value* _true_block            = *LLVALUE(true_block);
+ 	Value* _false_block           = *LLVALUE(false_block);
+	Value* _true_block_end        = *LLVALUE(true_block_end);
+	Value* _false_block_end       = *LLVALUE(false_block_end);
+
+ 	BasicBlock* father_block      = dyn_cast<BasicBlock>(_father);
+ 	BasicBlock* _true_block_      = dyn_cast<BasicBlock>(_true_block);
+ 	BasicBlock* _false_block_     = dyn_cast<BasicBlock>(_false_block);
+	BasicBlock* _true_block_end_  = dyn_cast<BasicBlock>(_true_block_end);
+	BasicBlock* _false_block_end_ = dyn_cast<BasicBlock>(_false_block_end);
 
 	if (isElseWork) {
 		BasicBlock* end_block = createBlock();
-		if (_true_block_->getTerminator() == NULL)
-			BranchInst::Create(end_block, _true_block_);
-		if (_false_block_->getTerminator() == NULL)
-			BranchInst::Create(end_block, _false_block_);
+		if (_true_block_end_->getTerminator() == NULL)
+			BranchInst::Create(end_block, _true_block_end_);
+		if (_false_block_end_->getTerminator() == NULL)
+			BranchInst::Create(end_block, _false_block_end_);
 	} else {
-		if (_true_block_->getTerminator() == NULL)
-			BranchInst::Create(_false_block_, _true_block_);
+		if (_true_block_end_->getTerminator() == NULL)
+			BranchInst::Create(_false_block_, _true_block_end_);
 	}
 	BranchInst* branch = BranchInst::Create(_true_block_, _false_block_, condition, father_block);
 }
 
-void llcg_llvm::For(LValue cond, LValue init, LValue pd, LValue work, LValue statement) {
-	Value* condition  = *LLVALUE(cond);
-	Value* _init      = *LLVALUE(init);
-	Value* _pd        = *LLVALUE(pd);
-	Value* _work      = *LLVALUE(work);
-	Value* _statement = *LLVALUE(statement);
-	BasicBlock* init_block = dyn_cast<BasicBlock>(_init);
-	BasicBlock* end_block  = dyn_cast<BasicBlock>(_pd);
-	BasicBlock* do_block   = dyn_cast<BasicBlock>(_work);
-	BasicBlock* work_block = dyn_cast<BasicBlock>(_statement);
+void llcg_llvm::For(LValue cond, LValue init, LValue pd, LValue work, LValue statement, LValue statement_end) {
+	Value* condition           = *LLVALUE(cond);
+	Value* _init               = *LLVALUE(init);
+	Value* _pd                 = *LLVALUE(pd);
+	Value* _work               = *LLVALUE(work);
+	Value* _statement          = *LLVALUE(statement);
+	Value* _statement_end      = *LLVALUE(statement_end);
+	BasicBlock* init_block     = dyn_cast<BasicBlock>(_init);
+	BasicBlock* end_block      = dyn_cast<BasicBlock>(_pd);
+	BasicBlock* do_block       = dyn_cast<BasicBlock>(_work);
+	BasicBlock* work_block     = dyn_cast<BasicBlock>(_statement);
+	BasicBlock* work_block_end = dyn_cast<BasicBlock>(_statement_end);
 
 	BasicBlock* false_block = createBlock();
 	BranchInst* branch = BranchInst::Create(work_block, false_block, condition, end_block);
 	if (init_block->getTerminator() == NULL)
 		BranchInst::Create(end_block, init_block);
-	if (work_block->getTerminator() == NULL)
-		BranchInst::Create(do_block,  work_block);
+	if (work_block_end->getTerminator() == NULL)
+		BranchInst::Create(do_block,  work_block_end);
 	if (do_block->getTerminator() == NULL)
 		BranchInst::Create(end_block, do_block);
 }
 
-void llcg_llvm::While(LValue cond, LValue father, LValue pd, LValue statement) {
-	Value* condition  = *LLVALUE(cond);
-	Value* _father    = *LLVALUE(father);
-	Value* _pd        = *LLVALUE(pd);
-	Value* _statement = *LLVALUE(statement);
-
-	BasicBlock* father_block = dyn_cast<BasicBlock>(_father);
-	BasicBlock* pd_block     = dyn_cast<BasicBlock>(_pd);
-	BasicBlock* true_block   = dyn_cast<BasicBlock>(_statement);
+void llcg_llvm::While(LValue cond, LValue father, LValue pd, LValue statement, LValue statement_end) {
+	Value* condition           = *LLVALUE(cond);
+	Value* _father             = *LLVALUE(father);
+	Value* _pd                 = *LLVALUE(pd);
+	Value* _statement          = *LLVALUE(statement);
+	Value* _statement_end      = *LLVALUE(statement_end);
+	BasicBlock* father_block   = dyn_cast<BasicBlock>(_father);
+	BasicBlock* pd_block       = dyn_cast<BasicBlock>(_pd);
+	BasicBlock* true_block     = dyn_cast<BasicBlock>(_statement);
+	BasicBlock* true_block_end = dyn_cast<BasicBlock>(_statement_end);
 
 	// 生成while循环
 	BasicBlock* false_block = createBlock();
 	BranchInst* branch = BranchInst::Create(true_block, false_block, condition, pd_block);
 	if (father_block->getTerminator() == NULL)
 		BranchInst::Create(pd_block, father_block);
-	if (true_block->getTerminator() == NULL)
-		BranchInst::Create(pd_block, true_block);
+	if (true_block_end->getTerminator() == NULL)
+		BranchInst::Create(pd_block, true_block_end);
 }
 
 void llcg_llvm::DoWhile(LValue statement, LValue pd) {
@@ -590,16 +601,18 @@ void llcg_llvm::VerifyAndWrite(const string& outfile_name) {
 }
 
 void llcg_llvm::verifyModuleAndWrite(llvm::Module* M, const string& outfile_name) {
+	// 输出编译后的LLVM可读字节码
+	outs() << "LLVM module:\n\n" << *M;
+	outs() << "\n\n";
+	outs().flush();
+
     // 校验问题, 这个函数需要一个输出流来打印错误信息
 	outs() << "\n";
     if (verifyModule(*M, &outs())) {
         outs() << "构建LLVM字节码出错!\n";
         exit(1);
     }
-	// 输出编译后的LLVM可读字节码
-	outs() << "LLVM module:\n\n" << *M;
-	outs() << "\n\n";
-	outs().flush();
+
 
     // 输出二进制BitCode到.bc文件
     std::error_code ErrInfo;

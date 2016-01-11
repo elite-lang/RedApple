@@ -63,9 +63,10 @@ public:
 	virtual LValue Assignment(const string& opt, LValue value1, LValue value2);
 	virtual LValue Dot(LValue value, int num);
 	virtual LValue Select(LValue value, vector<LValue>& args);
-	virtual void   If(LValue cond, LValue father, LValue true_block, LValue false_block, bool isElseWork);
-	virtual void   For(LValue cond, LValue init, LValue pd, LValue work, LValue statement);
-	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement);
+	virtual void   If(LValue cond, LValue father, LValue true_block, LValue true_block_end,
+					   LValue false_block, LValue false_block_end, bool isElseWork);
+	virtual void   For(LValue cond, LValue init, LValue pd, LValue work, LValue statement, LValue statement_end);
+	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement, LValue statement_end);
 	virtual void   DoWhile(LValue statement, LValue pd);
 	virtual void   DoUntil(LValue statement, LValue pd);
 	virtual LValue New(LValue var_type, vector<LValue>& args, const string& funcname = "");
@@ -126,9 +127,10 @@ public:
 	virtual lvalue* l_Assignment(const string& opt, lvalue* value1, lvalue* value2);
 	virtual lvalue* l_Dot(lvalue* value, int num);
 	virtual lvalue* l_Select(lvalue* value, vector<lvalue*>& args);
-	virtual void   l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* false_block, bool isElseWork);
-	virtual void   l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement);
-	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement);
+	virtual void   l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* true_block_end,
+					   lvalue* false_block, lvalue* false_block_end, bool isElseWork);
+	virtual void   l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement, lvalue* statement_end);
+	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement, lvalue* statement_end);
 	virtual void   l_DoWhile(lvalue* statement, lvalue* pd);
 	virtual void   l_DoUntil(lvalue* statement, lvalue* pd);
 	virtual lvalue* l_New(lvalue* var_type, vector<lvalue*>& args, const string& funcname = "");

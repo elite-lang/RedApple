@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-12-24 17:54:40
 * @Last Modified by:   sxf
@@ -21,7 +21,7 @@ lvalue* llcg_llvm::l_FuncType(lvalue* ret_type, vector<lvalue*>& types, bool isN
 		llvm_type* t = dynamic_cast<llvm_type*>(p);
 		arg_types.push_back(*t);
 	}
-	FunctionType* func_type = FunctionType::get(*ret, arg_types, 
+	FunctionType* func_type = FunctionType::get(*ret, arg_types,
 		/*vararg*/isNotSure);
 	return new llvm_type(func_type);
 }
@@ -124,14 +124,14 @@ lvalue* llcg_llvm::l_DefGlobalVar(lvalue* var_type, const string& name) {
 lvalue* llcg_llvm::l_DefGlobalVar(lvalue* var_type, const string& name, lvalue* init) {
 	Type* t = *dynamic_cast<llvm_type*>(var_type);
 	Value* v = *dynamic_cast<llvm_value*>(init);
-	Value* g = new GlobalVariable(*M, t, false, GlobalValue::LinkageTypes::ExternalLinkage, 
+	Value* g = new GlobalVariable(*M, t, false, GlobalValue::LinkageTypes::ExternalLinkage,
 									dyn_cast<Constant>(v), name);
 	return new llvm_value(g);
-}	
+}
 
 lvalue* llcg_llvm::l_Load(lvalue* var_addr) {
 	Value* ptr = *dynamic_cast<llvm_value*>(var_addr);
-	Value* v = new LoadInst(ptr, "", false, nowBlock);		
+	Value* v = new LoadInst(ptr, "", false, nowBlock);
 	return new llvm_value(v);
 }
 
@@ -145,12 +145,12 @@ lvalue* llcg_llvm::l_Store(lvalue* var_addr, lvalue* value) {
 lvalue* llcg_llvm::l_Opt1(const string& opt, lvalue* value) {
 	Value* ans = *dynamic_cast<llvm_value*>(value);
 
-	AtomicRMWInst::BinOp bop; 
-	Value* one = ConstantInt::get(Type::getInt64Ty(context), 1); 
+	AtomicRMWInst::BinOp bop;
+	Value* one = ConstantInt::get(Type::getInt64Ty(context), 1);
 	Value* ret;
-	if (opt == "-") { ret = BinaryOperator::CreateNeg(ans, "", nowBlock); 
+	if (opt == "-") { ret = BinaryOperator::CreateNeg(ans, "", nowBlock);
 						return new llvm_value(ret);  }
-	if (opt == "~") { ret = BinaryOperator::CreateNot(ans, "", nowBlock); 
+	if (opt == "~") { ret = BinaryOperator::CreateNot(ans, "", nowBlock);
 						return new llvm_value(ret);  }
 	if (opt == "++") { bop = AtomicRMWInst::BinOp::Add;  goto selfWork; }
 	if (opt == "--") { bop = AtomicRMWInst::BinOp::Sub;  goto selfWork; }
@@ -158,13 +158,13 @@ lvalue* llcg_llvm::l_Opt1(const string& opt, lvalue* value) {
 	if (opt == "b--") { bop = AtomicRMWInst::BinOp::Sub; goto saveWork; }
 
 selfWork:
-	new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent, 
+	new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent,
 		SynchronizationScope::CrossThread, nowBlock);
-	ret = new LoadInst(ans, "", false, nowBlock);	
+	ret = new LoadInst(ans, "", false, nowBlock);
 	return new llvm_value(ret);
 
 saveWork:
-	ret = new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent, 
+	ret = new AtomicRMWInst(bop, ans, one, AtomicOrdering::SequentiallyConsistent,
 		SynchronizationScope::CrossThread, nowBlock);
 	return new llvm_value(ret);
 }
@@ -227,19 +227,19 @@ lvalue* llcg_llvm::l_Cmp(const string& opt, lvalue* value1, lvalue* value2) {
 	Type* t2 = ans2->getType();
 	CmpInst::Predicate instp;
 	if (t1->isIntegerTy() && t2->isIntegerTy() && t1->getIntegerBitWidth()==t2->getIntegerBitWidth() ) {
-		if (opt == "==") { instp = CmpInst::Predicate::ICMP_EQ;  goto cmpOper; } 
-		if (opt == "!=") { instp = CmpInst::Predicate::ICMP_NE;  goto cmpOper; } 
-		if (opt == "<=") { instp = CmpInst::Predicate::ICMP_SLE; goto cmpOper; } 
-		if (opt == ">=") { instp = CmpInst::Predicate::ICMP_SGE; goto cmpOper; } 
-		if (opt == "<")  { instp = CmpInst::Predicate::ICMP_SLT; goto cmpOper; } 
-		if (opt == ">")  { instp = CmpInst::Predicate::ICMP_SGT; goto cmpOper; } 
+		if (opt == "==") { instp = CmpInst::Predicate::ICMP_EQ;  goto cmpOper; }
+		if (opt == "!=") { instp = CmpInst::Predicate::ICMP_NE;  goto cmpOper; }
+		if (opt == "<=") { instp = CmpInst::Predicate::ICMP_SLE; goto cmpOper; }
+		if (opt == ">=") { instp = CmpInst::Predicate::ICMP_SGE; goto cmpOper; }
+		if (opt == "<")  { instp = CmpInst::Predicate::ICMP_SLT; goto cmpOper; }
+		if (opt == ">")  { instp = CmpInst::Predicate::ICMP_SGT; goto cmpOper; }
 	} else {
 		normalize_type(ans1, ans2, nowBlock);
-		if (opt == "==") { instp = CmpInst::Predicate::FCMP_OEQ;  goto cmpOper; } 
-		if (opt == "!=") { instp = CmpInst::Predicate::FCMP_ONE;  goto cmpOper; } 
-		if (opt == "<=") { instp = CmpInst::Predicate::FCMP_OLE; goto cmpOper; } 
-		if (opt == ">=") { instp = CmpInst::Predicate::FCMP_OGE; goto cmpOper; } 
-		if (opt == "<")  { instp = CmpInst::Predicate::FCMP_OLT; goto cmpOper; } 
+		if (opt == "==") { instp = CmpInst::Predicate::FCMP_OEQ;  goto cmpOper; }
+		if (opt == "!=") { instp = CmpInst::Predicate::FCMP_ONE;  goto cmpOper; }
+		if (opt == "<=") { instp = CmpInst::Predicate::FCMP_OLE; goto cmpOper; }
+		if (opt == ">=") { instp = CmpInst::Predicate::FCMP_OGE; goto cmpOper; }
+		if (opt == "<")  { instp = CmpInst::Predicate::FCMP_OLT; goto cmpOper; }
 		if (opt == ">")  { instp = CmpInst::Predicate::FCMP_OGT; goto cmpOper; }
 	}
 
@@ -255,14 +255,14 @@ lvalue* llcg_llvm::l_Assignment(const string& opt, lvalue* value1, lvalue* value
 		Value* ret = new StoreInst(ans2, ans1, false, nowBlock);
 		return new llvm_value(ret);
 	}
-	AtomicRMWInst::BinOp bop; 
+	AtomicRMWInst::BinOp bop;
 	if (opt == "+=") { bop = AtomicRMWInst::BinOp::Add; goto rmwOper; }
 	if (opt == "-=") { bop = AtomicRMWInst::BinOp::Sub; goto rmwOper; }
 	if (opt == "&=") { bop = AtomicRMWInst::BinOp::And; goto rmwOper; }
 	if (opt == "|=") { bop = AtomicRMWInst::BinOp::Or;  goto rmwOper; }
 	if (opt == "^=") { bop = AtomicRMWInst::BinOp::Xor; goto rmwOper; }
 rmwOper:
-	Value* ret = new AtomicRMWInst(bop, ans1, ans2, AtomicOrdering::SequentiallyConsistent, 
+	Value* ret = new AtomicRMWInst(bop, ans1, ans2, AtomicOrdering::SequentiallyConsistent,
 		SynchronizationScope::CrossThread, nowBlock);
 	return new llvm_value(ret);
 }
@@ -272,7 +272,7 @@ lvalue* llcg_llvm::l_Dot(lvalue* value, int num) {
 	ConstantInt* zero = ConstantInt::get(Type::getInt32Ty(context), 0);
 	ConstantInt* n    = ConstantInt::get(Type::getInt32Ty(context), num);
 	std::vector<Value*> indices;
-	indices.push_back(zero); 
+	indices.push_back(zero);
 	indices.push_back(n);
 	GetElementPtrInst* ptr = GetElementPtrInst::CreateInBounds(ans, indices, "", nowBlock);
 	return new llvm_value(ptr);
@@ -285,7 +285,7 @@ lvalue* llcg_llvm::l_Select(lvalue* value, vector<lvalue*>& args) {
 	if (!(v->getType()->isPointerTy())) return nullptr;
 	if (v->getType()->getPointerElementType()->isIntegerTy(64))
 		len_array = v;
-	else 
+	else
 		len_array = CastInst::CreatePointerCast(v, Type::getInt64PtrTy(context));
 	Value* index;
 	if (args.size() != 0) {
@@ -293,7 +293,7 @@ lvalue* llcg_llvm::l_Select(lvalue* value, vector<lvalue*>& args) {
 		for (int i = -2, j = 0; j < args.size()-1; --i, ++j) {
 			Value* len = new LoadInst(ptrMove(len_array, i), "", false, nowBlock);
 			index = BinaryOperator::Create(Instruction::Mul, index, len, "", nowBlock);
-			Value* other = *dynamic_cast<llvm_value*>(args[j+1]);	
+			Value* other = *dynamic_cast<llvm_value*>(args[j+1]);
 			index = BinaryOperator::Create(Instruction::Add, index, other, "", nowBlock);
 		}
 	} else { errs() << "error index\n"; }
@@ -304,7 +304,8 @@ lvalue* llcg_llvm::l_Select(lvalue* value, vector<lvalue*>& args) {
 	return new llvm_value(ptr);
 }
 
-void   llcg_llvm::l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* false_block, bool isElseWork) {
+void   llcg_llvm::l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* true_block_end,
+						lvalue* false_block, lvalue* false_block_end, bool isElseWork) {
 	Value* condition    = *dynamic_cast<llvm_value*>(cond);
 	Value* _father      = *dynamic_cast<llvm_value*>(father);
 	Value* _true_block  = *dynamic_cast<llvm_value*>(true_block);
@@ -324,9 +325,9 @@ void   llcg_llvm::l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue*
 			BranchInst::Create(_false_block_, _true_block_);
 	}
 	BranchInst* branch = BranchInst::Create(_true_block_, _false_block_, condition, father_block);
-}	
+}
 
-void   llcg_llvm::l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement) {
+void   llcg_llvm::l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement, lvalue* statement_end) {
 	Value* condition  = *dynamic_cast<llvm_value*>(cond);
 	Value* _init      = *dynamic_cast<llvm_value*>(init);
 	Value* _pd        = *dynamic_cast<llvm_value*>(pd);
@@ -336,7 +337,7 @@ void   llcg_llvm::l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lv
 	BasicBlock* end_block  = dyn_cast<BasicBlock>(_pd);
 	BasicBlock* do_block   = dyn_cast<BasicBlock>(_work);
 	BasicBlock* work_block = dyn_cast<BasicBlock>(_statement);
-	
+
 	BasicBlock* false_block = createBlock();
 	BranchInst* branch = BranchInst::Create(work_block, false_block, condition, end_block);
 	if (init_block->getTerminator() == NULL)
@@ -347,7 +348,7 @@ void   llcg_llvm::l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lv
 		BranchInst::Create(end_block, do_block);
 }
 
-void   llcg_llvm::l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement) {
+void   llcg_llvm::l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement, lvalue* statement_end) {
 	Value* condition  = *dynamic_cast<llvm_value*>(cond);
 	Value* _father    = *dynamic_cast<llvm_value*>(father);
 	Value* _pd        = *dynamic_cast<llvm_value*>(pd);
@@ -394,7 +395,7 @@ lvalue* llcg_llvm::l_NewArray(lvalue* var_type, vector<lvalue*>& wd, const strin
 	}
 	args.push_back(zero);
 	string func_name = "malloc_array";
-	CallInst *call = CallInst::Create(M->getFunction(func_name), 
+	CallInst *call = CallInst::Create(M->getFunction(func_name),
 		args, "", nowBlock);
 	// t = ArrayType::get(t, 0);
 	t = t->getPointerTo();
@@ -549,8 +550,8 @@ void   llcg_llvm::l_MakeMetaList(vector<string>& list) {
 	BasicBlock& bb = F->getEntryBlock();
 	Function* FuncF = M->getFunction("elite_meta_list");
 	Constant* list_vec = getPtrArray(*M, args_list);
-	vector<Value*> args; 
-	args.push_back(list_vec); 
+	vector<Value*> args;
+	args.push_back(list_vec);
 	CallInst::Create(FuncF, args, "", &bb);
 }
 
@@ -562,12 +563,12 @@ void   llcg_llvm::l_MakeMetaList(const string& name, vector<string>& list, lvalu
 		args_list.push_back(geti8StrVal(*M, list[i].c_str(), ""));
 	}
 	args_list.push_back(Constant::getNullValue(Type::getInt8PtrTy(M->getContext())));
-	
+
 	Constant* list_vec = getPtrArray(*M, args_list);
-	vector<Value*> args; 
+	vector<Value*> args;
 	args.push_back(geti8StrVal(*M, name.c_str(), "")); // 第一个参数, 函数名
 	args.push_back(list_vec); // 第二个参数, 函数类型定义字符串列表
-	
+
 	Type* ft = *dynamic_cast<llvm_type*>(fp);
 	Function* nowFunc = dyn_cast<Function>(M->getOrInsertFunction(name, (FunctionType*)ft));
 	Type* nowType = Type::getInt8PtrTy(M->getContext());

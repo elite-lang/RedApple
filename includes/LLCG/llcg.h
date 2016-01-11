@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-11-23 10:53:22
 * @Last Modified by:   sxf
@@ -42,7 +42,7 @@ public:
 	virtual LValue DefVar(LValue var_type, const string& name) = 0; // 返回分配的地址
 	virtual LValue DefVar(LValue var_type, const string& name, LValue init) = 0;
 	virtual LValue DefGlobalVar(LValue var_type, const string& name) = 0;
-	virtual LValue DefGlobalVar(LValue var_type, const string& name, LValue init) = 0;	
+	virtual LValue DefGlobalVar(LValue var_type, const string& name, LValue init) = 0;
 	virtual LValue Load(LValue var_addr) = 0;
 	virtual LValue Store(LValue var_addr, LValue value) = 0;
 	virtual LValue Opt1(const string& opt, LValue value) = 0;
@@ -51,9 +51,10 @@ public:
 	virtual LValue Assignment(const string& opt, LValue value1, LValue value2) = 0;
 	virtual LValue Dot(LValue value, int num) = 0;
 	virtual LValue Select(LValue value, vector<LValue>& args) = 0;
-	virtual void   If(LValue cond, LValue father, LValue true_block, LValue false_block, bool isElseWork) = 0;	
-	virtual void   For(LValue cond, LValue init, LValue pd, LValue work, LValue statement) = 0;
-	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement) = 0;
+	virtual void   If(LValue cond, LValue father, LValue true_block, LValue true_block_end,
+					   LValue false_block, LValue false_block_end, bool isElseWork) = 0;
+	virtual void   For(LValue cond, LValue init, LValue pd, LValue work, LValue statement, LValue statement_end) = 0;
+	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement, LValue statement_end) = 0;
 	virtual void   DoWhile(LValue statement, LValue pd) = 0;
 	virtual void   DoUntil(LValue statement, LValue pd) = 0;
 	virtual LValue New(LValue var_type, vector<LValue>& args, const string& funcname = "") = 0;
