@@ -220,6 +220,7 @@ LValue llcg_llvm::Opt2(const string& opt, LValue value1, LValue value2) {
 		if (opt == "-") { instr = Instruction::Sub;  goto binOper; }
 		if (opt == "*") { instr = Instruction::Mul;  goto binOper; }
 		if (opt == "/") { instr = Instruction::SDiv; goto binOper; }
+		if (opt == "%") { instr = Instruction::SRem; goto binOper; }
 		if (opt == "<<") { instr = Instruction::Shl; goto binOper; }
 		if (opt == ">>") { instr = Instruction::LShr; goto binOper; } // 注意，这里没处理有符号数和无符号数的问题 AShr(arithmetic)
 		if (opt == "&") { instr = Instruction::And; goto binOper; }
@@ -231,6 +232,7 @@ LValue llcg_llvm::Opt2(const string& opt, LValue value1, LValue value2) {
 		if (opt == "-") { instr = Instruction::FSub;  goto binOper; }
 		if (opt == "*") { instr = Instruction::FMul;  goto binOper; }
 		if (opt == "/") { instr = Instruction::FDiv; goto binOper; }
+		if (opt == "%") { instr = Instruction::FRem; goto binOper; }
 	}
 
 binOper:

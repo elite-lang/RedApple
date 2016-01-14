@@ -253,7 +253,7 @@ static LValue opt2_macro(CodeGenContext* context, Node* node) {
 	LValue ans1 = op1->codeGen(context);
 	LValue ans2 = op2->codeGen(context);
 	if (opt == "+"  || opt == "-" || opt == "*" || opt == "*" || opt == "/" || opt == "<<" ||
-		opt == ">>" || opt == "&" || opt == "|" || opt == "^") {
+		opt == ">>" || opt == "&" || opt == "|" || opt == "^" || opt == "%") {
 		return context->getLLCG()->Opt2(opt, ans1, ans2);
 	}
 

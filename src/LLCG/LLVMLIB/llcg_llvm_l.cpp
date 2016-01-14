@@ -202,6 +202,7 @@ lvalue* llcg_llvm::l_Opt2(const string& opt, lvalue* value1, lvalue* value2) {
 		if (opt == "-") { instr = Instruction::Sub;  goto binOper; }
 		if (opt == "*") { instr = Instruction::Mul;  goto binOper; }
 		if (opt == "/") { instr = Instruction::SDiv; goto binOper; }
+		if (opt == "%") { instr = Instruction::SRem; goto binOper; }
 		if (opt == "<<") { instr = Instruction::Shl; goto binOper; }
 		if (opt == ">>") { instr = Instruction::LShr; goto binOper; } // 注意，这里没处理有符号数和无符号数的问题 AShr(arithmetic)
 		if (opt == "&") { instr = Instruction::And; goto binOper; }
@@ -213,6 +214,7 @@ lvalue* llcg_llvm::l_Opt2(const string& opt, lvalue* value1, lvalue* value2) {
 		if (opt == "-") { instr = Instruction::FSub;  goto binOper; }
 		if (opt == "*") { instr = Instruction::FMul;  goto binOper; }
 		if (opt == "/") { instr = Instruction::FDiv; goto binOper; }
+		if (opt == "%") { instr = Instruction::FRem; goto binOper; }
 	}
 
 binOper:
