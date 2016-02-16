@@ -11,15 +11,16 @@
 using namespace std;
 
 class FloatNode: public Node {
-public: 
+public:
 	static FloatNode* Create(const char* num);
-	virtual LValue codeGen(CodeGenContext* context); 
+	virtual LValue codeGen(CodeGenContext* context);
 	virtual NodeType getType();
 	float getFloat();
 	virtual Node* copy() {
 		return new FloatNode(*this);
 	}
 protected:
+	void printSelf();
 	float value;
 	FloatNode(const char* num);
 };

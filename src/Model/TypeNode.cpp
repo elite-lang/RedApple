@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-11-19 13:40:13
 * @Last Modified by:   sxf
@@ -7,6 +7,7 @@
 
 #include "TypeNode.h"
 #include "CodeGenContext.h"
+#include "elegantlist.hpp"
 #include <iostream>
 using namespace std;
 
@@ -43,9 +44,10 @@ string& TypeNode::getTypeName() {
 }
 
 void TypeNode::printSelf() {
-	printf("Type ");
-	if (is_const) printf("const ");
-	printf("%s", str.c_str());
+	// printf("Type ");
+	if (is_const) Node::el.print("const");
+	// printf("%s", str.c_str());
+	Node::el.print(str);
 }
 
 TypeNode::TypeNode(const char* name, bool is_const, bool is_source) {

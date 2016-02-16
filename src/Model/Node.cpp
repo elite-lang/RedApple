@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-09-22 19:21:40
 * @Last Modified by:   sxf
@@ -10,9 +10,10 @@
 #include <stdio.h>
 #include "nodes.h"
 #include <iostream>
+#include "elegantlist.hpp"
 
 void Node::init() {
-	next = child = NULL; 
+	next = child = NULL;
 }
 
 Node::Node() {
@@ -46,7 +47,7 @@ void Node::Free(Node*& p) {
 void Node::FreeAll(Node*& p) {
 	if (p != NULL) {
 		Node::FreeAll(p->next);
-		Node::FreeAll(p->child);	
+		Node::FreeAll(p->child);
 		delete p;
 		p = NULL;
 	}
@@ -113,22 +114,34 @@ void Node::addBrother (Node* n) {
 }
 
 void Node::print(int k) {
-	for (int i = 0; i < k; ++i)
-		printf("    ");
-	printSelf();
-	printf("\n");
-
-	Node* p = child; int t = 0;
-	while (p != NULL) {
-		p->print(k+1);
-		p = p->next;
-		++t;
+	if (getType() != node_t) {
+		printSelf();
+	} else {
+		el.print("(");
+		Node* p = child;
+		while (p != NULL) {
+			p->print(k+1);
+			p = p->next;
+		}
+		el.print(")");
 	}
-	if (t >= 3) printf("\n");
+	if (k == 0) printf("\n\n");
+	// for (int i = 0; i < k; ++i)
+	// 	printf("    ");
+	// printSelf();
+	// printf("\n");
+	//
+	// Node* p = child; int t = 0;
+	// while (p != NULL) {
+	// 	p->print(k+1);
+	// 	p = p->next;
+	// 	++t;
+	// }
+	// if (t >= 3) printf("\n");
 }
 
 void Node::printSelf() {
-	printf("Node");
+	Node::el.print("Node");
 }
 
 NodeType Node::getType() {
@@ -140,32 +153,32 @@ bool Node::isSingle() {
 }
 
 Node* Node::make_list(int num, ...) {
-	va_list argp; Node* para = NULL;  
-	Node* ans = NULL;  
-	va_start( argp, num );    
-    for (int i = 0; i < num; ++i) {    
-        para = va_arg( argp, Node* );  
+	va_list argp; Node* para = NULL;
+	Node* ans = NULL;
+	va_start( argp, num );
+    for (int i = 0; i < num; ++i) {
+        para = va_arg( argp, Node* );
         if (para == NULL) continue;
         if (!para->isSingle()) para = new Node(para);
-        if ( ans == NULL )    
+        if ( ans == NULL )
         	ans = para;
         else ans->addBrother(para);
-    }    
+    }
     va_end( argp );
     return ans;
 }
 
 Node* Node::makeList(int num, Node* plist[]) {
-	Node* para = NULL;  
-	Node* ans = NULL;  
-	for (int i = 0; i < num; ++i) {    
+	Node* para = NULL;
+	Node* ans = NULL;
+	for (int i = 0; i < num; ++i) {
         para = plist[i];
         if (para == NULL) continue;
         if (!para->isSingle()) para = new Node(para);
-        if ( ans == NULL )    
+        if ( ans == NULL )
         	ans = para;
         else ans->addBrother(para);
-    }    
+    }
     return ans;
 }
 
@@ -219,3 +232,5 @@ std::string& Node::getStr() {
 	std::cerr << "getStr() - 获取字符串错误, 该类型不正确: " << getTypeName() << std::endl;
 	exit(1);
 }
+
+ElegantList Node::el;

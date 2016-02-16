@@ -6,6 +6,8 @@
 #include "IntNode.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "elegantlist.hpp"
+#include "Utils/string_formatter.h"
 /**
  * IntNode implementation
  */
@@ -19,7 +21,7 @@ IntNode::IntNode(const char* num) {
 }
 
 void IntNode::printSelf() {
-	printf("Int %d", value);
+	Node::el.print(string_format("%d", value));
 }
 
 NodeType IntNode::getType() {

@@ -5,6 +5,8 @@
 
 #include "FloatNode.h"
 #include <cstdlib>
+#include "elegantlist.hpp"
+#include "Utils/string_formatter.h"
 /**
  * FloatNode implementation
  */
@@ -23,4 +25,8 @@ NodeType FloatNode::getType() {
 
 float FloatNode::getFloat() {
 	return value;
+}
+
+void FloatNode::printSelf() {
+	Node::el.print(string_format("%f.2", value));
 }

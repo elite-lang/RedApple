@@ -4,6 +4,7 @@
 
 
 #include "IDNode.h"
+#include "elegantlist.hpp"
 
 /**
  * IDNode implementation
@@ -25,7 +26,8 @@ IDNode::IDNode(char _value){
 }
 
 void IDNode::printSelf() {
-	printf("ID %s", value.c_str());
+	// printf("ID %s", value.c_str());
+	Node::el.print(value);
 }
 
 NodeType IDNode::getType() {

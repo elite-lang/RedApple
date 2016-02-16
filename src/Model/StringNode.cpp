@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-09-22 22:00:32
 * @Last Modified by:   sxf
@@ -8,6 +8,7 @@
 
 #include "StringNode.h"
 #include <stdio.h>
+#include "elegantlist.hpp"
 #include "Utils/StringEscape.h"
 
 StringNode::StringNode(const char* _value){
@@ -32,7 +33,8 @@ StringNode* StringNode::Create(char _value) {
 
 
 void StringNode::printSelf() {
-	printf("String %s", value.c_str());
+	// printf("String %s", value.c_str());
+	Node::el.print("\"" + value + "\"");
 }
 
 NodeType StringNode::getType() {
