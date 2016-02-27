@@ -10,6 +10,10 @@
 #include "llvm_value.h"
 #include "llvm_type.h"
 
+#include <iostream>
+#include <fstream>
+using namespace std;
+
 llcg_llvm::llcg_llvm() {
 	meta_M = llvm::make_unique<Module>("", context);
 	register_metalib();
@@ -615,12 +619,16 @@ void llcg_llvm::verifyModuleAndWrite(llvm::Module* M, const string& outfile_name
         exit(1);
     }
 
+	std::error_code ErrInfo;
+	raw_fd_ostream fs(outfile_name+".bitcode", ErrInfo, sys::fs::F_None);
+	fs << *M << "\n";
+	fs.flush();
 
     // 输出二进制BitCode到.bc文件
-    std::error_code ErrInfo;
-    raw_ostream *out = new raw_fd_ostream(outfile_name.c_str(), ErrInfo, sys::fs::F_None);
-    WriteBitcodeToFile(M, *out);
-    out->flush(); delete out;
+
+    raw_fd_ostream out(outfile_name, ErrInfo, sys::fs::F_None);
+    WriteBitcodeToFile(M, out);
+    out.flush();
 }
 
 void llcg_llvm::MakeMetaModule(const string& outfile_name, const string& module_name) {
