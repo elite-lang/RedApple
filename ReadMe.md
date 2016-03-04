@@ -79,3 +79,5 @@ void main() {
 	FunctionCall("print", 5);
 }
 ```
+
+[![Join the chat at https://gitter.im/elite-lang/RedApple](https://badges.gitter.im/elite-lang/RedApple.svg)](https://gitter.im/elite-lang/RedApple?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
