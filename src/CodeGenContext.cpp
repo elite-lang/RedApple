@@ -11,6 +11,7 @@
 #include <iostream>
 #include "idtable.h"
 #include "MacroTranslate.h"
+#include "Pass.h"
 
 using namespace std;
 
@@ -23,12 +24,11 @@ LValue CodeGenContext::MacroMake(Node* node) {
 			Node* user_macro_node = p->getData();
 			MacroTranslate translater;
 			Node* replace = translater.Marco(user_macro_node, node->getNext());
-			replace->print(1);
 			LValue ans = MacroMake(replace);
 			Node::FreeAll(replace);
 			return ans;
 		}
-		ICodeGenFunction* func = getMacro(node->getStr());
+		ICodeGenFunction* func = now_pass->getMacro(node->getStr());
 		if (func != NULL) {
 			return func->call(this, node->getNext());
 		}
@@ -40,48 +40,6 @@ LValue CodeGenContext::MacroMake(Node* node) {
 	for (Node* p = node->getChild(); p != NULL; p = p->getNext())
 		ans = MacroMake(p);
 	return ans;
-}
-
-ICodeGenFunction* CodeGenContext::getMacro(const string& str) {
-	auto func = macro_map.find(str);
-	if (func != macro_map.end()) return func->second;
-	else return NULL;
-}
-
-void CodeGenContext::ScanOther(Node* node) {
-	PreMacro();
-    MacroMake(node);
-    printf("-- 宏解析流程完成 --\n");
-    PreInit();
-    MacroMake(node);
-    printf("-- 预处理流程完成 --\n");
-    // pretype流程，负责处理所有类型相关问题并更新符号表
-    PreTypeInit();
-    MacroMake(node);
-    printf("-- 类型化流程完成 --\n");
-}
-
-void CodeGenContext::AddOrReplaceMacros(const FuncReg* macro_funcs) {
-	while (true) {
-		const char*      name = macro_funcs->name;
-		CodeGenCFunction func = macro_funcs->func;
-		if (name == 0) return;
-		string fname = name;
-		auto p = macro_map.find(fname);
-		if (p != macro_map.end())
-			p->second = new CodeGenFunction(func);
-		else
-			macro_map[fname] = new CodeGenFunction(func);
-		++macro_funcs;
-	}
-}
-
-void CodeGenContext::AddOrReplaceMacros(const string& name, ICodeGenFunction* func) {
-	macro_map[name] = func;
-}
-
-void CodeGenContext::RemoveAllMacros() {
-	macro_map.clear();
 }
 
 
@@ -231,45 +189,7 @@ void CodeGenContext::setNormalType() {
 }
 
 
-void CodeGenContext::SaveMacros() {
-	macro_save_stack.push(macro_map);
-}
-
-void CodeGenContext::RecoverMacros() {
-	macro_map = macro_save_stack.top();
-	macro_save_stack.pop();
-}
-
-
-extern const FuncReg macro_funcs[];
-extern const FuncReg macro_classes[];
-extern const FuncReg macro_prescan[];
-extern const FuncReg macro_pretype[];
-extern const FuncReg macro_defmacro[];
-
-void CodeGenContext::PreInit() {
-	RemoveAllMacros();
-	AddOrReplaceMacros(macro_prescan);
-}
-
-void CodeGenContext::PreTypeInit() {
-	RemoveAllMacros();
-	AddOrReplaceMacros(macro_pretype);
-}
-
-void CodeGenContext::PreMacro() {
-	RemoveAllMacros();
-	AddOrReplaceMacros(macro_defmacro);
-}
-
-void CodeGenContext::Init() {
-	RemoveAllMacros();
-	AddOrReplaceMacros(macro_funcs);
-	AddOrReplaceMacros(macro_classes);
-}
-
-CodeGenContext::CodeGenContext(Node* node) {
-	root = node;
+CodeGenContext::CodeGenContext() {
 	_save = false;
 	st = new IDTable();
 	codeGenerator = llcg::CreateLLVM();

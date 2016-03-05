@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-10-29 11:05:42
 * @Last Modified by:   sxf
@@ -26,13 +26,13 @@ static LValue function_macro(CodeGenContext* context, Node* node) {
 	std::vector<std::string> type_vec;
 	std::vector<std::string> arg_name;
 	if (args_node->getChild() != NULL) {
-		for (Node* pC = args_node->getChild(); 
-			 pC != NULL; pC = pC->getNext() ) 
+		for (Node* pC = args_node->getChild();
+			 pC != NULL; pC = pC->getNext() )
 		{
 			Node* pSec = pC->getChild()->getNext();
 			type_vec.push_back(pSec->getStr());
 			pSec = pSec->getNext();
-			arg_name.push_back(pSec->getStr());	
+			arg_name.push_back(pSec->getStr());
 			pSec = pSec->getNext();
 			if (pSec != NULL)
 			{
@@ -53,12 +53,12 @@ static LValue struct_macro(CodeGenContext* context, Node* node) {
 	std::vector<std::string> type_vec;
 	std::vector<std::string> arg_name;
 	if (args_node->getChild() != NULL) {
-		for (Node* pC = args_node->getChild(); 
-			 pC != NULL; pC = pC->getNext() ) 
+		for (Node* pC = args_node->getChild();
+			 pC != NULL; pC = pC->getNext() )
 		{
 			Node* pSec = pC->getChild()->getNext();
 			type_vec.push_back(pSec->getStr());
-			arg_name.push_back(pSec->getNext()->getStr());	
+			arg_name.push_back(pSec->getNext()->getStr());
 		}
 	}
 	StructModel* sm = new StructModel(struct_name, type_vec, arg_name);
@@ -82,7 +82,7 @@ static LValue function_type_macro(CodeGenContext* context, Node* node) {
 	node = node->getNext();
 	std::string function_name = node->getStr();
 	id* i = context->st->find(function_name);
-	if (i->type != function_t) return NULL;
+	if (i == NULL || i->type != function_t) return NULL;
 	auto fm = dynamic_pointer_cast<FunctionModel>(i->data);
 	fm->genCode(context);
 	return NULL;

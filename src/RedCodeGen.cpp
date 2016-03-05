@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-09-23 22:57:41
 * @Last Modified by:   sxf
@@ -17,26 +17,18 @@ RedCodeGen::RedCodeGen() {
 
 }
 
-RedCodeGen::RedCodeGen(Node* node) {
-    // 创建一个上下文类
-    Init(node);
-}
-
 RedCodeGen* RedCodeGen::Create() {
     return new RedCodeGen();
 }
 
-RedCodeGen* RedCodeGen::Create(Node* node) {
-    return new RedCodeGen(node);
-}
-
-
-void RedCodeGen::Init(Node* node) {
+void RedCodeGen::Init() {
     if (this->context != NULL) {
         delete context;
         context = NULL;
     }
-    this->context = new CodeGenContext(node); 
+    this->context = new CodeGenContext();
+    pm.LoadDefaultLists();
+    this->context->setPassManager(&pm);
 }
 
 RedCodeGen::~RedCodeGen() {
@@ -45,7 +37,7 @@ RedCodeGen::~RedCodeGen() {
 
 
 void RedCodeGen::PreScan(Node* node) {
-    context->ScanOther(node);
+    pm.RunPassList("prescan", node, context);
 }
 
 
@@ -61,8 +53,7 @@ void RedCodeGen::Make(Node* node, const char* outfile_name, const char* module_n
     context->getLLCG()->BeginModule(mod_name);
 
     // 正式流程
-    context->Init();
-	context->MacroMakeAll(node);
+    pm.RunPassList("main", node, context);
     string out_name = outfile_name;
     context->getLLCG()->VerifyAndWrite(out_name);
 }

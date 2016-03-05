@@ -432,7 +432,7 @@ LValue llcg_llvm::New(LValue var_type, vector<LValue>& args, const string& funcn
 		vector<Value*> fargs;
 		fargs.push_back(AllocSize);
 		CallInst* call = CallInst::Create(f, fargs, "", nowBlock);
-		Malloc = CastInst::CreatePointerCast(call, t, "", nowBlock);
+		Malloc = CastInst::CreatePointerCast(call, t->getPointerTo(), "", nowBlock);
 	}
 	return LValue(new llvm_value(Malloc));
 }
@@ -457,7 +457,7 @@ LValue llcg_llvm::NewArray(LValue var_type, vector<LValue>& wd, const string& fu
 		call = CallInst::Create(M->getFunction(func_name),
 			args, "", nowBlock);
 	} else {
-		Function* f = (Function*)(M->getOrInsertFunction(funcname, getMallocType()));
+		Function* f = (Function*)(M->getOrInsertFunction(funcname, getMallocArrayType()));
 		f->setCallingConv(CallingConv::C);
 		call = CallInst::Create(f, args, "", nowBlock);
 	}

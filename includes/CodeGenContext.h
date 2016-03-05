@@ -25,28 +25,9 @@
 class CodeGenContext : public ICodeGenContext
 {
 public:
-	CodeGenContext(Node* node);
-	~CodeGenContext();
+	CodeGenContext();
+	virtual ~CodeGenContext();
 
-	/**
-	 * @brief 预先扫描宏时的初始化，初始化第一趟扫描
-	 */
-	virtual void PreMacro();
-
-	/**
-	 * @brief 预先扫描类型名称时的初始化，初始化第二趟扫描
-	 */
-	virtual void PreInit();
-
-	/**
-	 * @brief 预先扫描类型和函数定义时的初始化，初始化第三趟扫描
-	 */
-	virtual void PreTypeInit();
-
-	/**
-	 * @brief 正式扫描前的初始化
-	 */
-	virtual void Init();
 
 	/**
 	 * @brief 这个函数是用来一条条翻译Node宏的
@@ -57,43 +38,6 @@ public:
 	 */
 	virtual LValue MacroMake(Node* node);
 
-
-	/**
-	 * @brief 递归翻译该节点下的所有宏
-	 * @param node 要翻译的节点
-	 */
-	virtual void MacroMakeAll(Node* node) {
-		MacroMake(node);
-	}
-
-	/**
-	 * @brief 查找一个名称是否为一个C宏
-	 * @details 查找一个名称是否为一个C宏
-	 *
-	 * @param str 宏的名字
-	 * @return 如果有，则返回函数指针，否则返回NULL
-	 */
-	virtual ICodeGenFunction* getMacro(const string& str);
-
-	// C++注册宏
-	// void AddMacros(const FuncReg* macro_funcs); // 为只添加不替换保留
-
-	/**
-	 * @brief 添加或替换一条宏
-	 * @details 添加或替换一条宏，如果当前名称存在则替换，没有则添加
-	 *
-	 * @param macro_funcs 一组宏定义数组，类似Lua中函数的定义方式
-	 */
-	virtual void AddOrReplaceMacros(const FuncReg* macro_funcs);
-
-	virtual void AddOrReplaceMacros(const string& name, ICodeGenFunction* func);
-
-
-	/**
-	 * @brief 移除全部宏指令
-	 * @details 移除全部宏指令
-	 */
-	virtual void RemoveAllMacros();
 
 	// 获取当前模块中已注册的函数
 	virtual LValue getFunction(Node* node);
@@ -106,8 +50,6 @@ public:
 
 	virtual shared_ptr<FunctionModel> getFunctionModel(const std::string& name);
 	virtual shared_ptr<StructModel> getStructModel(const std::string& name);
-
-	virtual void ScanOther(Node* node);
 
 	// 类型的定义和查找
 	virtual void DefType(string name, LValue t);
@@ -132,10 +74,6 @@ public:
 	 */
 	virtual LValue FindVar(const string& name);
 
-
-	virtual void SaveMacros();
-	virtual void RecoverMacros();
-
 	virtual bool isSave() { return _save; }
 	virtual void setIsSave(bool save) { _save = save; }
 
@@ -149,27 +87,28 @@ public:
 	 */
 	virtual llcg* getLLCG() { return codeGenerator; }
 
+	virtual void setNowPass(Pass* pass) {
+		now_pass = pass;
+	}
+
+	virtual Pass* getNowPass() {
+		return now_pass;
+	}
+
+	virtual PassManager* getPassManager() {
+		return pm;
+	}
+
+	virtual void setPassManager(PassManager* pm) {
+		this->pm = pm;
+	}
+
 private:
 
 	llcg* codeGenerator;
 
-	/**
-	 * @brief 语法树根节点
-	 * @details 额外保存的语法树根节点，为方便树的遍历而记录
-	 */
-	Node* root;
-
-	/**
-	 * @brief 宏定义表，用来查找是否有该宏定义的
-	 * @details 宏定义表，里面存放有对应名称的C语言宏处理函数
-	 */
-	map<string, ICodeGenFunction*> macro_map;
-
-	/**
-	 * @brief 这个栈是用来临时保存上面的查询表的
-	 * @details 某些情况，可能会对宏处理的函数进行临时的变更，就需要保存和恢复全部的状态，这个栈是用来记录宏表的
-	 */
-	stack<map<string, ICodeGenFunction*> > macro_save_stack;
+	Pass* now_pass;
+	PassManager* pm;
 
 	void setNormalType();
 

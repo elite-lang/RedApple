@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-10-26 14:05:30
 * @Last Modified by:   sxf
@@ -9,20 +9,22 @@
 #include "StringNode.h"
 #include "IDNode.h"
 #include <stdio.h>
+#include "Pass.h"
 
 extern const FuncReg macro_classes_replace[];
 
 static LValue class_macro(CodeGenContext* context, Node* node) {
-	context->SaveMacros();
-	context->AddOrReplaceMacros(macro_classes_replace);
+	auto pass = context->getNowPass();
+	pass->SaveMacros();
+	pass->AddOrReplaceMacros(macro_classes_replace);
 
 
-	context->RecoverMacros();
+	pass->RecoverMacros();
 	return NULL;
 }
 
 static LValue module_macro(CodeGenContext* context, Node* node) {
-	
+
 
 	return NULL;
 }
@@ -30,10 +32,11 @@ static LValue module_macro(CodeGenContext* context, Node* node) {
 extern const FuncReg macro_funcs[];
 
 static LValue function_macro(CodeGenContext* context, Node* node) {
-	context->SaveMacros();
-	context->AddOrReplaceMacros(macro_funcs);
+	auto pass = context->getNowPass();
+	pass->SaveMacros();
+	pass->AddOrReplaceMacros(macro_funcs);
 
-	context->RecoverMacros();
+	pass->RecoverMacros();
 	return NULL;
 }
 
