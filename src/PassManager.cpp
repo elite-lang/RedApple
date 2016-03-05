@@ -34,7 +34,6 @@ void PassManager::RunPassList(const string& name, Node* node, ICodeGenContext* c
     if (idx != pass_lists.end()) {
         for (auto i : idx->second) {
             // 设置i为活动pass
-            printf("run pass\n");
             ctx->setNowPass(i);
             ctx->MacroMake(node);
         }
