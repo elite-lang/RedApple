@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-11-13 17:08:01
 * @Last Modified by:   sxf
@@ -12,11 +12,11 @@
 #include <string>
 #include "LLCG/lvalue.h"
 
-typedef struct cJSON cJSON;
+
 
 enum MetaType
 {
-	struct_meta_t, function_meta_t, macro_meta_t
+	struct_meta_t, function_meta_t, macro_meta_t, map_meta_t
 };
 
 class CodeGenContext;
@@ -28,15 +28,14 @@ class MetaModel : public lvalue
 {
 public:
 	MetaModel(std::string);
-	~MetaModel();
+	virtual ~MetaModel();
 
 	virtual void insertToST(CodeGenContext* context) = 0;
 	virtual void genCode(CodeGenContext* context) = 0;
-	virtual cJSON* genJson() = 0;
 	virtual void genMetaCode(CodeGenContext* context) = 0;
 	virtual MetaType getMetaType() = 0;
 
-	static MetaModel* readJson(cJSON*);
+	static MetaModel* readJson();
 	static MetaModel* readMetaCode();
 protected:
 	std::string name;

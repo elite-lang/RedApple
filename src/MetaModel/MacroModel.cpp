@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-11-25 15:02:32
 * @Last Modified by:   sxf
@@ -15,7 +15,7 @@ MacroModel::~MacroModel() {
 
 }
 
-	
+
 void MacroModel::insertToST(CodeGenContext* context) {
 
 }
@@ -24,9 +24,6 @@ void MacroModel::genCode(CodeGenContext* context) {
 
 }
 
-cJSON* MacroModel::genJson() {
-	return NULL;
-}
 
 void MacroModel::genMetaCode(CodeGenContext* context) {
 

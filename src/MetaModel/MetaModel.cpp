@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-11-14 14:33:49
 * @Last Modified by:   sxf
@@ -16,11 +16,10 @@ MetaModel::~MetaModel() {
 
 }
 
-MetaModel* MetaModel::readJson(cJSON* J) {
+MetaModel* MetaModel::readJson() {
 	return NULL;
 }
 
 MetaModel* MetaModel::readMetaCode() {
 	return NULL;
 }
-

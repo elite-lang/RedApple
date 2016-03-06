@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-11-13 12:07:03
 * @Last Modified by:   sxf
@@ -37,7 +37,6 @@ public:
 
 	virtual void insertToST(CodeGenContext* context);
 	virtual void genCode(CodeGenContext* context);
-	virtual cJSON* genJson();
 	virtual void genMetaCode(CodeGenContext* context);
 	virtual MetaType getMetaType();
 private:

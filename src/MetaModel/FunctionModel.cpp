@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-11-13 16:45:51
 * @Last Modified by:   sxf
@@ -51,13 +51,10 @@ void FunctionModel::genCode(CodeGenContext* context) {
 		type_vec.push_back(t);
 	}
 	// 先合成一个函数
-	func_type = context->getLLCG()->FuncType(ret_type, type_vec, 
+	func_type = context->getLLCG()->FuncType(ret_type, type_vec,
 		/*not vararg*/false);
 }
 
-cJSON* FunctionModel::genJson() {
-	return NULL;
-}
 
 void FunctionModel::genMetaCode(CodeGenContext* context) {
 	vector<string> data;

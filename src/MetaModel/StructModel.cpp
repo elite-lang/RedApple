@@ -1,4 +1,4 @@
-/* 
+/*
 * @Author: sxf
 * @Date:   2015-10-31 18:24:33
 * @Last Modified by:   sxf
@@ -50,9 +50,6 @@ void StructModel::genCode(CodeGenContext* context) {
 	struct_type = context->getLLCG()->Struct(getStruct(context), type_vec);
 }
 
-cJSON* StructModel::genJson() {
-	return NULL;
-}
 
 void StructModel::genMetaCode(CodeGenContext* context) {
 	vector<string> data;
