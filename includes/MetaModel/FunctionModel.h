@@ -40,7 +40,6 @@ public:
 	virtual void genMetaCode(CodeGenContext* context);
 	virtual MetaType getMetaType();
 private:
-	LValue func;
 	LValue func_type;
 };
 

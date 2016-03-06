@@ -196,6 +196,11 @@ CodeGenContext::CodeGenContext() {
 	setNormalType();
 }
 
+void CodeGenContext::Init() {
+	_save = false;
+}
+
 CodeGenContext::~CodeGenContext() {
 	delete st;
+	delete codeGenerator;
 }

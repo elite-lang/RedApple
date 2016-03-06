@@ -6,9 +6,11 @@
 */
 
 #include "RedCodeGen.h"
+#include "idtable.h"
 #include <string>
 #include <map>
 #include <vector>
+#include <set>
 using namespace std;
 
 #include "CodeGenContext.h"
@@ -40,6 +42,10 @@ void RedCodeGen::PreScan(Node* node) {
     pm.RunPassList("prescan", node, context);
 }
 
+void RedCodeGen::PreScan(std::set<Node*>& nodes) {
+    pm.RunPassListWithSet("prescan", nodes, context);
+}
+
 
 void RedCodeGen::MakeMeta(const char* outfile_name, const char* module_name) {
     string out_name = outfile_name;
@@ -50,10 +56,12 @@ void RedCodeGen::MakeMeta(const char* outfile_name, const char* module_name) {
 
 void RedCodeGen::Make(Node* node, const char* outfile_name, const char* module_name) {
     string mod_name = module_name;
+    context->st->push();  // 进入文件局部符号表
+    context->Init();
     context->getLLCG()->BeginModule(mod_name);
-
     // 正式流程
     pm.RunPassList("main", node, context);
     string out_name = outfile_name;
     context->getLLCG()->VerifyAndWrite(out_name);
+    context->st->pop();   // 离开该文件符号表
 }

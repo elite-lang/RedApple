@@ -28,6 +28,7 @@ public:
 	CodeGenContext();
 	virtual ~CodeGenContext();
 
+	void Init();
 
 	/**
 	 * @brief 这个函数是用来一条条翻译Node宏的

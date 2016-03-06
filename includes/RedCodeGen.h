@@ -21,6 +21,7 @@ class RedCodeGen : public CodeGen
 public:
 	virtual void Init();
 	virtual void PreScan(Node* node);
+	virtual void PreScan(std::set<Node*>& nodes);
 	virtual void Make(Node* node, const char* outfile_name, const char* module_name);
 	virtual void MakeMeta(const char* outfile_name, const char* module_name);
 

@@ -19,6 +19,7 @@ static LValue function_macro(CodeGenContext* context, Node* node) {
 	// 第二个参数, 函数名
 	node = node->getNext();
 	std::string function_name = node->getStr();
+	cout << function_name << endl;
 	shared_ptr<FunctionModel> fm = context->getFunctionModel(function_name);
 	fm->genMetaCode(context);
 	LValue F = fm->getFunction(context);

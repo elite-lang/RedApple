@@ -9,7 +9,10 @@
 #ifndef CODE_GEN_H
 #define CODE_GEN_H
 
+#include <set>
+
 class Node;
+
 
 /**
  * @brief 代码生成器的接口类
@@ -24,6 +27,7 @@ class CodeGen
 public:
 	virtual void Init() = 0;
 	virtual void PreScan(Node* node) = 0;
+	virtual void PreScan(std::set<Node*>& nodes) = 0;
 	virtual void Make(Node* node, const char* outfile_name, const char* module_name = "") = 0;
 	virtual void MakeMeta(const char* outfile_name, const char* module_name = "") = 0;
 };

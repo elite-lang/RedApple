@@ -40,6 +40,18 @@ void PassManager::RunPassList(const string& name, Node* node, ICodeGenContext* c
     }
 }
 
+void PassManager::RunPassListWithSet(const string& name, set<Node*>& nodes, ICodeGenContext* ctx) {
+    auto idx = pass_lists.find(name);
+    if (idx != pass_lists.end()) {
+        for (auto i : idx->second) {
+            // 设置i为活动pass
+            ctx->setNowPass(i);
+            for (auto node : nodes)
+                ctx->MacroMake(node);
+        }
+    }
+}
+
 
 extern const FuncReg macro_funcs[];
 extern const FuncReg macro_classes[];

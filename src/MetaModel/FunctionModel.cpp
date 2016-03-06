@@ -37,9 +37,7 @@ void FunctionModel::insertToST(CodeGenContext* context) {
 }
 
 LValue FunctionModel::getFunction(CodeGenContext* context) {
-	if (func != NULL) return func;
-	func = context->getLLCG()->GetOrInsertFunction(name, func_type);
-	return func;
+	return context->getLLCG()->GetOrInsertFunction(name, func_type);
 }
 
 

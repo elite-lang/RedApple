@@ -5,6 +5,7 @@
 #include <vector>
 #include <list>
 #include <string>
+#include <set>
 using namespace std;
 
 class ICodeGenContext;
@@ -21,6 +22,8 @@ public:
     list<Pass*>* getPassList(const string& name);
 
     void RunPassList(const string& name, Node* node, ICodeGenContext* ctx);
+
+    void RunPassListWithSet(const string& name, set<Node*>& nodes, ICodeGenContext* ctx);
 
     void LoadDefaultLists();
 

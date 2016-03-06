@@ -6,14 +6,12 @@
 */
 
 #include "llcg_llvm.h"
-
 #include "llvm_value.h"
 #include "llvm_type.h"
 
 #include <iostream>
 #include <fstream>
 using namespace std;
-
 llcg_llvm::llcg_llvm() {
 	meta_M = llvm::make_unique<Module>("", context);
 	register_metalib();
@@ -54,7 +52,7 @@ LValue llcg_llvm::GetOrInsertFunction(const string& name, LValue ret_type, vecto
 	return nullptr;
 }
 
-void   llcg_llvm::FunctionBodyBegin(LValue func, vector<string>& name_list) {
+void llcg_llvm::FunctionBodyBegin(LValue func, vector<string>& name_list) {
 	Value* _func = *LLVALUE(func);
 	Function* F = dyn_cast<Function>(_func);
 	int i = 0;
@@ -573,6 +571,8 @@ extern const LibFunc stdlibs[];
 void llcg_llvm::BeginModule(const string& name) {
 	M = llvm::make_unique<Module>(name, context);
 	register_stdlib(M.get(), stdlibs);
+	nowBlock = NULL;
+	nowFunc = NULL;
 }
 
 void llcg_llvm::register_stdlib(Module* M, const LibFunc* libs_func) {
