@@ -53,8 +53,8 @@ public:
 	virtual LValue Select(LValue value, vector<LValue>& args) = 0;
 	virtual void   If(LValue cond, LValue father, LValue true_block, LValue true_block_end,
 					   LValue false_block, LValue false_block_end, bool isElseWork) = 0;
-	virtual void   For(LValue cond, LValue init, LValue pd, LValue work, LValue statement, LValue statement_end) = 0;
-	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement, LValue statement_end) = 0;
+	virtual void   For(LValue cond, LValue init, LValue pd, LValue work, LValue statement, LValue statement_end, LValue end) = 0;
+	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement, LValue statement_end, LValue end) = 0;
 	virtual void   DoWhile(LValue statement, LValue pd) = 0;
 	virtual void   DoUntil(LValue statement, LValue pd) = 0;
 	virtual LValue New(LValue var_type, vector<LValue>& args, const string& funcname = "") = 0;
@@ -86,7 +86,8 @@ public:
 
 	virtual void   MakeMetaList(vector<string>& list) = 0;
 	virtual void   MakeMetaList(const string& name, vector<string>& list, LValue fp) = 0;
-
+	virtual void   CloseTerminator(LValue basicblock, LValue target) = 0;
+	virtual void   SetNowBasicBlock(LValue nowBlock) = 0;
 	static llcg*   CreateLLVM();
 
 };

@@ -147,10 +147,21 @@ static LValue for_macro(CodeGenContext* context, Node* node) {
 	// 参数四 循环体
 	node = node->getNext();
 	LValue work_block = context->getLLCG()->CreateBasicBlock();
+
+	LValue false_block = context->getLLCG()->CreateBasicBlock();
+
+	// 生成break和continue标识
+	context->st->insert("break", conditions_t, false_block);
+	context->st->insert("continue", conditions_t, end_block);
+
+	 // 为了在生成代码前先记录break时要跳出的位置, 必须先建好各个BasicBlock, 最后再设定跳转关系
+	context->getLLCG()->SetNowBasicBlock(work_block);
 	context->MacroMake(node);
 	LValue work_end_block = context->getLLCG()->GetNowBasicBlock();
+	context->getLLCG()->SetNowBasicBlock(false_block);
 	// 生成for循环
-	context->getLLCG()->For(condition, init_block, end_block, do_block, work_block, work_end_block);
+	context->getLLCG()->For(condition, init_block, end_block, do_block, work_block, work_end_block, false_block);
+
 	context->st->pop();
 	return NULL;
 }
@@ -165,13 +176,18 @@ static LValue while_macro(CodeGenContext* context, Node* node) {
 	// 参数二 循环体
 	node = node->getNext();
 	LValue true_block = context->getLLCG()->CreateBasicBlock();
+	LValue false_block = context->getLLCG()->CreateBasicBlock();
+
 	context->st->push();
+	context->getLLCG()->SetNowBasicBlock(true_block);
 	context->MacroMake(node);
 	context->st->pop();
 	LValue work_end_block = context->getLLCG()->GetNowBasicBlock();
 
+	context->getLLCG()->SetNowBasicBlock(false_block);
+
 	// 生成while循环
-	context->getLLCG()->While(condition, father_block, pd_block, true_block, work_end_block);
+	context->getLLCG()->While(condition, father_block, pd_block, true_block, work_end_block, false_block);
 	return NULL;
 }
 

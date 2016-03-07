@@ -53,8 +53,8 @@ public:
 	virtual lvalue* l_Select(lvalue* value, vector<lvalue*>& args) = 0;
 	virtual void   l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* true_block_end,
 					   lvalue* false_block, lvalue* false_block_end, bool isElseWork) = 0;
-	virtual void   l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement, lvalue* statement_end) = 0;
-	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement, lvalue* statement_end) = 0;
+	virtual void   l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement, lvalue* statement_end, lvalue* end) = 0;
+	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement, lvalue* statement_end, lvalue* end) = 0;
 	virtual void   l_DoWhile(lvalue* statement, lvalue* pd) = 0;
 	virtual void   l_DoUntil(lvalue* statement, lvalue* pd) = 0;
 	virtual lvalue* l_New(lvalue* var_type, vector<lvalue*>& args, const string& funcname = "") = 0;
@@ -86,6 +86,7 @@ public:
 
 	virtual void   l_MakeMetaList(vector<string>& list) = 0;
 	virtual void   l_MakeMetaList(const string& name, vector<string>& list, lvalue* fp) = 0;
+	virtual void   l_CloseTerminator(lvalue* basicblock, lvalue* target) = 0;
 
 };
 

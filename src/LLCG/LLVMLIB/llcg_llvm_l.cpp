@@ -329,18 +329,19 @@ void   llcg_llvm::l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue*
 	BranchInst* branch = BranchInst::Create(_true_block_, _false_block_, condition, father_block);
 }
 
-void   llcg_llvm::l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement, lvalue* statement_end) {
+void   llcg_llvm::l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement, lvalue* statement_end, lvalue* end) {
 	Value* condition  = *dynamic_cast<llvm_value*>(cond);
 	Value* _init      = *dynamic_cast<llvm_value*>(init);
 	Value* _pd        = *dynamic_cast<llvm_value*>(pd);
 	Value* _work      = *dynamic_cast<llvm_value*>(work);
 	Value* _statement = *dynamic_cast<llvm_value*>(statement);
+	Value* _end       = *dynamic_cast<llvm_value*>(end);
 	BasicBlock* init_block = dyn_cast<BasicBlock>(_init);
 	BasicBlock* end_block  = dyn_cast<BasicBlock>(_pd);
 	BasicBlock* do_block   = dyn_cast<BasicBlock>(_work);
 	BasicBlock* work_block = dyn_cast<BasicBlock>(_statement);
+	BasicBlock* false_block = dyn_cast<BasicBlock>(_end);
 
-	BasicBlock* false_block = createBlock();
 	BranchInst* branch = BranchInst::Create(work_block, false_block, condition, end_block);
 	if (init_block->getTerminator() == NULL)
 		BranchInst::Create(end_block, init_block);
@@ -350,18 +351,19 @@ void   llcg_llvm::l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lv
 		BranchInst::Create(end_block, do_block);
 }
 
-void   llcg_llvm::l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement, lvalue* statement_end) {
+void   llcg_llvm::l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement, lvalue* statement_end, lvalue* end) {
 	Value* condition  = *dynamic_cast<llvm_value*>(cond);
 	Value* _father    = *dynamic_cast<llvm_value*>(father);
 	Value* _pd        = *dynamic_cast<llvm_value*>(pd);
 	Value* _statement = *dynamic_cast<llvm_value*>(statement);
+	Value* _end       = *dynamic_cast<llvm_value*>(end);
 
 	BasicBlock* father_block = dyn_cast<BasicBlock>(_father);
 	BasicBlock* pd_block     = dyn_cast<BasicBlock>(_pd);
 	BasicBlock* true_block   = dyn_cast<BasicBlock>(_statement);
+	BasicBlock* false_block  = dyn_cast<BasicBlock>(_end);
 
 	// 生成while循环
-	BasicBlock* false_block = createBlock();
 	BranchInst* branch = BranchInst::Create(true_block, false_block, condition, pd_block);
 	if (father_block->getTerminator() == NULL)
 		BranchInst::Create(pd_block, father_block);
@@ -578,4 +580,13 @@ void   llcg_llvm::l_MakeMetaList(const string& name, vector<string>& list, lvalu
 	BasicBlock& bb = F->getEntryBlock();
 	Function* FuncF = M->getFunction("elite_meta_function");
 	CallInst::Create(FuncF, args, "", &bb);
+}
+
+void llcg_llvm::l_CloseTerminator(lvalue* basicblock, lvalue* target) {
+	Value* _basicblock = *dynamic_cast<llvm_value*>(basicblock);
+	Value* _target     = *dynamic_cast<llvm_value*>(target);
+	BasicBlock* bb     = dyn_cast<BasicBlock>(_basicblock);
+	BasicBlock* tg     = dyn_cast<BasicBlock>(_target);
+	if (bb->getTerminator() == NULL)
+		BranchInst::Create(tg, bb);
 }

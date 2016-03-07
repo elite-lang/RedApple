@@ -65,8 +65,8 @@ public:
 	virtual LValue Select(LValue value, vector<LValue>& args);
 	virtual void   If(LValue cond, LValue father, LValue true_block, LValue true_block_end,
 					   LValue false_block, LValue false_block_end, bool isElseWork);
-	virtual void   For(LValue cond, LValue init, LValue pd, LValue work, LValue statement, LValue statement_end);
-	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement, LValue statement_end);
+	virtual void   For(LValue cond, LValue init, LValue pd, LValue work, LValue statement, LValue statement_end, LValue end);
+	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement, LValue statement_end, LValue end);
 	virtual void   DoWhile(LValue statement, LValue pd);
 	virtual void   DoUntil(LValue statement, LValue pd);
 	virtual LValue New(LValue var_type, vector<LValue>& args, const string& funcname = "");
@@ -98,7 +98,8 @@ public:
 
 	virtual void MakeMetaList(vector<string>& list);
 	virtual void MakeMetaList(const string& name, vector<string>& list, LValue fp);
-
+	virtual void CloseTerminator(LValue basicblock, LValue target);
+	virtual void SetNowBasicBlock(LValue nowBlock);
 
 	/* 下面是llcg_l的继承 */
 
@@ -129,8 +130,8 @@ public:
 	virtual lvalue* l_Select(lvalue* value, vector<lvalue*>& args);
 	virtual void   l_If(lvalue* cond, lvalue* father, lvalue* true_block, lvalue* true_block_end,
 					   lvalue* false_block, lvalue* false_block_end, bool isElseWork);
-	virtual void   l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement, lvalue* statement_end);
-	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement, lvalue* statement_end);
+	virtual void   l_For(lvalue* cond, lvalue* init, lvalue* pd, lvalue* work, lvalue* statement, lvalue* statement_end, lvalue* end);
+	virtual void   l_While(lvalue* cond, lvalue* father, lvalue* pd, lvalue* statement, lvalue* statement_end, lvalue* end);
 	virtual void   l_DoWhile(lvalue* statement, lvalue* pd);
 	virtual void   l_DoUntil(lvalue* statement, lvalue* pd);
 	virtual lvalue* l_New(lvalue* var_type, vector<lvalue*>& args, const string& funcname = "");
@@ -162,7 +163,7 @@ public:
 
 	virtual void   l_MakeMetaList(vector<string>& list);
 	virtual void   l_MakeMetaList(const string& name, vector<string>& list, lvalue* fp);
-
+	virtual void   l_CloseTerminator(lvalue* basicblock, lvalue* target);
 
 protected:
 
