@@ -30,7 +30,7 @@ static void register_functioncall(llvm::Module *module) {
 
     llvm::FunctionType* func_type =
         llvm::FunctionType::get(
-            llvm::Type::getVoidTy(module->getContext())->getPointerTo(), arg_types, true);
+            llvm::Type::getInt8Ty(module->getContext())->getPointerTo(), arg_types, true);
 
     llvm::Function *func = llvm::Function::Create(
                 func_type, llvm::Function::ExternalLinkage,
@@ -99,7 +99,7 @@ static void register_malloc_array(Module *module) {
 
     FunctionType* meta_type =
         FunctionType::get(
-            Type::getVoidTy(module->getContext())->getPointerTo(), arg_types, true);
+            Type::getInt8Ty(module->getContext())->getPointerTo(), arg_types, true);
 
     Function *func = Function::Create(
                 meta_type, Function::ExternalLinkage,
