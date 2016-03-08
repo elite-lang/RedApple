@@ -418,6 +418,13 @@ void llcg_llvm::DoUntil(LValue statement, LValue pd) {
 
 }
 
+void llcg_llvm::Goto(LValue target) {
+	if (nowBlock->getTerminator()) return;
+	Value* v = *LLVALUE(target);
+	BasicBlock* target_block = dyn_cast<BasicBlock>(v);
+	BranchInst::Create(target_block, nowBlock);
+}
+
 LValue llcg_llvm::New(LValue var_type, vector<LValue>& args, const string& funcname) {
 	Type* t = *LLTYPE(var_type);
 	Type* ITy = Type::getInt64Ty(context);

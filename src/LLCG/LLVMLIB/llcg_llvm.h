@@ -69,6 +69,7 @@ public:
 	virtual void   While(LValue cond, LValue father, LValue pd, LValue statement, LValue statement_end, LValue end);
 	virtual void   DoWhile(LValue statement, LValue pd);
 	virtual void   DoUntil(LValue statement, LValue pd);
+	virtual void   Goto(LValue target);
 	virtual LValue New(LValue var_type, vector<LValue>& args, const string& funcname = "");
 	virtual LValue NewArray(LValue var_type, vector<LValue>& wd, const string& funcname = "");
 	virtual LValue Delete(LValue pointer, const string& funcname = "");

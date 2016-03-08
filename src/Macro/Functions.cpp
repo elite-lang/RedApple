@@ -317,6 +317,7 @@ static LValue new_macro(CodeGenContext* context, Node* node) {
 }
 
 static LValue delete_macro(CodeGenContext* context, Node* node) {
+	std::string str = node->getStr();
 
 	return NULL;
 }
@@ -324,6 +325,31 @@ static LValue delete_macro(CodeGenContext* context, Node* node) {
 static LValue delete_array_macro(CodeGenContext* context, Node* node) {
 	return NULL;
 }
+
+static LValue break_macro(CodeGenContext* context, Node* node) {
+	printf("break macro\n");
+	id* d = context->st->find("break");
+	if (d == NULL) {
+		printf("错误的break语句使用环境\n");
+		exit(1);
+	}
+	context->getLLCG()->Goto(d->data);
+	return NULL;
+}
+
+static LValue continue_macro(CodeGenContext* context, Node* node) {
+	printf("continue macro\n");
+	id* d = context->st->find("continue");
+	if (d == NULL) {
+		printf("错误的continue语句使用环境\n");
+		exit(1);
+	}
+	context->getLLCG()->Goto(d->data);
+	return NULL;
+}
+
+
+
 
 /*
 extern Node* parseFile(const char* path);
@@ -351,6 +377,8 @@ extern const FuncReg macro_funcs[] = {
 	{"new",      new_macro},
 	{"delete",   delete_macro},
 	{"delete[]", delete_array_macro},
+	{"break",    break_macro},
+	{"continue", continue_macro},
 	//{"import",   import_macro}, // 实验型导入功能,最后应从库中删除
 	{NULL, NULL}
 };
