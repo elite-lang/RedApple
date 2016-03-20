@@ -179,7 +179,7 @@ extern "C" {
 
 	void free_array(void* ptr, int v) {
 		if (ptr == NULL) return;
-		void* real_ptr = ptr - v*sizeof(int);
+		void* real_ptr = (char*)ptr - v*sizeof(int);
 		free(ptr);
 	}
 
