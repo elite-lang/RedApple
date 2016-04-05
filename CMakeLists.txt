@@ -64,8 +64,10 @@ list(REMOVE_ITEM  source_files  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 
 if(USE_DYNAMIC)
 	add_library(red SHARED ${source_files}) # 使用动态库
+	install(TARGETS red RUNTIME DESTINATION bin)
 else()
 	add_library(red STATIC ${source_files}) # 使用静态库
+	install(TARGETS red ARCHIVE DESTINATION lib)
 endif()
 
 add_subdirectory(runtime)
