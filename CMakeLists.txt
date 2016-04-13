@@ -70,7 +70,7 @@ else()
 	install(TARGETS red ARCHIVE DESTINATION lib)
 endif()
 
-add_subdirectory(runtime)
+add_subdirectory(runtimeproj)
 
 
 
