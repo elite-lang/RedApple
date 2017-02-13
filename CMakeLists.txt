@@ -8,7 +8,7 @@ set(LLVM_TARGETS_TO_BUILD X86)
 set(LLVM_BUILD_RUNTIME OFF)
 set(LLVM_BUILD_TOOLS OFF)
 
-find_package(LLVM REQUIRED CONFIG)
+find_package(LLVM 3.6 REQUIRED CONFIG) 
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
@@ -50,7 +50,7 @@ endif()
 
 # 核心路径配置
 include_directories(includes includes/Model includes/LLCG src src/Utils src/MetaModel src/cJSON
-src/LLCG/ src/LLCG/LLVMLIB ../header_libs/elegantlist)
+src/LLCG/ src/LLCG/LLVMLIB header_libs/elegantlist)
 
 file(GLOB_RECURSE source_files	${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 								${CMAKE_CURRENT_SOURCE_DIR}/src/Model/*.cpp
